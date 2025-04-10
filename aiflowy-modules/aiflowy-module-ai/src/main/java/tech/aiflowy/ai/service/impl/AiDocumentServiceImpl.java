@@ -1,5 +1,6 @@
 package tech.aiflowy.ai.service.impl;
 
+import org.springframework.core.io.ClassPathResource;
 import tech.aiflowy.ai.entity.AiDocument;
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.ai.entity.AiLlm;
@@ -22,8 +23,10 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import tech.aiflowy.common.util.StringUtil;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +124,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         // 再删除指定路径下的文件
         QueryWrapper wrapper = QueryWrapper.create().where("id = ?", id);
         AiDocument aiDocument = aiDocumentMapper.selectOneByQuery(wrapper);
-        String filePath = fileUploadPath + aiDocument.getDocumentPath();
+        String filePath = getRootPath() + aiDocument.getDocumentPath();
         deleteFile(filePath);
         return true;
     }
@@ -135,7 +138,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     public ResponseEntity<?> previewFile(String documentId) throws IOException {
         QueryWrapper wrapper = QueryWrapper.create().where("id = ?", documentId);
         AiDocument aiDocument = aiDocumentMapper.selectOneByQuery(wrapper);
-        String FILE_DIRECTORY = fileUploadPath + aiDocument.getDocumentPath();
+        String FILE_DIRECTORY = getRootPath() + aiDocument.getDocumentPath();
         // 构建文件路径
         Path filePath = Paths.get(FILE_DIRECTORY);
 //        Path filePath = Paths.get(FILE_DIRECTORY).resolve(fileName).normalize();
@@ -232,6 +235,18 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             System.out.println("发生 I/O 错误：" + e.getMessage());
         } finally {
             return false;
+        }
+    }
+
+    private String getRootPath() {
+        if (StringUtil.hasText(this.fileUploadPath)) {
+            return this.fileUploadPath;
+        }
+        ClassPathResource fileResource = new ClassPathResource("/");
+        try {
+            return new File(fileResource.getFile(), "/public").getAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
