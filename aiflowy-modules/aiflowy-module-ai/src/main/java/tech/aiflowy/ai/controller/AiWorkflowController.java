@@ -5,10 +5,9 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.store.DocumentStore;
 import com.agentsflex.core.store.SearchWrapper;
 import com.agentsflex.core.store.StoreOptions;
-import com.agentsflex.llm.spark.SparkLlm;
-import com.agentsflex.llm.spark.SparkLlmConfig;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.knowledge.Knowledge;
+import dev.tinyflow.core.node.KnowledgeNode;
 import dev.tinyflow.core.provider.KnowledgeProvider;
 import dev.tinyflow.core.provider.LlmProvider;
 import tech.aiflowy.ai.entity.AiKnowledge;
@@ -84,7 +83,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
                 AiKnowledge aiKnowledge = aiKnowledgeService.getById(new BigInteger(o.toString()));
                 return  new Knowledge() {
                     @Override
-                    public List<Document> search(String keyword, int limit) {
+                    public List<Document> search(String keyword, int limit, KnowledgeNode knowledgeNode, Chain chain) {
                         DocumentStore documentStore = aiKnowledge.toDocumentStore();
                         if (documentStore == null){
                             return null;
