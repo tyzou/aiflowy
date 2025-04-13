@@ -37,7 +37,7 @@ const Login: React.FC = () => {
                     appStore.setToken(resp.data.data.token)
                     appStore.setNickname(resp.data.data.nickname)
                     appStore.setAvatar(resp.data.data.avatar)
-                    navigate("/index")
+                    navigate("/ai/bots")
                 } else if (resp.data.message) {
                     message.error(resp.data.message)
                 }
