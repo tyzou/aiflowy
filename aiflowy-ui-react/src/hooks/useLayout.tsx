@@ -1,4 +1,5 @@
 import React, {useContext} from "react"
+import {BreadcrumbItemType} from "antd/es/breadcrumb/Breadcrumb";
 
 export type LayoutOptions = {
     /**
@@ -25,6 +26,11 @@ export type LayoutOptions = {
      * 是否显示底部
      */
     showFooter?: boolean,
+
+    /**
+     * 面包屑
+     */
+    breadcrumbs?: BreadcrumbItemType[],
 
     /**
      * 是否显示面包屑
