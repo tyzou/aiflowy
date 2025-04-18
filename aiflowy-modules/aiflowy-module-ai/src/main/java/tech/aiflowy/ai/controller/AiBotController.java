@@ -2,6 +2,7 @@ package tech.aiflowy.ai.controller;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.agentsflex.core.message.AiMessage;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import tech.aiflowy.ai.entity.*;
@@ -159,7 +160,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         if (humanMessage.getFunctions() != null && !humanMessage.getFunctions().isEmpty()) {
             try {
                 AiMessageResponse aiMessageResponse = llm.chat(historiesPrompt);
-                function_call(aiMessageResponse, emitter, needClose, historiesPrompt, llm, prompt, false, false);
+                function_call(aiMessageResponse, emitter, needClose, historiesPrompt, llm, prompt, false);
             } catch (Exception e) {
                 emitter.completeWithError(e);
             }
@@ -175,7 +176,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 public void onMessage(ChatContext context, AiMessageResponse response) {
                     try {
 
-                        function_call(response, emitter, needClose, historiesPrompt, llm, prompt, false,true);
+                        function_call(response, emitter, needClose, historiesPrompt, llm, prompt, false);
                     } catch (Exception e) {
                         emitter.completeWithError(e);
                     }
@@ -258,7 +259,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             if (humanMessage.getFunctions() != null && !humanMessage.getFunctions().isEmpty()) {
                 try {
                     AiMessageResponse aiMessageResponse = llm.chat(historiesPrompt);
-                    function_call(aiMessageResponse, emitter, needClose, historiesPrompt, llm, prompt, true, true);
+                    function_call(aiMessageResponse, emitter, needClose, historiesPrompt, llm, prompt, true);
                 } catch (Exception e) {
                     emitter.completeWithError(e);
                 }
@@ -272,7 +273,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                     @Override
                     public void onMessage(ChatContext context, AiMessageResponse response) {
                         try {
-                            function_call(response, emitter, needClose, historiesPrompt, llm, prompt, true, true);
+                            function_call(response, emitter, needClose, historiesPrompt, llm, prompt, true);
                         } catch (Exception e) {
                             emitter.completeWithError(e);
                         }
@@ -280,6 +281,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
                     @Override
                     public void onStop(ChatContext context) {
+
                         if (needClose[0]) {
                             System.out.println("normal chat complete");
                             emitter.complete();
@@ -299,16 +301,16 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             if (humanMessage.getFunctions() != null && !humanMessage.getFunctions().isEmpty()) {
                 try {
                     AiMessageResponse aiMessageResponse = llm.chat(historiesPrompt);
-                    resultFunctionCall = jsonResultFunctionCall(aiMessageResponse, historiesPrompt, llm, prompt);
-                    return JSON.toJSONString(resultFunctionCall.getMessage());
+                    resultFunctionCall = jsonResultJsonFunctionCall(aiMessageResponse, historiesPrompt, llm, prompt);
+                    return JSON.toJSONString(resultFunctionCall.getMessage(), new SerializeConfig());
                 } catch (Exception e) {
                     return createErrorResponse(e);
                 }
             } else {
                 AiMessageResponse messageResponse = llm.chat(historiesPrompt);
-                 resultFunctionCall = jsonResultFunctionCall(messageResponse, historiesPrompt, llm, prompt);
+                 resultFunctionCall = jsonResultJsonFunctionCall(messageResponse, historiesPrompt, llm, prompt);
                 AiBotExternalMsgJsonResult result = handleMessageResult(resultFunctionCall.getMessage());
-                return JSON.toJSONString(result);
+                return JSON.toJSONString(result, new SerializeConfig());
             }
         }
     }
@@ -349,22 +351,32 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     }
     /**
      *
-     * @param aiMessageResponse
+     * @param aiMessageResponse 大模型返回的消息
      * @param emitter
-     * @param needClose
-     * @param historiesPrompt
-     * @param llm
-     * @param prompt
-     * @param isChatApi 该参数用于分辨外部地址用户通过apiKey的方式传参，不涉及外部调用的默认 false
-     * @param stream
+     * @param needClose 是否需要关闭流
+     * @param historiesPrompt 消息历史记录
+     * @param llm 大模型
+     * @param prompt 提示词
+     * @param isExternalChatApi true 外部系统调用bot  false 内部系统调用bot
      */
-    private String function_call(AiMessageResponse aiMessageResponse, MySseEmitter emitter, Boolean[] needClose, HistoriesPrompt historiesPrompt, Llm llm, String prompt, boolean isChatApi,boolean stream) {
+    private String function_call(AiMessageResponse aiMessageResponse, MySseEmitter emitter, Boolean[] needClose, HistoriesPrompt historiesPrompt, Llm llm, String prompt, boolean isExternalChatApi) {
         ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         RequestContextHolder.setRequestAttributes(sra, true);
         String content = aiMessageResponse.getMessage().getContent();
         Object messageContent = aiMessageResponse.getMessage();
         if (StringUtil.hasText(content)) {
+            // 如果是外部系统调用chat
+            if (isExternalChatApi){
+                AiBotExternalMsgJsonResult result = handleMessageStreamJsonResult(aiMessageResponse.getMessage());
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                System.out.println(JSON.toJSONString(result, new SerializeConfig()));
+                System.out.println("未完测试");
+
+                emitter.send(JSON.toJSONString(result, new SerializeConfig()));
+            } else{
                 emitter.send(messageContent.toString());
+            }
+
         }
         List<FunctionCaller> functionCallers = aiMessageResponse.getFunctionCallers();
         if (CollectionUtil.hasItems(functionCallers)) {
@@ -408,7 +420,21 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         return JSON.toJSONString(messageContent);
     }
 
-    private AiMessageResponse jsonResultFunctionCall(AiMessageResponse aiMessageResponse , HistoriesPrompt historiesPrompt, Llm llm, String prompt) {
+    private AiBotExternalMsgJsonResult handleMessageStreamJsonResult(AiMessage message) {
+        AiBotExternalMsgJsonResult result = new AiBotExternalMsgJsonResult();
+        AiBotExternalMsgJsonResult.Choice choice = new AiBotExternalMsgJsonResult.Choice();
+        AiBotExternalMsgJsonResult.Delta delta = new AiBotExternalMsgJsonResult.Delta();
+        delta.setRole("assistant");
+        delta.setContent(message.getContent());
+        choice.setDelta(delta);
+        result.setCreated(new Date().getTime());
+        result.setChoices(choice);
+        result.setStatus(message.getStatus().name());
+
+        return result;
+    }
+
+    private AiMessageResponse jsonResultJsonFunctionCall(AiMessageResponse aiMessageResponse , HistoriesPrompt historiesPrompt, Llm llm, String prompt) {
         List<FunctionCaller> functionCallers = aiMessageResponse.getFunctionCallers();
         if (CollectionUtil.hasItems(functionCallers)) {
             for (FunctionCaller functionCaller : functionCallers) {

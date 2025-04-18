@@ -1,14 +1,19 @@
 package tech.aiflowy.ai.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.util.List;
 
 public class AiBotExternalMsgJsonResult {
 
+    @JSONField(ordinal = 1)
     private String id;
     private String status;
+    @JSONField(ordinal = 2)
     private long created;
     private String object;
     private String model;
+    @JSONField(ordinal = 3)
     private Choice choices;
     private Usage usage;
     private String serviceTier;
@@ -21,6 +26,8 @@ public class AiBotExternalMsgJsonResult {
     public void setId(String id) {
         this.id = id;
     }
+
+
 
     public String getStatus() {
         return status;
@@ -84,7 +91,7 @@ public class AiBotExternalMsgJsonResult {
         private Message message;
         private Object logprobs; // Can be null
         private String finishReason;
-
+        private Delta delta;
         // Getters and Setters
         public int getIndex() {
             return index;
@@ -92,6 +99,14 @@ public class AiBotExternalMsgJsonResult {
 
         public void setIndex(int index) {
             this.index = index;
+        }
+
+        public Delta getDelta() {
+            return delta;
+        }
+
+        public void setDelta(Delta delta) {
+            this.delta = delta;
         }
 
         public Message getMessage() {
@@ -118,7 +133,28 @@ public class AiBotExternalMsgJsonResult {
             this.finishReason = finishReason;
         }
     }
+    public static class Delta{
 
+        private String role;
+
+        private String content;
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public void setRole(String role) {
+            this.role = role;
+        }
+    }
     public static class Message {
         private String role;
         private String content;
