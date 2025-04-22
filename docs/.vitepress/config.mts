@@ -159,41 +159,41 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
       text: '简介',
       collapsed: false,
       items: [
-        { text: '什么是 AIFlowy？', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
+        { text: '什么是 AIFlowy？', link: '/info/what-is-aiflowy' },
+        { text: '快速开始', link: '/info/quick-start' },
       ]
     },
     {
       text: 'Bot 应用',
       collapsed: false,
       items: [
-        { text: '什么是 Bot', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
+        { text: '什么是 Bot', link: '/bot-applicatoin/what-is-a-bot' },
+        { text: '快速开始', link: '/bot-applicatoin/quick-start' },
       ]
     },
     {
       text: '插件',
       collapsed: false,
       items: [
-        { text: '什么是 插件？', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
-        { text: '自定义插件', link: 'routing' },
+        { text: '什么是 插件？', link: '/plugin/what_is_plugin' },
+        { text: '快速开始', link: '/plugin/quick-start' },
+        { text: '自定义插件', link: '/plugin/custom-plugin' },
       ]
     },
     {
       text: '知识库',
       collapsed: false,
       items: [
-        { text: '什么是知识库', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
+        { text: '什么是知识库', link: '/knowledge/what-is-knowledge' },
+        { text: '快速开始', link: '/knowledge/quick-start' },
       ]
     },
     {
       text: '工作流',
       collapsed: false,
       items: [
-        { text: '什么是工作流', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
+        { text: '什么是工作流', link: '/workflow/what_is_workflow' },
+        { text: '快速开始', link: '/workflow/quick_start' },
       ]
     },
     {

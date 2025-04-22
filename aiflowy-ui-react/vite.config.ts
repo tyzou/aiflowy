@@ -16,10 +16,10 @@ export default defineConfig({
     server: {
         proxy: {
             '^/api': {
-                target: 'http://localhost:8080/',
+                target: 'http://127.0.0.1:8080/',
             },
             '^/attachment/': {
-                target: 'http://localhost:8080/static/',
+                target: 'http://127.0.0.1:8080/static/',
             },
         },
     },

@@ -7,20 +7,22 @@ apiKey 的作用是 用于身份认证，通过 apiKey 第三方可以携带对�
 请求地址： http://127.0.0.1:8080/api/v1/aiBot/externalChat
 
 
+
+
+### 默认请求方式以 JSON格式返回
+请求头：
+
 Headers: {
 Authorization: apiKey
 }
 
 请求格式参数说明：
-
-botId: 第三方想要请求的 BotId
-
-### 默认请求方式以 JSON格式返回
-
 ```
 messages： 消息体
+botId： 第三方想要请求的 BotId
 ```
 
+请求示例：
 ```json
 {   
     "messages": [
@@ -44,13 +46,18 @@ messages： 消息体
 }
 ```
 
-请求成功示例： 
+
 
 响应参数说明：
 
+```json
 status: END 表示本次对话正常结束
 created： 创建时间
 message： 消息体
+
+```
+
+请求成功示例：
 ```json
 {
     "status": "END",

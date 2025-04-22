@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Button, Form, Input, Modal,  Space, Table, App} from 'antd';
 import {useGet, usePostManual} from '../../hooks/useApis'; // 确保路径正确
 import ModelInstallPage from '../ai/ModelInstallPage'
+import {RestOutlined} from "@ant-design/icons";
 
 type LayoutType = Parameters<typeof Form>[0]['layout'];
 type ParaType = {
@@ -35,20 +36,29 @@ const Ollama: React.FC = () => {
     };
     //删除大模型操作
     function handleDeleteAction(record: any) {
-        doGet({
-            url: '/api/v1/ollama/deleteModel',
-            params: {
-                modelName: record.name
-            }
-        }).then(res => {
-            if  (res.data.errorCode === 0){
-                message.error('删除成功')
+        Modal.confirm({
+            title: '确认删除?',
+            content: '该操作会删除本地大模型',
+            okText: '确定',
+            cancelText: '取消',
+            onOk: () => {
                 doGet({
-                    params: pagination
-                })
-            }
+                    url: '/api/v1/ollama/deleteModel',
+                    params: {
+                        modelName: record.name
+                    }
+                }).then(res => {
+                    if  (res.data.errorCode === 0){
+                        message.error('删除成功')
+                        doGet({
+                            params: pagination
+                        })
+                    }
 
-        })
+                })
+            },
+        });
+
     }
 
     const columns = [
@@ -81,14 +91,7 @@ const Ollama: React.FC = () => {
                     >
                         {record.hasJoinModel === 1 ? "已加入大模型" : "加入大模型"} {/* 动态显示文本 */}
                     </Button>
-                    <Button
-                        type={"link"}
-                        style={{color: 'red'}}
-                        size={'small'}
-                        onClick={() => handleDeleteAction(record)} // 点击事件
-                    >
-                        删除
-                    </Button>
+                        <a onClick={() => handleDeleteAction(record)}> <RestOutlined/> 删除 </a>
                 </Space>
             ),
         },
