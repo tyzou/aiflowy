@@ -159,8 +159,8 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
       text: '简介',
       collapsed: false,
       items: [
-        { text: '什么是 AIFlowy？', link: '/zh/product/info/what-is-aiflowy' },
-        { text: '快速开始', link: 'getting-started' },
+        { text: '什么是 AIFlowy？', link: '/info/what-is-aiflowy' },
+        { text: '技术规格', link: '/info/specifications' },
       ]
     },
     {
