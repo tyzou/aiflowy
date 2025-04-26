@@ -49,7 +49,7 @@ const Login: React.FC = () => {
 
 
     return (
-        <div className={styles.container} style={{backgroundImage: `url(${loginBg})`}}>
+        <div className={styles.container} style={{backgroundImage: `url(${loginBg})`,position:"relative"}}>
             <Flex vertical={false} style={{margin: "200px"}}>
                 <div>
                     <img alt="" src={loginImage} style={{height: "600px"}}/>
@@ -68,7 +68,7 @@ const Login: React.FC = () => {
                     }}
                 >
 
-                    <h1 style={{margin: '50px 0',}}>登录 </h1>
+                    <h1 style={{margin: '50px 0',}}>登录</h1>
 
                     <Form.Item
                         name="account"
@@ -107,6 +107,7 @@ const Login: React.FC = () => {
                 </Form>
             </Flex>
 
+            <div style={{position:"absolute",bottom:"20px",right:"20px",color:"#fff",fontSize:"14px"}}><a href="https://aiflowy.tech" style={{color:"#fff"}} target="_blank">AIFlowy.tech</a> (v1.0.0)</div>
         </div>
     )
 }
