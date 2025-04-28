@@ -164,7 +164,6 @@ export const WorkflowDesign = () => {
                                         action={'/api/v1/commons/uploadAntd'}
                                         children={<Button icon={<UploadOutlined/>}>上传</Button>}
                                         onChange={({file}) => {
-                                            console.log(window.location.origin);
                                             if (file.status === 'done') {
                                                 let url = file.response?.response.url;
                                                 if (url.indexOf('http') < 0) {
@@ -196,7 +195,7 @@ export const WorkflowDesign = () => {
 
 
                     <Form.Item wrapperCol={{offset: 4, span: 18}}>
-                        <Button loading={submitLoading} type="primary" htmlType="submit">
+                        <Button disabled={submitLoading} loading={submitLoading} type="primary" htmlType="submit">
                             <SendOutlined/> 开始运行
                         </Button>
                     </Form.Item>
@@ -210,9 +209,8 @@ export const WorkflowDesign = () => {
                         height: "300px",
                         marginTop: "10px",
                         borderRadius: "7px",
-                        overflowY: "scroll"
                     }}>
-                        <pre>{executeResult || '暂无输出'}</pre>
+                        <pre style={{whiteSpace: "pre-wrap",wordBreak: "break-all"}}>{executeResult || '暂无输出'}</pre>
                     </div>
                 </div>
 
