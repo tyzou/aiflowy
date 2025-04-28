@@ -194,7 +194,7 @@ export  const ParameterConfig: React.FC = () => {
             key: 'enabled',
             render: (text: boolean, record: Parameter) => {
                 return isEditing ? (
-                    <Form.Item name={[record.key, 'enabled']} initialValue={text} valuePropName="checked">
+                    <Form.Item name={[record.key, 'enabled']} initialValue={text} valuePropName="checked" >
                         <Switch />
                     </Form.Item>
                 ) : (
@@ -217,26 +217,7 @@ export  const ParameterConfig: React.FC = () => {
 
     return (
         <div>
-            <Space style={{ marginBottom: 16 }}>
-                {isEditing ? (
-                    <>
-                        <Button type="primary" onClick={saveAll}>保存全部</Button>
-                        <Button onClick={cancelEditing}>取消</Button>
-                    </>
-                ) : (
-                    <Button type="primary" icon={<EditOutlined />} onClick={startEditing}>
-                        编辑全部
-                    </Button>
-                )}
-                <Button
-                    type="dashed"
-                    icon={<PlusOutlined />}
-                    onClick={handleAdd}
-                >
-                    新增参数
-                </Button>
-            </Space>
-            <Form form={form} component={false}>
+            <Form form={form} component={false} >
                 <Table
                     className="custom-table"
                     bordered
@@ -246,6 +227,25 @@ export  const ParameterConfig: React.FC = () => {
                     rowKey="key"
                 />
             </Form>
+            <Space style={{ marginTop: 16 }}>
+                {/*{isEditing ? (*/}
+                {/*    <>*/}
+                {/*        <Button type="primary" onClick={saveAll}>保存全部</Button>*/}
+                {/*        <Button onClick={cancelEditing}>取消</Button>*/}
+                {/*    </>*/}
+                {/*) : (*/}
+                {/*    <Button type="primary" icon={<EditOutlined />} onClick={startEditing}>*/}
+                {/*        编辑全部*/}
+                {/*    </Button>*/}
+                {/*)}*/}
+                <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                >
+                    新增参数
+                </Button>
+            </Space>
         </div>
     );
 };
