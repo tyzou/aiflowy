@@ -1,12 +1,14 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Form, FormProps, Input, message, Modal, Space, Table, TableProps, Tag} from 'antd';
 import {useLocation, useNavigate} from "react-router-dom";
 import {useLayout} from "../../../hooks/useLayout.tsx";
 import {useBreadcrumbRightEl} from "../../../hooks/useBreadcrumbRightEl.tsx";
-import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {EditOutlined, PlusOutlined, RestOutlined} from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import {usePage, usePostManual} from "../../../hooks/useApis.ts";
 import {convertDatetimeUtil} from "../../../libs/changeDatetimeUtil.tsx";
+import SearchForm from "../../../components/AntdCrud/SearchForm.tsx";
+import {ColumnsConfig} from "../../../components/AntdCrud";
 
 interface DataType {
     id: string;
@@ -18,6 +20,11 @@ interface DataType {
 }
 
 const PluginTool: React.FC = () =>{
+    const [pagination, setPagination] = useState({
+        current: 1, // 当前页码
+        pageSize: 10, // 每页显示条数
+        total: 0, // 总记录数
+    });
     type FieldType = {
         name?: string;
         description?: string;
@@ -42,8 +49,17 @@ const PluginTool: React.FC = () =>{
         doGet: doGetPage
     } = usePage('aiPluginTool', {}, {manual: true})
     const {doPost: doPostSavePluginTool} = usePostManual('/api/v1/aiPluginTool/tool/save')
+    const {doPost: doPostRemovePluginTool} = usePostManual('/api/v1/aiPluginTool/remove')
+    const doGetPagePluginTool = () =>{
+        doGetPage({
+            params: {
+                pageNumber: 1,
+                pageSize: 10,
+                pluginId: id
+            }
+        })
+    }
     useEffect(() => {
-
         setOptions({
             showBreadcrumb: true,
             breadcrumbs: [
@@ -52,12 +68,7 @@ const PluginTool: React.FC = () =>{
                 {title: pluginTitle},
             ],
         })
-        doGetPage({
-            params: {
-                pageNumber: 1,
-                pageSize: 10,
-            }
-        })
+        doGetPagePluginTool()
         return () => {
             setOptions({
                 showBreadcrumb: true,
@@ -66,7 +77,15 @@ const PluginTool: React.FC = () =>{
         }
     }, [])
 
-
+    useEffect(() => {
+        if (result?.errorCode == 0){
+            setPagination({
+                current: result?.data.pageNumber,
+                pageSize: result?.data.pageSize,
+                total: result?.data.totalRow
+            })
+        }
+    }, [result])
     const columns: TableProps<DataType>['columns'] = [
         {
             title: 'id',
@@ -77,7 +96,7 @@ const PluginTool: React.FC = () =>{
         {
             title: '工具名称',
             dataIndex: 'name',
-            key: 'name'
+            key: 'name',
         },
         {
             title: '输入参数',
@@ -108,7 +127,7 @@ const PluginTool: React.FC = () =>{
             key: 'action',
             render: (_:any, record:DataType) => (
                 <Space size="middle">
-                    <EditOutlined onClick={() =>{
+                    <a onClick={() =>{
                         navigate('/ai/pluginToolEdit', {
                             state: {
                                 id: record.id,
@@ -119,15 +138,46 @@ const PluginTool: React.FC = () =>{
                                 title: record.name
                             }
                         })
-                    }}/>
-                    <DeleteOutlined onClick={() =>{
+                    }}> <EditOutlined /> 修改 </a>
 
-                    }}/>
+                    <a onClick={() =>{
+                        Modal.confirm({
+                            title: '确认删除？',
+                            content: '确认删除？',
+                            okText: '确认',
+                            cancelText: '取消',
+                            onOk: () => {
+                                doPostRemovePluginTool({
+                                    data: {
+                                        id: record.id
+                                    }
+                                }).then(r =>{
+                                    if  (r.data.errorCode == 0){
+                                        message.success("删除成功！")
+                                        doGetPagePluginTool()
+                                    } else if (r.data.errorCode >= 1){
+                                        message.error("删除失败！")
+                                    }
+                                })
+                            },
+                        });
+                    }}> <RestOutlined /> 删除 </a>
+
                 </Space>
             ),
         },
     ];
-
+    const columnsSearchConfig: ColumnsConfig<any> = [
+        {
+            form: {
+                type: "input"
+            },
+            dataIndex: "name",
+            title: "工具名称",
+            key: "name",
+            supportSearch: true
+        }
+    ];
 
     const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
         doPostSavePluginTool({
@@ -141,12 +191,7 @@ const PluginTool: React.FC = () =>{
                 message.success("创建成功！")
                 form.resetFields()
                 setAddPluginToolIsOpen(false)
-                doGetPage({
-                    params: {
-                        pageNumber: 1,
-                        pageSize: 10,
-                    }
-                })
+                doGetPagePluginTool()
             } else if (r.data.errorCode >= 1){
                 message.error("创建失败！")
             }
@@ -164,9 +209,49 @@ const PluginTool: React.FC = () =>{
     const handleAddPluginToolCancel = () => {
         setAddPluginToolIsOpen(false);
     };
+    // 分页变化时触发
+    const handleTableChange = (newPagination:any) => {
+        const { current, pageSize } = newPagination;
+        doGetPage({
+            params: {
+                pageNumber: current,
+                pageSize: pageSize,
+                pluginId: id
+            }
+        }).then(res => {
+            if (res) {
+                setPagination({
+                    current: newPagination.current, // 当前页码
+                    pageSize: newPagination.pageSize, // 每页显示条数
+                    total: res.data.totalRow, // 总记录数
+                })
+            }
+
+        })
+    };
     return (
         <div>
-            <Table<DataType> columns={columns} dataSource={result?.data?.records} />
+            <SearchForm columns={columnsSearchConfig} colSpan={6}
+                        onSearch={(values: any) => {
+                          doGetPage({
+                              params: {
+                                  ...values,
+                                  pluginId: id
+                              }
+                          })
+                        }}
+            />
+            <Table<DataType> columns={columns} dataSource={result?.data?.records} rowKey="id"
+                             loading={loading}
+                             pagination={{
+                                 current: pagination.current,
+                                 pageSize: pagination.pageSize,
+                                 total: pagination.total,
+                                 showSizeChanger: true, // 显示每页条数切换
+                                 showTotal: (total) => `共 ${total} 条数据`
+                             }}
+                             onChange={handleTableChange}
+            />
             <Modal title="创建工具" open={isAddPluginToolModalOpen} onOk={handleAddPluginToolOk}
                    onCancel={handleAddPluginToolCancel}
                    footer={null}

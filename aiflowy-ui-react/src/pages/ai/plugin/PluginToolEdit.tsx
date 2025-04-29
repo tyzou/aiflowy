@@ -618,7 +618,7 @@ const PluginToolEdit: React.FC = () => {
     if (showLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <Spin size="large"/>
+                <Spin />
             </div>
         );
     }

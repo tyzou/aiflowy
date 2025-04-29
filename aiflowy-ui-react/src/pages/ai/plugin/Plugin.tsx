@@ -17,11 +17,11 @@ import {
 	FormProps,
 	Input,
 	message,
-	Modal,
+	Modal, Pagination,
 	Radio,
 	Row,
 	Select,
-	Space
+	Space, Spin
 } from 'antd';
 import {usePage, usePostManual} from "../../../hooks/useApis.ts";
 import SearchForm from "../../../components/AntdCrud/SearchForm.tsx";
@@ -35,7 +35,11 @@ import {useNavigate} from "react-router-dom";
 
 const Plugin: React.FC = () => {
 	const navigate = useNavigate();
-
+	const [pagination, setPagination] = useState({
+		current: 1, // 当前页码
+		pageSize: 10, // 每页显示条数
+		total: 0, // 总记录数
+	});
 	const columnsConfig: ColumnsConfig<any> = [
 		{
 			hidden: true,
@@ -135,7 +139,14 @@ const Plugin: React.FC = () => {
 			}).then(r =>{
 				if (r.data.errorCode == 0){
 					message.success("插件保存成功！")
+					form.resetFields()
 					setAddPluginIsOpen(false)
+					doGetPage({
+						params: {
+							pageNumber: 1,
+							pageSize: 10,
+						}
+					})
 				}
 			})
 		} else {
@@ -209,13 +220,26 @@ const Plugin: React.FC = () => {
 				pageNumber: 1,
 				pageSize: 10,
 			}
-		}).then(res => {
-			console.log(res.data.data)
+		}).then(r => {
+			if (r.data.errorCode == 0){
+				setPagination({
+					current: r.data.data.pageNumber,
+					pageSize: r.data.data.pageSize,
+					total: r.data.data.totalRow
+				})
+			}
 		})
 	}, [])
+
+	useEffect(() => {
+		setPagination({
+			current: result?.data.pageNumber,
+			pageSize: result?.data.pageSize,
+			total: result?.data.totalRow
+		})
+	}, [result])
+
 	const getIconPath = (path: string) => {
-		console.log('path')
-		console.log(path)
 		form.setFieldsValue({
 			icon: path
 		})
@@ -232,19 +256,25 @@ const Plugin: React.FC = () => {
 	const handleaddPluginOk = () => {
 		// setAddPluginIsOpen(false);
 	};
-	return (
-		<>
+	return loading ?
+		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+		<Spin />
+		</div>
+		:
+		(
+		<div style={{height: 'calc(100vh - 68px)',overflowY: 'auto'}}>
 			<SearchForm columns={columnsConfig} colSpan={6}
 						onSearch={(values: any) => {
-							// setLocalPageNumber(1)
-							// setSearchParams(values)
-							// setUrlParams(values)
+							doGetPage({
+								params: {
+									name:  values.pluginName
+								}
+							})
 						}}
-						// onSearchValueInit={(key) => urlParams[key]}
 			/>
-			<Row className={"card-row"} gutter={[16, 16]}>
+			<Row className={"card-row"} gutter={[16, 16]} >
 				{result?.data?.records?.length > 0 ? result?.data?.records?.map((item: any) => (
-					<Col span={6}>
+					<Col span={6} key={item.id}>
 						<Card  actions={
 							[
 								<MenuUnfoldOutlined title="工具列表" onClick={() => {
@@ -256,8 +286,6 @@ const Plugin: React.FC = () => {
 									})
 								}}/>,
 								<EditOutlined key="edit" onClick={() =>{
-									console.log('item')
-									console.log(item)
 									// 设置modal 打开方式为修改
 									setIsSaveOrUpdate(false)
 									// 赋值模态框数据
@@ -295,7 +323,6 @@ const Plugin: React.FC = () => {
 																id: item.id
 															}
 														}).then(r =>{
-															console.log(r)
 															if (r.data.errorCode == 0){
 																message.success("删除成功！")
 																setAddPluginIsOpen(false)
@@ -304,8 +331,6 @@ const Plugin: React.FC = () => {
 																		pageNumber: 1,
 																		pageSize: 10,
 																	}
-																}).then(res => {
-																	console.log(res.data.data)
 																})
 															} else {
 																message.error(r.data.message)
@@ -339,6 +364,21 @@ const Plugin: React.FC = () => {
 				) : (<div></div>)}
 
 			</Row>
+			<Pagination  total={pagination.total} align="end" showTotal={(total) => `共 ${total} 条数据`}
+			onChange={(page, pageSize) => {
+				doGetPage({
+					params: {
+						pageNumber: page,
+						pageSize: pageSize,
+					}
+				})
+			}}
+			showSizeChanger={true}
+			pageSizeOptions={[10, 20, 30, 40, 50]}
+			defaultCurrent={1}
+			defaultPageSize={10}
+
+			/>
 			<Modal title="新增插件" open={addPluginIsOpen} onOk={handleaddPluginOk}
 				   onCancel={handleaddPluginCancle}
 				   styles={{
@@ -361,16 +401,16 @@ const Plugin: React.FC = () => {
 						hidden
 					>
 					</Form.Item>
-						<Form.Item<FieldType>
-							name="icon"
-							style={{ textAlign: 'center'}}
-						>
-							<div style={{ display: 'flex', justifyContent: 'center' }}>
-								{/* 使用 flex 布局确保 ImageUploader 居中 */}
-								<ImageUploader onChange={getIconPath} value={iconPath}/>
-							</div>
-						</Form.Item>
-
+					<Form.Item<FieldType>
+						name="icon"
+						style={{ textAlign: 'center'}}
+					>
+						<div style={{ display: 'flex', justifyContent: 'center' }}>
+							<Input  hidden/>
+							{/* 使用 flex 布局确保 ImageUploader 居中 */}
+							<ImageUploader onChange={getIconPath} value={iconPath}/>
+						</div>
+					</Form.Item>
 
 					<Form.Item<FieldType>
 						label="插件名称"
@@ -485,7 +525,7 @@ const Plugin: React.FC = () => {
 					</Form.Item>
 				</Form>
 			</Modal>
-		</>
+		</div>
 	);
 };
 

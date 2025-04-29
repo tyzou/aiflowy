@@ -7,14 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.springframework.stereotype.Service;
 import tech.aiflowy.ai.entity.AiPlugin;
 import tech.aiflowy.ai.entity.AiPluginTool;
 import tech.aiflowy.ai.mapper.AiPluginMapper;
 import tech.aiflowy.ai.mapper.AiPluginToolMapper;
 import tech.aiflowy.ai.service.AiPluginToolService;
-import org.springframework.stereotype.Service;
 import tech.aiflowy.common.domain.Result;
-import tech.aiflowy.common.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Date;
