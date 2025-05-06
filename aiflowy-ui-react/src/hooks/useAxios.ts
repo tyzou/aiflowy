@@ -51,7 +51,20 @@ Axios.interceptors.request.use((config) => {
     config.baseURL = baseUrl;
     return config
 })
-
+Axios.interceptors.response.use(
+    (response) => {
+        var path = window.location.pathname
+        if (response.data.message === '请登录'){
+            if (path && "/login" !== path){
+                window.location.href = '/login?from='+path
+            }
+        }
+        return response;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 export const useAxios =  makeUseAxios({
         // @ts-ignore
         cache: axiosCache,

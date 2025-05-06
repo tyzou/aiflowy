@@ -5,7 +5,7 @@ import loginBg from "../../assets/login-bg.png"
 import loginImage from "../../assets/login-image.jpg"
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import {useAppStore} from "../../store/appStore.ts";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {useLoginV3} from "../../hooks/useLogin.ts";
 import {useCaptcha} from "../../hooks/useCaptcha.ts";
 
@@ -13,7 +13,7 @@ const Login: React.FC = () => {
     const [form] = Form.useForm();
     const {message} = App.useApp();
     const navigate = useNavigate();
-
+    const location = useLocation()
 
     const {startCaptcha} = useCaptcha();
     //登录
@@ -32,12 +32,22 @@ const Login: React.FC = () => {
                 }
             }).then((resp) => {
                 if (resp.data.errorCode == 0) {
-                    message.success("登录成功，欢迎回来")
+                    console.log('location')
+                    console.log(location)
+                    const from = new URLSearchParams(location.search).get('from');
+                    if (from) {
+                        navigate(from)
+                    } else {
+                        navigate("/ai/bots")
+                        message.success("登录成功，欢迎回来")
+                        navigate("/ai/bots")
+                    }
+
                     // appStore.setLogin(resp.data.jwt, resp.data.nickName)
                     appStore.setToken(resp.data.data.token)
                     appStore.setNickname(resp.data.data.nickname)
                     appStore.setAvatar(resp.data.data.avatar)
-                    navigate("/ai/bots")
+
                 } else if (resp.data.message) {
                     message.error(resp.data.message)
                 }
