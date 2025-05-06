@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {ColumnsConfig} from "../AntdCrud";
-import {Avatar, Button, Card, Col, Dropdown, Modal, Pagination, Row, Spin} from "antd";
+import {Avatar, Button, Card, Col, Dropdown, Modal, Pagination, Row, Spin, Tooltip} from "antd";
 import {
     DeleteOutlined,
     EditOutlined, EllipsisOutlined,
@@ -152,7 +152,18 @@ const CardPage: React.FC<CardPageProps> = ({
                                     avatar={<Avatar src={item[avatarKey] || defaultAvatarSrc}/>}
                                     title={item[titleKey]}
                                     description={
-                                        <p>{item[descriptionKey]}</p>
+                                        <Tooltip title={item[descriptionKey] || "无描述"}>
+                                            <div style={{
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 1,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                minHeight: '1em',
+                                            }}>
+                                                {item[descriptionKey] || "暂无描述"} {/* 使用破折号作为占位符 */}
+                                            </div>
+                                        </Tooltip>
                                     }
                                 />
                             </Card>
