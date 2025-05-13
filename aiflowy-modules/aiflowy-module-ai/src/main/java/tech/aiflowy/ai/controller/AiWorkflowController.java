@@ -51,6 +51,12 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         return Result.success();
     }
 
+    @GetMapping("/exportWorkFlow")
+    public Result exportWorkFlow(BigInteger id) {
+        AiWorkflow workflow = service.getById(id);
+        return Result.success("content", workflow.getContent());
+    }
+
     @GetMapping("getRunningParameters")
     public Result getRunningParameters(@RequestParam BigInteger id) {
         AiWorkflow workflow = service.getById(id);
