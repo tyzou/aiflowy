@@ -139,7 +139,7 @@ export const ExternalBot: React.FC = () => {
                             if (res.data.errorCode === 0){
                                 message.success('删除成功');
                                 setChats([])
-                                getConversationManualGet()
+                                getConversationManualGet({params: { "botId": params?.id }})
                             }
                         });
                     },
