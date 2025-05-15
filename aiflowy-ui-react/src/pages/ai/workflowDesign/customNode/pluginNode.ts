@@ -1,5 +1,5 @@
 export interface PluginNodeOptions {
-    onChosen?: (updateNodeData: any) => void;
+    onChosen?: (updateNodeData: any,value: string) => void;
 }
 export const PluginNode = (options: PluginNodeOptions = {}) => ({
     title: '插件',

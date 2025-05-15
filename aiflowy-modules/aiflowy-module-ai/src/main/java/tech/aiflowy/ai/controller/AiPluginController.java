@@ -1,5 +1,7 @@
 package tech.aiflowy.ai.controller;
 
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.web.bind.annotation.PostMapping;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.web.controller.BaseCurdController;
@@ -56,5 +58,10 @@ public class AiPluginController extends BaseCurdController<AiPluginService, AiPl
     @PostMapping("/getList")
     public Result getList(){
         return aiPluginService.getList();
+    }
+
+    @Override
+    protected Page<AiPlugin> queryPage(Page<AiPlugin> page, QueryWrapper queryWrapper) {
+        return service.getMapper().paginateWithRelations(page, queryWrapper);
     }
 }

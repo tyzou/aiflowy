@@ -109,7 +109,7 @@ export const WorkflowDesign = () => {
 
     const {doGet: getRunningParameters} = useGetManual("/api/v1/aiWorkflow/getRunningParameters");
     const {doPost: tryRunning} = usePostManual("/api/v1/aiWorkflow/tryRunning");
-
+    const [selectedItem, setSelectedItem] = useState<any>([]);
     const showRunningParameters = async () => {
         setRunLoading(true)
         await doUpdate({
@@ -166,7 +166,10 @@ export const WorkflowDesign = () => {
 
     const [changeNodeData, setChangeNodeData] = useState<any>()
 
-    const handleChosen = (updateNodeData: any) => {
+    const handleChosen = (updateNodeData: any,  value: any) => {
+        if (value) {
+            setSelectedItem([value])
+        }
         setChangeNodeData(() => updateNodeData)
         setPluginOpen(true)
     }
@@ -188,6 +191,8 @@ export const WorkflowDesign = () => {
     return (
         <>
             <PluginTools
+                selectedItem={selectedItem}
+                goToPage="/ai/plugin"
                 open={pluginOpen} onClose={() => setPluginOpen(false)}
                 onCancel={() => setPluginOpen(false)}
                 onSelectedItem={item => {
@@ -204,7 +209,22 @@ export const WorkflowDesign = () => {
                             changeNodeData(res.data.data)
                         })
                     }
-                }}/>
+                    setSelectedItem([item.id])
+                }}
+                onRemoveItem={() => {
+                    setPluginOpen(false)
+                    // 调用保存的 updateNodeData 函数
+                    if (changeNodeData) {
+                        changeNodeData({
+                            pluginId: '',
+                            pluginName: '',
+                            parameters:[],
+                            outputDefs: []
+                        })
+                        setSelectedItem([])
+                    }
+                }}
+            />
             <Drawer
                 width={640}
                 title="请输入参数"
