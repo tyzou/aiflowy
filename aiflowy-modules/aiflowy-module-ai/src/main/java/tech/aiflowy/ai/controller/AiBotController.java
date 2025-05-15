@@ -138,6 +138,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         Map<String, Object> llmOptions = aiBot.getLlmOptions();
+        String systemPrompt = llmOptions != null ? (String) llmOptions.get("systemPrompt") : null;
         AiLlm aiLlm = aiLlmService.getById(aiBot.getLlmId());
 
         if (aiLlm == null) {
@@ -155,9 +156,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 aiBotConversationMessageService);
 
         final HistoriesPrompt historiesPrompt = new HistoriesPrompt();
-        if (llmOptions.get("systemPrompt") != null) {
-            historiesPrompt.setSystemMessage(SystemMessage.of((String) llmOptions.get("systemPrompt")));
+        if (systemPrompt != null) {
+            historiesPrompt.setSystemMessage(SystemMessage.of(systemPrompt));
         }
+
         historiesPrompt.setMemory(memory);
 
         HumanMessage humanMessage = new HumanMessage(prompt);
@@ -267,6 +269,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         Map<String, Object> llmOptions = aiBot.getLlmOptions();
+        String systemPrompt = llmOptions != null ? (String) llmOptions.get("systemPrompt") : null;
+
         AiLlm aiLlm = aiLlmService.getById(aiBot.getLlmId());
         if (aiLlm == null) {
             return createResponse(stream, JSON.toJSONString(errorRespnseMsg(5, "LLM不存在")));
@@ -275,8 +279,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         Llm llm = aiLlm.toLlm();
         AiBotExternalMessageMemory messageMemory = new AiBotExternalMessageMemory(messages);
         HistoriesPrompt historiesPrompt = new HistoriesPrompt();
-        if (llmOptions.get("systemPrompt") != null) {
-            historiesPrompt.setSystemMessage(SystemMessage.of((String) llmOptions.get("systemPrompt")));
+        if (systemPrompt != null) {
+            historiesPrompt.setSystemMessage(SystemMessage.of(systemPrompt));
         }
         historiesPrompt.setMemory(messageMemory);
 
