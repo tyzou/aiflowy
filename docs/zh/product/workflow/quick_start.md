@@ -8,6 +8,6 @@
 
 ## 运行工作流
 
-然后点击 **试运行**
+然后点击 **开始运行**
 
 ![start-workflow.png](resource/start-workflow.png)
