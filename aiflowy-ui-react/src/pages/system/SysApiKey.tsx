@@ -4,7 +4,7 @@ import CrudPage from "../../components/CrudPage";
 import {EditLayout} from "../../components/AntdCrud/EditForm.tsx";
 import {dateFormat} from "../../libs/utils.ts";
 import {Button, message, Modal} from "antd";
-import {useGetManual, usePostManual} from "../../hooks/useApis.ts";
+import {usePostManual} from "../../hooks/useApis.ts";
 
 
 //字段配置
@@ -90,13 +90,9 @@ const actionConfig = {
 
 export const SysApiKey: React.FC = () => {
 	const {doPost: useApiKeyPost} = usePostManual('/api/v1/sysApiKey/key/save');
-	const {doGet: doPage} = useGetManual('/api/v1/sysApiKey/page');
-	const [queryParam] = useState({
-		pageNum: 1,
-		pageSize: 10
-	});
+	const [refreshTrigger, setRefreshTrigger] = useState(0);
     return (
-        <CrudPage columnsConfig={columnsConfig} tableAlias="sysApiKey" addButtonEnable={false}
+        <CrudPage columnsConfig={columnsConfig} tableAlias="sysApiKey" addButtonEnable={false} externalRefreshTrigger={refreshTrigger}
 				  customButton={() => {
 					  return <><Button type="primary" onClick={() => {
 							  Modal.confirm({
@@ -111,12 +107,7 @@ export const SysApiKey: React.FC = () => {
 										  console.log(res);
 										  if (res.data.errorCode === 0) {
 											  message.success("apiKey生成成功");
-											  doPage({params: {
-												  ...queryParam,
-												  }}).then((res) => {
-												  console.log('res');
-												  console.log(res);
-											  })
+											  setRefreshTrigger(prev => prev + 1);
 										  }
 									  })
 								  },
