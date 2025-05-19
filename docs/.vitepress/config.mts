@@ -271,6 +271,14 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                     text: 'apiKey',
                     link: 'system/apiKey.md',
                 },
+                {
+                    text: '数据字典',
+                    link: 'system/data_dictionary.md',
+                },
+                {
+                    text: '系统设置',
+                    link: 'system/settings.md',
+                },
 
             ]
         }
