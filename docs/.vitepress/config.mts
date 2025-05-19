@@ -224,5 +224,12 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 {text: '添加供应商', link: '/llm/llmSuppliers.md'},
             ]
         },
+        {
+            text: '本地模型',
+            collapsed: false,
+            items: [
+                {text: 'ollama', link: '/localLlm/ollama.md'},
+            ]
+        },
     ]
 }
