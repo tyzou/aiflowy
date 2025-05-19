@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useList, usePage, useRemove, useRemoveBatch, useSave, useUpdate} from "../../hooks/useApis.ts";
 import AntdCrud, {ActionConfig, Actions, ColumnsConfig} from "../AntdCrud";
 import {Page} from "../../types/Page.ts";
@@ -19,7 +19,9 @@ interface CurdPageProps {
     rowSelectEnable?: boolean,
     params?: any,
     paramsToUrl?: boolean,
-    editLayout?: EditLayout
+    editLayout?: EditLayout,
+    onRefresh?: () => void;
+    externalRefreshTrigger?: number; // 当这个值变化时触发刷新
 }
 
 const CrudPage: React.FC<CurdPageProps> = ({
@@ -35,6 +37,7 @@ const CrudPage: React.FC<CurdPageProps> = ({
                                                params,
                                                paramsToUrl = false,
                                                editLayout,
+                                               externalRefreshTrigger
                                            }) => {
 
     const isPage = showType === "page";
@@ -110,6 +113,9 @@ const CrudPage: React.FC<CurdPageProps> = ({
     //
     // console.log("index", urlParams, {pageNumber, pageSize})
 
+    useEffect(() => {
+        actions.onFetchList?.(pageNumber, pageSize, urlParams);
+    }, [externalRefreshTrigger]);
 
     return (
         <AntdCrud columns={columnsConfig}

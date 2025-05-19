@@ -130,3 +130,12 @@ docker run -d -p 9200:9200 -p 9600:9600 -e "discovery.type=single-node" -e "OPEN
 ## 2. OpenSearch 知识库配置样例
 
 ![open_search_config.png](../../development/ai/resource/open_search_config.png)
+
+## 阿里云 向量数据库
+
+## 1. 登录阿里云配置向量数据库，并创建集合名称
+![img_1.png](resource/config-aliyun-2.png)
+注意：集合名称需要先在阿里云上创建，才能配置在AIFlowy中
+
+## 2. 阿里云向量数据库配置样例
+![img.png](resource/config-aliyun-1.png)
