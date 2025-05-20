@@ -54,11 +54,13 @@ export const AiProChat = ({
     const [isStreaming, setIsStreaming] = useState(false);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
+    // 控制是否允许自动滚动
+    const autoScrollEnabled = useRef(true); // 默认允许自动滚动
+    const isUserScrolledUp = useRef(false); // 用户是否向上滚动过
     // 滚动到底部逻辑
     const scrollToBottom = () => {
         const container = messagesContainerRef.current;
-        if (container) {
+        if (container && autoScrollEnabled.current) {
             container.scrollTop = container.scrollHeight;
         }
     };
@@ -70,9 +72,34 @@ export const AiProChat = ({
 
     // 消息更新时滚动
     useLayoutEffect(() => {
-        scrollToBottom();
+        if (autoScrollEnabled.current) {
+            scrollToBottom();
+        }
     }, [chats]);
+    useLayoutEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
 
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const atBottom = scrollHeight - scrollTop <= clientHeight + 5; // 允许误差 5px
+
+            if (atBottom) {
+                // 用户回到底部，恢复自动滚动
+                autoScrollEnabled.current = true;
+                isUserScrolledUp.current = false;
+            } else {
+                // 用户向上滚动，禁用自动滚动
+                autoScrollEnabled.current = false;
+                isUserScrolledUp.current = true;
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
     // 提交流程优化
     const handleSubmit = async () => {
         if (!content.trim()) return;
@@ -121,6 +148,9 @@ export const AiProChat = ({
                         }
                         return newChats;
                     });
+                    if (autoScrollEnabled.current) {
+                        scrollToBottom(); // 只有在自动滚动开启时才滚动
+                    }
                     if (currentContent === partial) {
                         clearInterval(id);
                     }
