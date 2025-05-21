@@ -4,7 +4,7 @@
     <parent>
         <groupId>tech.aiflowy</groupId>
         <artifactId>aiflowy-modules</artifactId>
-        <version>1.0.2</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>aiflowy-module-job</artifactId>
