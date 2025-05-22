@@ -2,6 +2,11 @@ package tech.aiflowy.ai.service;
 
 import com.mybatisflex.core.service.IService;
 import tech.aiflowy.ai.entity.AiPluginCategoryRelation;
+import tech.aiflowy.common.domain.Result;
+
+import java.lang.reflect.Array;
+import java.math.BigInteger;
+import java.util.ArrayList;
 
 /**
  *  服务层。
@@ -11,4 +16,7 @@ import tech.aiflowy.ai.entity.AiPluginCategoryRelation;
  */
 public interface AiPluginCategoryRelationService extends IService<AiPluginCategoryRelation> {
 
+    Result updateRelation(long pluginId, ArrayList<Integer> categoryIds);
+
+    Result getPluginCategories(long pluginId);
 }

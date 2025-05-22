@@ -20,5 +20,5 @@ public interface AiPluginService extends IService<AiPlugin> {
 
     Result getList();
 
-    void pageByCategory(Long pageNumber, Long pageSize, int category);
+    Result pageByCategory(Long pageNumber, Long pageSize, int category);
 }

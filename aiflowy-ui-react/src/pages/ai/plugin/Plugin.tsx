@@ -1,11 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+	ClusterOutlined,
 	DeleteOutlined,
 	EditOutlined,
 	EllipsisOutlined,
 	MenuUnfoldOutlined,
 	MinusCircleOutlined,
-	PlusOutlined, QuestionCircleOutlined
+	PlusOutlined,
+	QuestionCircleOutlined,
 } from '@ant-design/icons';
 import {
 	Avatar,
@@ -17,112 +19,108 @@ import {
 	FormProps,
 	Input,
 	message,
-	Modal, Pagination,
+	Modal,
+	Pagination,
 	Radio,
 	Row,
-	Select,
-	Space, Spin, Tooltip
+	Select, SelectProps,
+	Space,
+	Spin,
+	Tooltip,
 } from 'antd';
-import {usePage, usePostManual} from "../../../hooks/useApis.ts";
-import SearchForm from "../../../components/AntdCrud/SearchForm.tsx";
-import {ColumnsConfig} from "../../../components/AntdCrud";
-import {useBreadcrumbRightEl} from "../../../hooks/useBreadcrumbRightEl.tsx";
-import ImageUploader from "../../../components/ImageUploader";
-import TextArea from "antd/es/input/TextArea";
+import {useGetManual, usePostManual} from '../../../hooks/useApis.ts';
+import SearchForm from '../../../components/AntdCrud/SearchForm.tsx';
+import { ColumnsConfig } from '../../../components/AntdCrud';
+import { useBreadcrumbRightEl } from '../../../hooks/useBreadcrumbRightEl.tsx';
+import ImageUploader from '../../../components/ImageUploader';
+import TextArea from 'antd/es/input/TextArea';
 import {CheckboxGroupProps} from "antd/es/checkbox";
 import {useNavigate} from "react-router-dom";
+import './less/plugin.less'
 
-
+interface Category {
+	id: number;
+	name: string;
+}
 const Plugin: React.FC = () => {
 	const navigate = useNavigate();
+
+	// 插件分页信息
 	const [pagination, setPagination] = useState({
-		current: 1, // 当前页码
-		pageSize: 10, // 每页显示条数
-		total: 0, // 总记录数
+		current: 1,
+		pageSize: 10,
+		total: 0,
 	});
+
+	// 表格列配置
 	const columnsConfig: ColumnsConfig<any> = [
 		{
 			hidden: true,
-			form: {
-				type: "hidden"
-			},
-			dataIndex: "id",
-			key: "id"
+			form: { type: 'hidden' },
+			dataIndex: 'id',
+			key: 'id',
 		},
 		{
 			title: 'Icon',
 			dataIndex: 'icon',
 			key: 'icon',
-			form: {
-				type: "image"
-			}
+			form: { type: 'image' },
 		},
 		{
-			form: {
-				type: "input",
-				rules: [{required: true, message: '请输入插件名称'}]
-			},
-			dataIndex: "pluginName",
-			title: "插件名称",
-			key: "pluginName",
+			form: { type: 'input', rules: [{ required: true, message: '请输入插件名称' }] },
+			dataIndex: 'pluginName',
+			title: '插件名称',
+			key: 'pluginName',
 			supportSearch: true,
-			placeholder: "请输入插件名称",
-
+			placeholder: '请输入插件名称',
 		},
-
 		{
-			form: {
-				type: "TextArea",
-				rules: [{required: true, message: '请输入插件描述'}],
-				attrs: {
-					rows: 3
-				}
-			},
-			dataIndex: "pluginDesc",
-			title: "插件描述",
-			key: "pluginDesc"
+			form: { type: 'TextArea', rules: [{ required: true, message: '请输入插件描述' }], attrs: { rows: 3 } },
+			dataIndex: 'pluginDesc',
+			title: '插件描述',
+			key: 'pluginDesc',
 		},
-
 		{
 			hidden: true,
-			form: {
-				type: "hidden"
-			},
-			dataIndex: "options",
-			title: "插件配置",
-			key: "options"
+			form: { type: 'hidden' },
+			dataIndex: 'options',
+			title: '插件配置',
+			key: 'options',
 		},
-
 		{
-			form: {
-				type: "select"
-			},
-			dataIndex: "status",
-			title: "数据状态",
-			key: "status",
-			dict: {
-				name: "dataStatus"
-			}
+			form: { type: 'select' },
+			dataIndex: 'status',
+			title: '数据状态',
+			key: 'status',
+			dict: { name: 'dataStatus' },
 		},
 	];
+
 	type FieldType = {
 		id?: string;
 		icon?: string;
 		name?: string;
-		description	?: string;
-		baseUrl?: string; // 基础地址
+		description?: string;
+		baseUrl?: string;
 		headers?: string;
 		authData?: string;
 		authType?: string;
 		position?: string;
 		tokenKey?: string;
 		tokenValue?: string;
-
 	};
-
+	// 设置面包屑右侧按钮
+	useBreadcrumbRightEl(
+		<Button type={'primary'} onClick={() => {
+			setAddPluginIsOpen(true);
+			setIsSaveOrUpdate(true);
+		}}>
+			<PlusOutlined /> 新增插件
+		</Button>
+	);
+	// 处理表单提交
 	const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-		// 如果是新增
-		if (isSaveOrUpdate){
+		if (isSaveOrUpdate) {
 			doPostPluginSave({
 				data: {
 					icon: values.icon,
@@ -134,23 +132,17 @@ const Plugin: React.FC = () => {
 					authType: values.authType,
 					position: values.position,
 					tokenKey: values.tokenKey,
-					tokenValue: values.tokenValue
+					tokenValue: values.tokenValue,
+				},
+			}).then((r) => {
+				if (r.data.errorCode === 0) {
+					message.success('插件保存成功！');
+					form.resetFields();
+					setAddPluginIsOpen(false);
+					doSearchPlugins();
 				}
-			}).then(r =>{
-				if (r.data.errorCode == 0){
-					message.success("插件保存成功！")
-					form.resetFields()
-					setAddPluginIsOpen(false)
-					doGetPage({
-						params: {
-							pageNumber: 1,
-							pageSize: 10,
-						}
-					})
-				}
-			})
+			});
 		} else {
-			// 如果是修改
 			doPostPluginUpdate({
 				data: {
 					id: values.id,
@@ -163,388 +155,523 @@ const Plugin: React.FC = () => {
 					authType: values.authType,
 					position: values.position,
 					tokenKey: values.tokenKey,
+				},
+			}).then((r) => {
+				if (r.data.errorCode === 0) {
+					message.success('修改成功！');
+					doSearchPlugins();
+					setAddPluginIsOpen(false);
+				} else {
+					message.error(r.data.message);
 				}
-			}).then(r =>{
-				if (r.data.errorCode == 0){
-					message.success("修改成功！")
-					doGetPage({
-						params: {
-							pageNumber: 1,
-							pageSize: 10,
-						}
-					})
-					setAddPluginIsOpen(false)
-
-				} else if (r.data.errorCode >= 1){
-					message.error(r.data.message)
-				}
-			})
+			});
 		}
-
 	};
+
 	const options: CheckboxGroupProps<string>['options'] = [
 		{ label: 'headers', value: 'headers' },
 		{ label: 'query', value: 'query' },
 	];
+
 	const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
 		console.log('Failed:', errorInfo);
 	};
+
 	// 控制新增插件模态框的显示与隐藏
-	const [addPluginIsOpen, setAddPluginIsOpen] = useState(false)
+	const [addPluginIsOpen, setAddPluginIsOpen] = useState(false);
+
 	// 认证类型
-	const [authType, setAuthType] = useState('none')
+	const [authType, setAuthType] = useState('none');
+
 	// 定义是新增还是修改 【true: 新增 false: 修改】
-	const [isSaveOrUpdate, setIsSaveOrUpdate] = useState(true)
-	const [iconPath, setIconPath] = useState('')
+	const [isSaveOrUpdate, setIsSaveOrUpdate] = useState(true);
+
+	// 图标路径
+	const [iconPath, setIconPath] = useState('');
+
 	// 认证参数位置
-	const [positionValue, setPositionValue] = useState('headers')
-	const {
-		loading,
-		result,
-		doGet: doGetPage
-	} = usePage('aiPlugin', {}, {manual: true})
+	const [positionValue, setPositionValue] = useState('headers');
+
+	// 插件列表数据
+	const [plugins, setPlugins] = useState<any[]>([]);
+	const [loading, setLoading] = useState<boolean>(false);
+
+	// 分类相关状态
+	const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+	const [selectedCategoryId, setSelectedCategoryId] = useState<number | string | null>('0');
+	const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+	const [newCategoryName, setNewCategoryName] = useState('');
+// 归类相关状态
+	const [classifyModalVisible, setClassifyModalVisible] = useState(false);
+	const [selectedPluginId, setSelectedPluginId] = useState<number | null>(null);
+	// 回显选中的分类
+	const [selectedCategoryForClassify, setSelectedCategoryForClassify] = useState< SelectProps['options']>([]);
+
+// 更新插件分类的方法
+	const { doPost: doUpdatePluginCategory } = usePostManual('/api/v1/aiPluginCategoryRelation/updateRelation');
+	// 获取插件数据
+	// const { doGet: doGetPage } = usePage('aiPlugin', {}, { manual: true });
+	const {doGet: doGetPage} = useGetManual('/api/v1/aiPlugin/pageByCategory')
+
 	// 保存插件
-	const {doPost: doPostPluginSave} = usePostManual('/api/v1/aiPlugin/plugin/save')
+	const { doPost: doPostPluginSave } = usePostManual('/api/v1/aiPlugin/plugin/save');
 	// 修改插件
-	const {doPost: doPostPluginUpdate} = usePostManual('/api/v1/aiPlugin/plugin/update')
-	const {doPost: doRemove} = usePostManual('/api/v1/aiPlugin/plugin/remove')
-	useBreadcrumbRightEl(<Button type={"primary"} onClick={() => {
-		setAddPluginIsOpen(true)
-		// 设置modal 打开方式为新增
-		setIsSaveOrUpdate(true)
-	}}>
-		<PlusOutlined/>新增插件</Button>)
+	const { doPost: doPostPluginUpdate } = usePostManual('/api/v1/aiPlugin/plugin/update');
+	const { doPost: doRemove } = usePostManual('/api/v1/aiPlugin/plugin/remove');
+
+	// 获取分类数据（假设有一个分类接口）
+	const { doGet: doGetCategories } = useGetManual('/api/v1/aiPluginCategories/list');
+
+	const { doPost: doSaveCategories } =usePostManual('/api/v1/aiPluginCategories/save')
+
+	const {doGet: doGetPluginCategory} = useGetManual('/api/v1/aiPluginCategoryRelation/getPluginCategories')
+
+
+	// 初始化加载插件和分类数据
 	useEffect(() => {
+		doSearchPlugins();
+		fetchCategories();
+	}, []);
+
+	const fetchCategories = () => {
+		doGetCategories().then((res) => {
+			if (res.data.errorCode === 0) {
+				setCategories([{id: '0', name: '全部'},  ...(res.data.data)] || []);
+			}
+		});
+	};
+
+	const doSearchPlugins = (params: any = {}) => {
+		setLoading(true);
 		doGetPage({
 			params: {
-				pageNumber: 1,
-				pageSize: 10,
-			}
-		}).then(r => {
-			if (r.data.errorCode == 0){
+				pageNumber: pagination.current,
+				pageSize: pagination.pageSize,
+				category: params.categoryId | 0,
+				...params,
+			},
+		}).then((r) => {
+			if (r.data.errorCode === 0) {
+				setPlugins(r.data.data.records);
 				setPagination({
 					current: r.data.data.pageNumber,
 					pageSize: r.data.data.pageSize,
-					total: r.data.data.totalRow
-				})
+					total: r.data.data.totalRow,
+				});
 			}
-		})
-	}, [])
+			setLoading(false);
+		});
+	};
 
-	useEffect(() => {
-		setPagination({
-			current: result?.data.pageNumber,
-			pageSize: result?.data.pageSize,
-			total: result?.data.totalRow
-		})
-	}, [result])
+	const handleSearch = (values: any) => {
+		doSearchPlugins({ name: values.pluginName });
+	};
 
 	const getIconPath = (path: string) => {
-		form.setFieldsValue({
-			icon: path
-		})
-	}
+		form.setFieldsValue({ icon: path });
+	};
+
 	// 创建表单实例
 	const [form] = Form.useForm();
-	const handleaddPluginCancle = () => {
-		form.resetFields()
-		setPositionValue('headers')
-		setAuthType('none')
+
+	const handleAddPluginCancel = () => {
+		form.resetFields();
+		setPositionValue('headers');
+		setAuthType('none');
 		setAddPluginIsOpen(false);
 	};
 
-	const handleaddPluginOk = () => {
-		// setAddPluginIsOpen(false);
+	const handleAddPluginOk = () => {};
+
+	// 点击分类
+	const handleSelectCategory = (categoryId: number) => {
+		console.log('点击分类', categoryId);
+		setSelectedCategoryId(categoryId);
+		doSearchPlugins({ categoryId });
 	};
-	return loading ?
-		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-		<Spin />
-		</div>
-		:
-		(
-		<div style={{height: 'calc(100vh - 68px)',overflowY: 'auto'}}>
-			<SearchForm columns={columnsConfig} colSpan={6}
-						onSearch={(values: any) => {
-							doGetPage({
-								params: {
-									name:  values.pluginName
-								}
-							})
-						}}
-			/>
-			<Row className={"card-row"} gutter={[16, 16]} >
-				{result?.data?.records?.length > 0 ? result?.data?.records?.map((item: any) => (
-					<Col span={6} key={item.id}>
-						<Card  actions={
-							[
-								<MenuUnfoldOutlined title="工具列表" onClick={() => {
-									navigate('/ai/pluginTool', {
-										state: {
-											id: item.id,
-											pluginTitle: item.name
-										}
-									})
-								}}/>,
-								<EditOutlined key="edit" onClick={() =>{
-									// 设置modal 打开方式为修改
-									setIsSaveOrUpdate(false)
-									// 赋值模态框数据
-									form.setFieldsValue({
-										id: item.id,
-										icon: item.icon,
-										name: item.name,
-										description: item.description,
-										baseUrl: item.baseUrl,
-										headers: item.headers?JSON.parse(item.headers):[],
-										authData: item.authData,
-										authType: item.authType,
-										position: item.position,
-										tokenKey: item.tokenKey,
-										tokenValue: item.tokenValue
-									})
-									setIconPath(item.icon)
-									setAuthType(item.authType)
-									setAddPluginIsOpen(true)
-								}} />,
-								<Dropdown menu={{
-									items: [
-										{
-											key: 'delete',
-											label: '删除',
-											icon: <DeleteOutlined/>,
-											danger: true,
-											onClick: () => {
-												Modal.confirm({
-													title: '确定要删除吗?',
-													content: '此操作不可逆，请谨慎操作。',
-													onOk() {
-														doRemove({
-															data: {
-																id: item.id
-															}
-														}).then(r =>{
-															if (r.data.errorCode == 0){
-																message.success("删除成功！")
-																setAddPluginIsOpen(false)
-																doGetPage({
-																	data: {
-																		pageNumber: 1,
-																		pageSize: 10,
-																	}
-																})
-															} else {
-																message.error(r.data.message)
-															}
-														})
-													},
-													onCancel() {
-													},
-												});
+
+	// 打开新增分类模态框
+	const openAddCategoryModal = () => {
+		setCategoryModalVisible(true);
+	};
+
+	// 提交新增分类
+	const addNewCategory = () => {
+		if (!newCategoryName.trim()) {
+			message.warning('请输入分类名称');
+			return;
+		}
+
+		// 假设你有新增分类的接口
+		// doPostAddCategory({ data: { name: newCategoryName } }).then(...)
+
+		// 模拟添加本地分类
+		const newCategory = {
+			id: Date.now(),
+			name: newCategoryName,
+		};
+		setCategories([...categories, newCategory]);
+		setNewCategoryName('');
+		setCategoryModalVisible(false);
+		doSaveCategories({data:{name:newCategoryName}}).then((res)=>{
+			if (res.data.errorCode === 0){
+				message.success('分类添加成功');
+				fetchCategories();
+			}
+
+		})
+	};
+	const handleClassifySubmit = () => {
+		// if (!selectedPluginId || selectedCategoriesForClassify.length === 0) {
+		// 	message.warning('请至少选择一个分类');
+		// 	return;
+		// }
+		doUpdatePluginCategory({
+			data: {
+				pluginId: selectedPluginId,
+				categoryIds: selectedCategoryForClassify // 注意这里是数组
+			}
+		}).then(res => {
+			if (res.data.errorCode === 0) {
+				message.success('分类更新成功');
+				doSearchPlugins({categoryId: selectedCategoryId}); // 刷新插件列表
+			} else {
+				message.error(res.data.message || '分类更新失败');
+			}
+		});
+
+		setClassifyModalVisible(false);
+	};
+	return (
+		<div style={{ height: 'calc(100vh - 68px)', overflowY: 'auto', display: 'flex'}}>
+			{/* 左侧分类导航 */}
+			<div style={{ width: 240, paddingLeft: 8, paddingRight: 8, paddingTop: 16, borderRight: '1px solid #e8e8e8', backgroundColor: '#f8f9fa'}}>
+				<div style={{ backgroundColor: "white", height: '100%'}}>
+
+				<Button  block icon={<PlusOutlined />} onClick={openAddCategoryModal} style={{ marginBottom: 16 }}>
+					新增分类
+				</Button>
+
+					<div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+						{categories.map((cat) => (
+							<div
+								key={cat.id}
+								className={`category-item ${selectedCategoryId === cat.id ? 'selected' : ''}`}
+								onClick={() => handleSelectCategory(cat.id)}
+							>
+								{cat.name}
+							</div>
+						))}
+					</div>
+
+				</div>
+			</div>
+
+			{/* 右侧插件内容 */}
+			<div style={{ flex: 1}}>
+				<SearchForm columns={columnsConfig} colSpan={6} onSearch={handleSearch} />
+
+				<Row className={"card-row"} gutter={[16, 16]}>
+					{loading ? (
+						<div style={{  height: '100vh', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+							<Spin />
+						</div>
+
+					) : plugins.length > 0 ? (
+						plugins.map((item: any) => (
+							<Col span={6} key={item.id}>
+								<Card
+									actions={[
+										<MenuUnfoldOutlined title="工具列表" onClick={() => {
+											navigate('/ai/pluginTool', {
+												state: {
+													id: item.id,
+													pluginTitle: item.name,
+												}
+											});
+										}} />,
+										<EditOutlined key="edit" onClick={() => {
+											setIsSaveOrUpdate(false);
+											form.setFieldsValue({
+												id: item.id,
+												icon: item.icon,
+												name: item.name,
+												description: item.description,
+												baseUrl: item.baseUrl,
+												headers: item.headers ? JSON.parse(item.headers) : [],
+												authData: item.authData,
+												authType: item.authType,
+												position: item.position,
+												tokenKey: item.tokenKey,
+												tokenValue: item.tokenValue,
+											});
+											setIconPath(item.icon);
+											setAuthType(item.authType);
+											setAddPluginIsOpen(true);
+										}} />,
+										<Dropdown menu={{
+											items: [
+												{
+												key: 'delete',
+												label: '删除',
+												icon: <DeleteOutlined />,
+												danger: true,
+												onClick: () => {
+													Modal.confirm({
+														title: '确定要删除吗?',
+														content: '此操作不可逆，请谨慎操作。',
+														onOk() {
+															doRemove({ data: { id: item.id } }).then((r) => {
+																if (r.data.errorCode === 0) {
+																	message.success("删除成功！");
+																	doSearchPlugins();
+																} else {
+																	message.error(r.data.message);
+																}
+															});
+														},
+													});
+												},
 											},
-										}
-									],
-								}}>
-									<EllipsisOutlined key="ellipsis" title="更多操作"/>
-								</Dropdown>
-							]
+												{
+													key: 'classify',
+													label: '归类',
+													icon: <ClusterOutlined/>,
+													onClick: () => {
+														setSelectedPluginId(item.id);
+														// 查询当前插件的分类
+														doGetPluginCategory({
+															params: {
+																pluginId: item.id
+															}
+														}).then((res) => {
+															if (res.data.errorCode === 0) {
+																const options = res.data.data.map((item: Category) => ({
+																	value: item.id,
+																	label: item.name
+																}));
+																setSelectedCategoryForClassify(options)
+																// setSelectedCategoryForClassify(item.categoryIds || [])
+																setClassifyModalVisible(true);
+															}
+														});
 
-						} style={{padding: 8}} >
-							<Card.Meta
-								avatar={<Avatar src={item.icon || "/favicon.png"} />}
-								title={item.name}
-								description={
-									<Tooltip title={item.description}>
-										<div style={{
-											display: '-webkit-box',
-											WebkitLineClamp: 1,      // 限制显示行数
-											WebkitBoxOrient: 'vertical',
-											overflow: 'hidden',
-											textOverflow: 'ellipsis',
+													}
+												}
+											],
 										}}>
-											{item.description}
-										</div>
-									</Tooltip>
-								}
-							/>
-						</Card>
-					</Col>)
 
-				) : (<div></div>)}
+											<EllipsisOutlined key="ellipsis" title="更多操作" />
+										</Dropdown>,
+									]}
+									style={{ padding: 8 }}
+								>
+									<Card.Meta
+										avatar={<Avatar src={item.icon || "/favicon.png"} />}
+										title={item.name}
+										description={
+											<Tooltip title={item.description}>
+												<div style={{
+													display: '-webkit-box',
+													WebkitLineClamp: 1,
+													WebkitBoxOrient: 'vertical',
+													overflow: 'hidden',
+													textOverflow: 'ellipsis',
+												}}>{item.description}</div>
+											</Tooltip>
+										}
+									/>
+								</Card>
+							</Col>
+						))
+					) : (
+						<div style={{ textAlign: 'center', width: '100%' }}>暂无插件</div>
+					)}
+				</Row>
 
-			</Row>
-			<Pagination  total={pagination.total} align="end" showTotal={(total) => `共 ${total} 条数据`}
-			onChange={(page, pageSize) => {
-				doGetPage({
-					params: {
-						pageNumber: page,
-						pageSize: pageSize,
-					}
-				})
-			}}
-			showSizeChanger={true}
-			pageSizeOptions={[10, 20, 30, 40, 50]}
-			defaultCurrent={1}
-			defaultPageSize={10}
+				<Pagination
+					total={pagination.total}
+					align="end"
+					showTotal={(total) => `共 ${total} 条数据`}
+					onChange={(page, pageSize) => {
+						setPagination({ ...pagination, current: page, pageSize });
+						doSearchPlugins({ pageNumber: page, pageSize });
+					}}
+					showSizeChanger={true}
+					pageSizeOptions={[10, 20, 30, 40, 50]}
+					defaultCurrent={1}
+					defaultPageSize={10}
+				/>
+			</div>
 
-			/>
-			<Modal title="新增插件" open={addPluginIsOpen} onOk={handleaddPluginOk}
-				   onCancel={handleaddPluginCancle}
-				   footer={null}
+			{/* 新增插件模态框 */}
+			<Modal
+				title="新增插件"
+				open={addPluginIsOpen}
+				onOk={handleAddPluginOk}
+				onCancel={handleAddPluginCancel}
+				footer={null}
 			>
 				<Form
 					form={form}
 					layout="vertical"
 					name="basic"
-					style={{ width: '100%'}}
+					style={{ width: '100%' }}
 					initialValues={{ authType: 'none', position: 'headers' }}
 					onFinish={onFinish}
 					onFinishFailed={onFinishFailed}
 					autoComplete="off"
 				>
-					<Form.Item<FieldType>
-						name="id"
-						hidden
-					>
-					</Form.Item>
-					<Form.Item<FieldType>
-						name="icon"
-						style={{ textAlign: 'center'}}
-					>
+					{/* 表单项... 和原文件一致，省略以保持简洁 */}
+					{/* 此处可以复用你原来的表单结构 */}
+					<Form.Item<FieldType> name="id" hidden></Form.Item>
+					<Form.Item<FieldType> name="icon" style={{ textAlign: 'center' }}>
 						<div style={{ display: 'flex', justifyContent: 'center' }}>
-							<Input  hidden/>
-							{/* 使用 flex 布局确保 ImageUploader 居中 */}
-							<ImageUploader onChange={getIconPath} value={iconPath}/>
+							<Input hidden />
+							<ImageUploader onChange={getIconPath} value={iconPath} />
 						</div>
 					</Form.Item>
-
 					<Form.Item<FieldType>
 						label="插件名称"
 						name="name"
 						rules={[{ required: true, message: '请输入插件名称!' }]}
 					>
-						<Input maxLength={30} showCount placeholder={'请输入插件名称'}/>
+						<Input maxLength={30} showCount placeholder={'请输入插件名称'} />
 					</Form.Item>
 					<Form.Item<FieldType>
 						label="插件描述"
 						name="description"
 						rules={[{ required: true, message: '请输入插件描述!' }]}
 					>
-						<TextArea
-							showCount
-							maxLength={500}
-							placeholder="请输入插件描述"
-							style={{ height: 80, resize: 'none' }}
-						/>
+						<TextArea showCount maxLength={500} placeholder="请输入插件描述" style={{ height: 80, resize: 'none' }} />
 					</Form.Item>
-
 					<Form.Item<FieldType>
 						name="baseUrl"
 						label={'插件 URL'}
-					  	rules={[{ required: true, message: '请输入插件URL' }]}
+						rules={[{ required: true, message: '请输入插件URL' }]}
 					>
 						<Input placeholder="请输入插件 URL" />
 					</Form.Item>
-					<Form.Item<FieldType>
-						name="headers"
-						label={'Headers'}
-					>
-					<Form.List name="headers">
-						{(fields, { add, remove }) => (
-							<>
-								{fields.map(({ key, name, ...restField }) => (
-									<Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-										<Form.Item
-											{...restField}
-											name={[name, 'label']}
-											rules={[{ required: true, message: 'Missing label ' }]}
-										>
-											<Input placeholder="Headers Name" />
-										</Form.Item>
-										<Form.Item
-											{...restField}
-											name={[name, 'value']}
-											rules={[{ required: true, message: 'Missing  value' }]}
-										>
-											<Input placeholder="Headers value" />
-										</Form.Item>
-										<MinusCircleOutlined onClick={() => remove(name)} />
-									</Space>
-								))}
+					<Form.Item<FieldType> name="headers" label={'Headers'}>
+						<Form.List name="headers">
+							{(fields, { add, remove }) => (
+								<>
+									{fields.map(({ key, name, ...restField }) => (
+										<Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+											<Form.Item {...restField} name={[name, 'label']} rules={[{ required: true, message: 'Missing label' }]}>
+												<Input placeholder="Headers Name" />
+											</Form.Item>
+											<Form.Item {...restField} name={[name, 'value']} rules={[{ required: true, message: 'Missing value' }]}>
+												<Input placeholder="Headers value" />
+											</Form.Item>
+											<MinusCircleOutlined onClick={() => remove(name)} />
+										</Space>
+									))}
 									<Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
 										添加 headers
 									</Button>
-							</>
-						)}
-					</Form.List>
+								</>
+							)}
+						</Form.List>
 					</Form.Item>
 					<Form.Item<FieldType>
 						label={
-							<span >
-      									认证方式
-      						<Tooltip style={{width: 350}}
-									 styles={{root: {maxWidth: 350 }}}
-									 title={
-								<div>
-									<p style={{ marginBottom: 8, width: 300 }}>选择插件使用的授权或验证方式。目前支持如下两种类型：</p>
-									<p>1.  无需认证</p>
-									<p style={{ fontSize: 12}}>不需要认证，直接访问插件即可。</p>
-									<p>2.  Service token / API key</p>
-									<p style={{ fontSize: 12}}>Token（令牌）是一种身份验证方式，用户或系统需提供唯一的密钥（Token）来访问受保护的资源。插件校验 Token 合法后，允许操作。</p>
-								</div>
-							}
-										 >
-      						  <QuestionCircleOutlined style={{ marginLeft: 8, color: 'rgba(0,0,0,.45)' }} />
-      						</Tooltip>
-    						</span>
+							<span>
+                认证方式
+                <Tooltip title="选择插件使用的授权或验证方式。目前支持如下两种类型：\n1. 无需认证\n2. Service token / API key">
+                  <QuestionCircleOutlined style={{ marginLeft: 8, color: 'rgba(0,0,0,.45)' }} />
+                </Tooltip>
+              </span>
 						}
 						name="authType"
-						rules={[{ required: true, message: '请输入插件名称!' }]}
+						rules={[{ required: true, message: '请选择认证方式!' }]}
 					>
 						<Select
 							onChange={(value) => {
-								setAuthType(value)
+								setAuthType(value);
 							}}
-							options={[{ value: 'none', label: '无需认证' }, { value: 'apiKey', label: 'Service token / API key' }]}
+							options={[
+								{ value: 'none', label: '无需认证' },
+								{ value: 'apiKey', label: 'Service token / API key' },
+							]}
 						/>
 					</Form.Item>
-					{authType === 'apiKey' ?
+					{authType === 'apiKey' && (
 						<>
-						<Form.Item<FieldType>
-						name="position"
-						label={'参数位置'}
-						rules={[{ required: true, message: '请输入认证数据' }]}
-						>
-						<Radio.Group options={options} value={positionValue} onChange={(e) =>{
-							setPositionValue(e.target.value)
-						}} />
-
-						</Form.Item>
-						<Form.Item<FieldType>
-							label="tokenKey"
-							name="tokenKey"
-							rules={[{ required: true, message: '请输入tokenKey!' }]}
-						>
-							<Input maxLength={500} showCount/>
-						</Form.Item>
-						<Form.Item<FieldType>
-						label="tokenValue"
-						name="tokenValue"
-						rules={[{ required: true, message: '请输入tokenValue' }]}>
-					<Input maxLength={2000} showCount/>
-					</Form.Item>
+							<Form.Item<FieldType>
+								name="position"
+								label={'参数位置'}
+								rules={[{ required: true, message: '请输入认证数据' }]}
+							>
+								<Radio.Group options={options} value={positionValue} onChange={(e) => setPositionValue(e.target.value)} />
+							</Form.Item>
+							<Form.Item<FieldType>
+								label="tokenKey"
+								name="tokenKey"
+								rules={[{ required: true, message: '请输入tokenKey!' }]}
+							>
+								<Input maxLength={500} showCount />
+							</Form.Item>
+							<Form.Item<FieldType>
+								label="tokenValue"
+								name="tokenValue"
+								rules={[{ required: true, message: '请输入tokenValue' }]}
+							>
+								<Input maxLength={2000} showCount />
+							</Form.Item>
 						</>
-						: <></> }
-
-
+					)}
 					<Form.Item label={null}>
-						<Space style={{ display: 'flex', justifyContent: 'flex-end' }} >
-							{/* 取消按钮 */}
-							<Button onClick={handleaddPluginCancle}>取消</Button>
-							{/* 确定按钮 */}
+						<Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
+							<Button onClick={handleAddPluginCancel}>取消</Button>
 							<Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
 								确定
 							</Button>
 						</Space>
+					</Form.Item>
+				</Form>
+			</Modal>
+
+			{/* 新增分类模态框 */}
+			<Modal
+				title="新增分类"
+				open={categoryModalVisible}
+				onOk={addNewCategory}
+				onCancel={() => setCategoryModalVisible(false)}
+			>
+
+				<Input
+					placeholder="请输入分类名称"
+					value={newCategoryName}
+					onChange={(e) => setNewCategoryName(e.target.value)}
+				/>
+			</Modal>
+
+			{/* 插件归类模态框 */}
+			<Modal
+				title="选择分类"
+				open={classifyModalVisible}
+				onOk={handleClassifySubmit}
+				onCancel={() => setClassifyModalVisible(false)}
+				destroyOnClose
+			>
+				<Form layout="vertical">
+					<Form.Item label="请选择分类">
+						<Select
+							mode="tags"
+							value={selectedCategoryForClassify}
+							onChange={(values) => setSelectedCategoryForClassify(values)}
+							placeholder="请选择分类"
+							style={{ width: '100%' }}
+						>
+							{categories
+								.filter((cat) => cat.name !== '全部') // 过滤掉 name 为 '全部' 的分类
+								.map((cat) => (
+									<Select.Option key={cat.id} value={cat.id}>
+										{cat.name}
+									</Select.Option>
+								))}
+						</Select>
 					</Form.Item>
 				</Form>
 			</Modal>

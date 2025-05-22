@@ -75,9 +75,8 @@ public class AiPluginController extends BaseCurdController<AiPluginService, AiPl
             queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
             return Result.success(queryPage(new Page<>(pageNumber, pageSize), queryWrapper));
         } else {
-            aiPluginService.pageByCategory(pageNumber, pageSize, category);
+            return aiPluginService.pageByCategory(pageNumber, pageSize, category);
         }
-        return Result.fail();
     }
 
     @Override
