@@ -21,5 +21,33 @@ apiSecret=xxx
 ```
 > 需要注意的是，只有 `openai` 方式才支持配置chatPath，其他厂商 `path` 都是固定的。
 
+## 阿里云百炼
+
+接入阿里云大模型 请点击 [阿里云百炼地址](https://bailian.console.aliyun.com/?tab=model#/model-market)
+
+在 AIFlowy 中配置 **阿里云** 品牌的模型配置参考如下图
+
+![config-aliyun-llm.png](resource/config-aliyun-llm.png)
+
+## 星火大模型
+接入星火大模型 请点击 [星火大模型地址](https://passport.xfyun.cn/login)
+在 AIFlowy 中配置 **星火大模型** 品牌的模型配置参考如下图
+
+![config-spark-llm.png](resource/config-spark-llm.png)
+
+## 模力方舟
+接入模力方舟大模型 请点击 [模力方舟地址](https://ai.gitee.com/serverless-api)
+请注意：模力方舟的品牌请选择 **Open AI**
+
+![config-gitee-llm.png](resource/config-gitee-llm.png)
+
+## 火山引擎
+接入模力方舟大模型 请点击 [火山引擎地址](https://www.volcengine.com/)
+请注意：火山引擎的品牌请选择 **Open AI**
+
+![config-volcengine.png](resource/config-volcengine.png)
+
+
+
 
 
