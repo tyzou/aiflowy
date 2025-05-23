@@ -811,6 +811,26 @@ CREATE TABLE `qrtz_triggers`  (
   CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) REFERENCES `qrtz_job_details` (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- v1.0.3 ddl end --
+-- ----------------------------
+-- Table structure for tb_ai_plugin_categories
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_ai_plugin_categories`;
+CREATE TABLE `tb_ai_plugin_categories`  (
+                                            `id` int(0) NOT NULL AUTO_INCREMENT,
+                                            `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                                            `created_at` timestamp(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+                                            PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for tb_ai_plugin_category_relation
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_ai_plugin_category_relation`;
+CREATE TABLE `tb_ai_plugin_category_relation`  (
+                                                   `category_id` int(0) NOT NULL,
+                                                   `plugin_id` bigint(0) NOT NULL
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
 
 SET FOREIGN_KEY_CHECKS = 1;
