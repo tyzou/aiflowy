@@ -1,13 +1,13 @@
 import React, {useLayoutEffect, useRef, useState} from 'react';
-import {Bubble, Sender, Welcome} from '@ant-design/x';
-import {Button, message, Space, Spin} from 'antd';
+import {Bubble, Prompts, Sender, Welcome} from '@ant-design/x';
+import {Button, GetProp, message, Space, Spin} from 'antd';
 import {CopyOutlined, OpenAIOutlined, SyncOutlined} from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import logo from "/favicon.png";
 import { UserOutlined } from '@ant-design/icons';
-
+import './aiprochat.less'
 const fooAvatar: React.CSSProperties = {
     color: '#fff',
     backgroundColor: '#87d068',
@@ -32,6 +32,7 @@ export type AiProChatProps = {
     botAvatar?: string;
     request: (messages: ChatMessage[]) => Promise<Response>;
     clearMessage?: () => void;
+    prompts?: GetProp<typeof Prompts, 'items'>;
 };
 
 export const AiProChat = ({
@@ -43,7 +44,8 @@ export const AiProChat = ({
                               helloMessage = '欢迎使用 AIFlowy',
                               botAvatar = `${logo}`,
                               request,
-                              clearMessage
+                              clearMessage,
+                              prompts,
                           }: AiProChatProps) => {
     const isControlled = parentChats !== undefined && parentOnChatsChange !== undefined;
     const [internalChats, setInternalChats] = useState<ChatMessage[]>([]);
@@ -101,14 +103,16 @@ export const AiProChat = ({
         };
     }, []);
     // 提交流程优化
-    const handleSubmit = async () => {
-        if (!content.trim()) return;
+    const handleSubmit = async (newMessage: string) => {
+        // 使用 newMessage 的值（如果存在），否则使用 content 状态
+        const messageContent = newMessage?.trim() || content.trim();
+        if (!messageContent) return;
         setSendLoading(true);
         setIsStreaming(true);
         const userMessage: ChatMessage = {
             role: 'user',
             id: Date.now().toString(),
-            content,
+            content: messageContent,
             created: Date.now(),
             updateAt: Date.now(),
         };
@@ -317,6 +321,16 @@ export const AiProChat = ({
             />
         );
     };
+    const SENDER_PROMPTS = prompts || [
+        {
+            key: '1',
+            description: '你好'
+        },
+        {
+            key: '2',
+            description: '你是谁？'
+        }
+    ];
 
     return (
         <div
@@ -351,15 +365,28 @@ export const AiProChat = ({
                     </>
                 )}
             </div>
+
             {/* 输入区域 */}
             <div
                 style={{
                     borderTop: '1px solid #eee',
                     padding: '12px',
                     display: 'flex',
+                    flexDirection: "column",
                     gap: '8px',
                 }}
             >
+                {/* 🌟 提示词 */}
+                <Prompts
+                    items={SENDER_PROMPTS}
+                    onItemClick={(info) => {
+                        handleSubmit(info.data.description as string)
+                    }}
+                    styles={{
+                        item: { padding: '6px 12px' },
+                    }}
+
+                />
                 <Sender
                     value={content}
                     onChange={setContent}

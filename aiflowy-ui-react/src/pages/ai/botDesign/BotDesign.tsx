@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 
 import {useLayout} from '../../../hooks/useLayout.tsx';
 import {Row} from 'antd/lib/index';
-import {App, Avatar, Button, Col, Collapse, Modal, Select, Tooltip} from 'antd';
+import {App, Avatar, Button, Col, Collapse, Form, Input, Modal, Select, Space, Tooltip} from 'antd';
 import Title from 'antd/es/typography/Title';
 import {DeleteOutlined, PlusOutlined} from "@ant-design/icons";
 import {
@@ -34,12 +34,6 @@ const colStyle: React.CSSProperties = {
 };
 
 
-const text = (
-    <p style={{paddingInlineStart: 24}}>
-    </p>
-);
-
-
 type CollapseLabelProps = {
     text: string,
     onClick: () => void,
@@ -59,7 +53,11 @@ const CollapseLabel: React.FC<CollapseLabelProps> = ({text, onClick, plusDisable
         }}/>}
     </div>
 }
-
+interface PresetQuestion {
+    key: string;
+    description: string;
+    icon?: React.ReactNode;
+}
 
 export const ListItem: React.FC<{
     title?: string,
@@ -115,10 +113,12 @@ const BotDesign: React.FC = () => {
 
     const [systemPrompt, setSystemPrompt] = useState<string>('')
     const [welcomeMessage, setWelcomeMessage] = useState<string>('')
+    const [isOpenProblemPreset, setIsOpenProblemPreset] = useState<boolean>(false)
     const {result: pluginToolResult,doPost: doPostPluginToolIds} = usePostManual('/api/v1/aiBotPlugins/getBotPluginToolIds')
     const {doSave: doSavePlugin} = useSave("aiBotPlugins");
     const {doPost: doRemovePlugin} = usePostManual('/api/v1/aiBotPlugins/doRemove');
-
+    // 添加状态管理预设问题数组
+    const [presetQuestions, setPresetQuestions] = useState<PresetQuestion[]>([]);
     useEffect(() => {
         doPostPluginToolIds({data: {botId: params.id}})
     }, []);
@@ -168,12 +168,15 @@ const BotDesign: React.FC = () => {
         }).then(reGetDetail)
             .then(() => {
                 message.success("保存成功")
+
             })
     }
 
     useEffect(() => {
         setSystemPrompt(detail?.data?.llmOptions?.systemPrompt || '你是一个AI助手，请根据用户的问题给出清晰、准确的回答。');
         setWelcomeMessage(detail?.data?.options?.welcomeMessage)
+        // 转换后端数据为新的格式
+        setPresetQuestions(detail?.data?.options?.presetQuestions || [])
     }, [detail]);
 
     const {result: workflowResult, doGet: doGetWorkflow} = useList("aiBotWorkflow", {"botId": params.id});
@@ -222,6 +225,11 @@ const BotDesign: React.FC = () => {
                 }
             })
     }
+    const handleProblemCancel = () =>{
+        setIsOpenProblemPreset(false)
+    }
+    // 创建表单实例
+    const [form] = Form.useForm();
 
     return (
         <>
@@ -444,8 +452,61 @@ const BotDesign: React.FC = () => {
                             {
                                 key: 'questions',
                                 label: <CollapseLabel text="问题预设" onClick={() => {
+                                    setIsOpenProblemPreset(true)
+                                    // reGetDetail().then(res =>{
+                                    //     setPresetQuestions(res?.data?.data?.options.presetQuestions)
+                                    //
+                                    // })
                                 }}/>,
-                                children: text,
+                                children: (
+                                    <div style={{ padding: '0 16px' }}>
+                                        {presetQuestions.length > 0 ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {presetQuestions.map((question, index) => (
+                                                    <div
+                                                        key={index}
+                                                        style={{
+                                                            padding: '8px 12px',
+                                                            background: '#f5f5f5',
+                                                            borderRadius: '4px',
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        <span>{question.description}</span>
+                                                        <Button
+                                                            type="text"
+                                                            icon={<DeleteOutlined />}
+                                                            onClick={() => {
+                                                                const newQuestions = [...presetQuestions];
+                                                                newQuestions.splice(index, 1);
+                                                                setPresetQuestions(newQuestions);
+                                                                    updateBotOptions({
+                                                                        data: {
+                                                                            options: { presetQuestions: newQuestions },
+                                                                            id: params.id,
+                                                                        }
+                                                                    }).then((res) => {
+                                                                        if (res?.data?.errorCode === 0){
+                                                                            reGetDetail().then(response =>{
+                                                                                setPresetQuestions(response?.data?.data?.options.presetQuestions)
+                                                                            })
+                                                                        }
+
+                                                                    })
+                                                            }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div style={{ color: '#999', textAlign: 'center', padding: '8px 0' }}>
+                                                暂无预设问题，点击右上角"+"添加
+                                            </div>
+                                        )}
+                                    </div>
+                                ),
                             },
                             {
                                 key: 'welcomeMessage',
@@ -465,12 +526,6 @@ const BotDesign: React.FC = () => {
                                     />
                                 </div>,
                             },
-                            // {
-                            //     key: 'ui',
-                            //     label: <CollapseLabel text="UI 与 Logo" onClick={() => {
-                            //     }} plusDisabled/>,
-                            //     children: text,
-                            // },
 
                         ]} bordered={false}/>
 
@@ -519,6 +574,7 @@ const BotDesign: React.FC = () => {
                         <div style={{height: "calc(100vh - 122px)", width: "100%"}} className={"bot-chat"}>
                             <AiProChat
                                 chats={chats}
+                                prompts={presetQuestions}
                                 onChatsChange={setChats} // 确保正确传递 onChatsChange
                                 // style={{ height: '600px' }}
                                 helloMessage={detail?.data?.options?.welcomeMessage}
@@ -549,6 +605,64 @@ const BotDesign: React.FC = () => {
                     </Col>
                 </Row>
             </div>
+
+            <Modal
+                title="问题预设"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={isOpenProblemPreset}
+
+                footer={null}
+                afterOpenChange={(open) => {
+                    if (open) {
+                        const values: Record<string, string> = {};
+                        [1, 2, 3, 4, 5].forEach((num: number) => {
+                            values[`question${num}`] = presetQuestions[num - 1]?.description || '';
+                        });
+                        form.setFieldsValue(values);
+                    }
+                }}
+            >
+                <Form layout="vertical" form={form}
+                      onFinish={(values: Record<string, string>) => {
+                    // 将表单值转换为 PresetQuestion[] 类型
+                          const questions = Object.entries(values)
+                              // @ts-ignore
+                              .filter(([key, value]) => value) // 过滤空值
+                              // @ts-ignore
+                              .map(([key, value], index) => ({
+                                  key: (index + 1).toString(),
+                                  description: value,
+                                  // icon: '<ProductOutlined />',
+                              }));
+                    updateBotOptions({data: {options:{presetQuestions: questions}, id: params.id}}).then((res) => {
+                        if (res.data.errorCode === 0){
+                            setIsOpenProblemPreset(false);
+                            reGetDetail()
+                        } else {
+                            message.error('保存失败')
+                        }
+                    });
+                }}>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                        <Form.Item
+                            key={num}
+                            label={`预设问题 ${num}`}
+                            name={`question${num}`}
+                            initialValue={presetQuestions[num-1]?.description || ''}
+                        >
+                            <Input />
+                        </Form.Item>
+                    ))}
+                    <Form.Item label={null}>
+                        <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button onClick={handleProblemCancel}>取消</Button>
+                            <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
+                                确定
+                            </Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </>
     );
 };
