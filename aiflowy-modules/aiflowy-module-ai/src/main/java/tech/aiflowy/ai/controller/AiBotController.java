@@ -207,6 +207,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
 
                 } catch (Exception e) {
+                    System.out.println("---------------------------出错啦");
+                    AiMessage aiMessage = new AiMessage();
+                    aiMessage.setContent(e.getMessage());
+                    emitter.send(JSON.toJSONString(aiMessage));
                     emitter.completeWithError(e);
                 }
             }
@@ -220,6 +224,17 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
             @Override
             public void onFailure(ChatContext context, Throwable throwable) {
+                System.out.println("---------------------------出错啦");
+                AiMessage aiMessage = new AiMessage();
+                aiMessage.setContent(throwable.getMessage());
+                boolean hasUnsupportedApiError = containsUnsupportedApiError(throwable.getMessage());
+                if (hasUnsupportedApiError){
+                    String errMessage = throwable.getMessage() + "\n**以下是 AIFlowy 提供的可查找当前错误的方向**\n**1: 在 AIFlowy 中，Bot 对话需要大模型携带 function_calling 功能**" +
+                            "\n**2: 请查看当前模型是否支持 function_calling 调用？**"
+                            ;
+                    aiMessage.setContent(errMessage);
+                }
+                emitter.send(JSON.toJSONString(aiMessage));
                 emitter.completeWithError(throwable);
             }
         });
@@ -547,5 +562,17 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
 
+    }
+
+    private boolean containsUnsupportedApiError(String message) {
+        if (message == null) {
+            return false;
+        }
+        // 检查是否包含"暂不支持该接口"或其他相关关键词
+        return message.contains("暂不支持该接口") ||
+                message.contains("不支持接口") ||
+                message.contains("接口不支持") ||
+                message.contains("The tool call is not supported")
+                ;
     }
 }
