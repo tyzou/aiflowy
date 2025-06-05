@@ -219,6 +219,9 @@ const BotDesign: React.FC = () => {
         sessionId: getSessionId()
     });
     const [pluginToolData, setPluginToolData] = useState([])
+
+    const defaultWelcomeMessage = "欢迎使用AIFlowy";
+
     useEffect(() => {
         setChats(messageResult?.data)
     }, [messageResult]);
@@ -565,10 +568,10 @@ const BotDesign: React.FC = () => {
                                     <DebouncedTextArea
                                         value={welcomeMessage}
                                         onChange={(value) => {
-                                            doUpdateBotOptions({welcomeMessage: value.target.value})
+                                            doUpdateBotOptions({welcomeMessage: value.target.value.length ? value.target.value :  defaultWelcomeMessage})
                                         }}
                                         onChangeImmediately={(event) => {
-                                            setWelcomeMessage(event.target.value)
+                                            setWelcomeMessage(event.target.value? event.target.value : defaultWelcomeMessage)
                                         }}
                                         placeholder="请输入欢迎语"
                                         autoSize={{minRows: 2, maxRows: 6}}
