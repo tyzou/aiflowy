@@ -4,7 +4,7 @@
 
 编译后端程序，需要您配置好 java 以及 maven 环境，然后进入到项目的根目录，执行 `mvn clean package` 即可编译。
 
-编译完成后，在 `aiflowy-starter/target` 下会生成名称为 `aiflowy-starter-1.0.0-alpha.1.jar` 的文件。
+编译完成后，在 `aiflowy-starter/target` 下会生成名称为 `aiflowy-starter-x.x.x.jar` 的文件。
 我们复制该文件到服务器，即可通过 java -jar 命令进行启动。
 
 ## 后端项目部署配置
@@ -16,7 +16,7 @@
 启动时，注意添加 `--spring.profiles.active=prod` 配置。
 
 ```shell
-java -jar aiflowy-starter-1.0.0-alpha.1.jar --spring.profiles.active=prod
+java -jar aiflowy-starter-x.x.x.jar --spring.profiles.active=prod
 ```
 
 ### 2、配置文件上传路径
