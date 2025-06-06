@@ -80,6 +80,10 @@
                     <groupId>org.jetbrains.kotlin</groupId>
                     <artifactId>kotlin-stdlib</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
