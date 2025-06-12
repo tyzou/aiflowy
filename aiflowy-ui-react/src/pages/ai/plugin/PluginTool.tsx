@@ -305,7 +305,7 @@ const PluginTool: React.FC = () =>{
                         <TextArea
                             showCount
                             maxLength={500}
-                            placeholder="请输入工具描述"
+                            placeholder="请输入工具描述, 便于大模型更好理解并调用"
                             style={{ height: 80, resize: 'none' }}
                         />
                     </Form.Item>

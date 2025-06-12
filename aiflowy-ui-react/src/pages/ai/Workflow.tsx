@@ -43,8 +43,10 @@ const columnsColumns: ColumnsConfig<any> = [
         form: {
             type: "TextArea",
             attrs: {
-                rows: 3
-            }
+                rows: 3,
+                placeholder: "请输入工作流描述, 便于大模型更好理解并调用"
+            },
+            rules: [{required: true, message: '请输入工作流描述'}]
         }
     },
 

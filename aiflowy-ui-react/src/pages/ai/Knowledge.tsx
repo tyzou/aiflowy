@@ -41,7 +41,8 @@ const columnsColumns: ColumnsConfig<any> = [
         form: {
             type: "TextArea",
             attrs: {
-                rows: 3
+                rows: 3,
+                placeholder: "请输入知识库描述, 便于大模型更好理解并调用"
             },
             rules: [{required: true, message: '请输入知识库描述'}]
 
@@ -127,16 +128,16 @@ const columnsColumns: ColumnsConfig<any> = [
         dataIndex: 'vectorEmbedLlmId',
         key: 'vectorEmbedLlmId',
         dict: '/api/v1/aiLlm/list?supportEmbed=true',
-        editCondition: (data: any) => {
-            return data?.options?.canUpdateEmbedding != false;
-        },
+        // editCondition: (data: any) => {
+        //     return data?.options?.canUpdateEmbedding != false;
+        // },
         form: {
             type: 'select',
             attrs: {
                 fieldNames: {
                     label: 'title',
                     value: 'id'
-                }
+                },
             },
             rules: [{required: true, message: '请选择向量模型'}]
         }

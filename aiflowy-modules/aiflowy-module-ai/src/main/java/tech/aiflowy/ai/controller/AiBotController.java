@@ -575,16 +575,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
     }
 
-    //    private void appendPluginFunctions(BigInteger botId, HumanMessage humanMessage) {
-//        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotPlugins::getBotId, botId);
-//        List<AiBotPlugins> aiBotPlugins = aiBotPluginsService.getMapper().selectListWithRelationsByQuery(queryWrapper);
-//        if (cn.hutool.core.collection.CollectionUtil.isNotEmpty(aiBotPlugins)) {
-//            for (AiBotPlugins aiBotPlugin : aiBotPlugins) {
-//                Function function = aiBotPlugin.getAiPlugins().toFunction();
-//                humanMessage.addFunction(function);
-//            }
-//        }
-//    }
     private void appendPluginToolFunction(BigInteger botId, HumanMessage humanMessage) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").eq(AiBotPlugins::getBotId, botId);
         List<BigInteger> pluginToolIds = aiBotPluginsService.getMapper().selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
