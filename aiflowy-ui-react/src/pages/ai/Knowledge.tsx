@@ -144,8 +144,8 @@ const columnsColumns: ColumnsConfig<any> = [
     },
     {
         title: '是否启用搜索引擎',
-        dataIndex: 'searchEnginesEnable',
-        key: 'searchEnginesEnable',
+        dataIndex: 'searchEngineEnable',
+        key: 'searchEngineEnable',
         form: {
             type: 'Switch'
         }
@@ -164,7 +164,7 @@ const columnsColumns: ColumnsConfig<any> = [
                 },
             },
             rules: [   ({ getFieldValue }: { getFieldValue: (name: string) => any }) => ({
-                required: getFieldValue('searchEnginesEnable') === true,
+                required: getFieldValue('searchEngineEnable') === true,
                 message: '请选择重排模型'
             })]
         }

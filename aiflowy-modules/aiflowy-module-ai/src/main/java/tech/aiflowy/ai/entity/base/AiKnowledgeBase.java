@@ -83,7 +83,7 @@ public class AiKnowledgeBase extends DateEntity implements Serializable {
      * 是否启用向量存储
      */
     @Column(comment = "是否启用搜索")
-    private Boolean searchEnginesEnable;
+    private Boolean searchEngineEnable;
 
     /**
      * Embedding 模型ID
@@ -271,11 +271,11 @@ public class AiKnowledgeBase extends DateEntity implements Serializable {
         this.rerankLlmId = rerankLlmId;
     }
 
-    public Boolean getSearchEnginesEnable() {
-        return searchEnginesEnable;
+    public Boolean getSearchEngineEnable() {
+        return searchEngineEnable;
     }
 
-    public void setSearchEnginesEnable(Boolean searchEnginesEnable) {
-        this.searchEnginesEnable = searchEnginesEnable;
+    public void setSearchEngineEnable(Boolean searchEngineEnable) {
+        this.searchEngineEnable = searchEngineEnable;
     }
 }
