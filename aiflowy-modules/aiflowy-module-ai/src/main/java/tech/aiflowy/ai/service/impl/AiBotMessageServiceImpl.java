@@ -54,6 +54,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                     .where("is_external_msg = ? ", isExternalMsg)
                     .where("account_id = ? ", SaTokenUtil.getLoginAccount().getId());
             List<AiBotMessage> messages = aiBotMessageMapper.selectListByQueryAs(queryConversation, AiBotMessage.class);
+            List<AiBotMessage> finalMessages = new ArrayList<>();
             for (AiBotMessage message : messages){
                 Map<String, Object> options = message.getOptions();
                 if (options != null && (Integer) options.get("type") == 2) {
@@ -63,9 +64,13 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                 if (options != null && (Integer) options.get("type") == 1){
                     message.setContent((String) options.get("user_input"));
                 }
+
+                finalMessages.add(message);
             }
 
-            return Result.success(messages);
+
+
+            return Result.success(finalMessages);
         } else {
             AtomicReference<List<AiBotMessage>> messages = new AtomicReference<>(new ArrayList<>());
             List<AiBotConversationMessage> result = (List<AiBotConversationMessage>)cache.get(tempUserId + ":" + botId);
