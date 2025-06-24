@@ -128,6 +128,7 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
             return Result.success(filteredList);
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
+            e.printStackTrace();
             return Result.fail(5, "查询过程中发生异常: " + e.getMessage());
         }
     }
