@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu } from 'antd';
 import { useNavigate } from "react-router-dom";
 import Sider from "antd/es/layout/Sider";
-import logo from "/favicon.png";
+import logo from "/favicon.svg";
 import { useMenus } from "../../hooks/useMenus.tsx";
 
 const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
@@ -63,18 +63,6 @@ const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
                         <div>
                             <img alt="AIFlowy" src={logo} style={{ height: "38px" }} />
                         </div>
-
-                        {!collapsed &&
-                            <div style={{
-                                fontSize: "28px",
-                                height: "38px",
-                                lineHeight: "38px",
-                                marginLeft: "10px",
-                                fontWeight: "bold",
-                            }}>
-                                AIFlowy
-                            </div>
-                        }
                     </div>
                 </div>
 

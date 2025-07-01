@@ -80,7 +80,7 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
 
         CompletableFuture<List<Document>> searcherFuture = CompletableFuture.supplyAsync(() -> {
             DocumentSearcher searcher = searcherFactory.getSearcher();
-            if (searcher == null || !knowledge.isSearchEngineEnable()) {
+            if (searcher == null || !knowledge.isSearchEngineEnabled()) {
                 return Collections.emptyList();
             }
             List<Document> documents = searcher.searchDocuments(keyword);
@@ -101,7 +101,7 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
         try {
             Map<String, Document> uniqueDocs = combinedFuture.get(); // 阻塞等待所有查询完成
             List<Document> needRerankDocuments = new ArrayList<>(uniqueDocs.values());
-
+            needRerankDocuments.sort((doc1, doc2) -> Double.compare(doc2.getScore(), doc1.getScore()));
             if (needRerankDocuments.isEmpty()) {
                 return Result.success();
             }
@@ -128,6 +128,7 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
             return Result.success(filteredList);
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
+            e.printStackTrace();
             return Result.fail(5, "查询过程中发生异常: " + e.getMessage());
         }
     }

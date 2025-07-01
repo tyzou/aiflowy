@@ -1,7 +1,7 @@
 // components/Loading.tsx
 import React from 'react';
 import styles from '../../pages/commons/login.module.less'; // 或使用 CSS 模块
-import logo from '../../../public/favicon.png'
+import logo from '../../../public/favicon.svg'
 
 const Loading: React.FC = () => {
     return (

@@ -1,6 +1,6 @@
 package tech.aiflowy.ai.node;
 
-import com.agentsflex.core.chain.ChainNode;
+import com.agentsflex.core.chain.node.BaseNode;
 import com.alibaba.fastjson.JSONObject;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.parser.BaseNodeParser;
@@ -14,12 +14,8 @@ public class DocNodeParser extends BaseNodeParser {
     }
 
     @Override
-    public ChainNode parse(JSONObject jsonObject, Tinyflow tinyflow) {
-        JSONObject data = getData(jsonObject);
-        DocNode docNode = new DocNode(readDocService);
-        addParameters(docNode, data);
-        addOutputDefs(docNode, data);
-        return docNode;
+    public BaseNode doParse(JSONObject root, JSONObject data, Tinyflow tinyflow) {
+        return new DocNode(readDocService);
     }
 
     public String getNodeName() {

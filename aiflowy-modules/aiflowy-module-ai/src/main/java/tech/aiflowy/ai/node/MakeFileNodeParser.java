@@ -2,6 +2,7 @@ package tech.aiflowy.ai.node;
 
 import cn.hutool.core.util.StrUtil;
 import com.agentsflex.core.chain.ChainNode;
+import com.agentsflex.core.chain.node.BaseNode;
 import com.alibaba.fastjson.JSONObject;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.parser.BaseNodeParser;
@@ -16,16 +17,12 @@ public class MakeFileNodeParser extends BaseNodeParser {
     }
 
     @Override
-    public ChainNode parse(JSONObject jsonObject, Tinyflow tinyflow) {
-        JSONObject data = getData(jsonObject);
+    public BaseNode doParse(JSONObject root, JSONObject data, Tinyflow tinyflow) {
         String suffix = data.getString("suffix");
         if (StrUtil.isEmpty(suffix)) {
             suffix = "docx";
         }
-        MakeFileNode node = new MakeFileNode(fileStorageService, suffix);
-        addParameters(node, data);
-        addOutputDefs(node, data);
-        return node;
+        return new MakeFileNode(fileStorageService, suffix);
     }
 
     public String getNodeName() {

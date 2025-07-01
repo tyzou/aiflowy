@@ -7,6 +7,7 @@ import com.agentsflex.core.store.DocumentStore;
 import com.agentsflex.core.store.SearchWrapper;
 import com.agentsflex.core.store.StoreOptions;
 import dev.tinyflow.core.Tinyflow;
+import dev.tinyflow.core.file.FileStorage;
 import dev.tinyflow.core.knowledge.Knowledge;
 import dev.tinyflow.core.node.KnowledgeNode;
 import dev.tinyflow.core.parser.ChainParser;
@@ -25,8 +26,10 @@ import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.common.filestorage.FileStorageService;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class TinyFlowConfigService {
@@ -47,6 +50,16 @@ public class TinyFlowConfigService {
         setSearchEngineProvider(tinyflow);
         setLlmProvider(tinyflow);
         setKnowledgeProvider(tinyflow);
+        setFileStorage(tinyflow);
+    }
+
+    private void setFileStorage(Tinyflow tinyflow) {
+        tinyflow.setFileStorage(new FileStorage() {
+            @Override
+            public String saveFile(InputStream stream, Map<String, String> headers) {
+                return storageService.save(new InputStreamFile(stream, headers));
+            }
+        });
     }
 
     public void setExtraNodeParser(Tinyflow tinyflow) {
@@ -57,7 +70,7 @@ public class TinyFlowConfigService {
         // 文件生成
         MakeFileNodeParser makeFileNodeParser = new MakeFileNodeParser(storageService);
         // 插件
-        PluginToolNodeParser pluginToolNodeParser  = new PluginToolNodeParser();
+        PluginToolNodeParser pluginToolNodeParser = new PluginToolNodeParser();
         // SQL查询
         SqlNodeParser sqlNodeParser = new SqlNodeParser();
 
