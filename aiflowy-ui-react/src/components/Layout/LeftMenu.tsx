@@ -3,6 +3,7 @@ import { Menu } from 'antd';
 import { useNavigate } from "react-router-dom";
 import Sider from "antd/es/layout/Sider";
 import logo from "/favicon.svg";
+import tabIcon from "/tabIcon.svg";
 import { useMenus } from "../../hooks/useMenus.tsx";
 
 const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
@@ -61,7 +62,13 @@ const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
                             display: "flex",
                         }}>
                         <div>
-                            <img alt="AIFlowy" src={logo} style={{ height: "38px" }} />
+                            {
+                                collapsed === true ? (
+                                    <img alt="AIFlowy" src={tabIcon} style={{ height: "38px" }} />
+                                ) : (
+                                    <img alt="AIFlowy" src={logo} style={{ height: "38px" }} />
+                                )
+                            }
                         </div>
                     </div>
                 </div>

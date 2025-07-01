@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-    SendOutlined,
+    PlayCircleOutlined,
+    SendOutlined, SettingOutlined,
     SmileOutlined,
 } from "@ant-design/icons";
 import CardPage from "../../components/CardPage";
@@ -58,12 +59,13 @@ const Bots: React.FC<{ paramsToUrl: boolean }> = () => {
                       avatarKey="icon"
                       defaultAvatarSrc={"/favicon.png"}
                       editLayout={{labelWidth: 80}}
+                      addCardTitle={"创建Bots"}
                       customActions={(item, existNodes) => {
                           return [
-                              <SmileOutlined title="Bot 设置" onClick={() => {
+                              <SettingOutlined title="设置" onClick={() => {
                                   window.open(`/ai/bot/design/${item.id}`, "_blank")
                               }}/>,
-                              <SendOutlined title="外部地址" onClick={() => {
+                              <PlayCircleOutlined title="运行" onClick={() => {
                                   window.open(window.location.href.substring(0, window.location.href.indexOf('/ai')) + '/ai/externalBot/' + item.id, "_blank")
                               }}/>,
                               ...existNodes

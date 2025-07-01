@@ -1,6 +1,6 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
 import {ColumnsConfig} from "../AntdCrud";
-import {Avatar, Button, Card, Col, Dropdown, Modal, Pagination, Row, Spin, Tooltip} from "antd";
+import {Avatar, Button, Card, Col, Dropdown, Image, Modal, Pagination, Row, Spin, Tooltip} from "antd";
 import {
     DeleteOutlined,
     EditOutlined, EllipsisOutlined,
@@ -15,7 +15,7 @@ import "./card_page.less"
 import SearchForm from "../AntdCrud/SearchForm.tsx";
 import {Page} from "../../types/Page.ts";
 import {useUrlParams} from "../../hooks/useUrlParams.ts";
-
+import addCardIcon from "../../../src/assets/addCardIcon.png"
 export type CardPageProps = {
     ref?: any,
     tableAlias: string,
@@ -30,6 +30,7 @@ export type CardPageProps = {
     descriptionKey?: string,
     customActions?: (data: any, existNodes: React.ReactNode[]) => React.ReactNode[],
     customHandleButton?:() => React.ReactNode[],
+    addCardTitle?: string
 }
 
 const CardPage: React.FC<CardPageProps> = forwardRef(({
@@ -45,6 +46,7 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                                                , descriptionKey = "description"
                                                , customActions = (_data: any, existNodes: any) => existNodes
                                                , customHandleButton = () => []
+                                                , addCardTitle = "创建"
                                            },ref) => {
 
     useImperativeHandle(ref, () => ({
@@ -88,9 +90,9 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                     (<div key={index}
                           style={{display: "inline-block", marginRight: "5px", marginBottom: "5px"}}>{item}</div>))
                 }
-                <Button type={"primary"} onClick={() => setIsEditOpen(true)}>
-                    <PlusOutlined/>{addButtonText}
-                </Button>
+                {/*<Button type={"primary"} onClick={() => setIsEditOpen(true)}>*/}
+                {/*    <PlusOutlined/>{addButtonText}*/}
+                {/*</Button>*/}
             </div>
         </>
     )
@@ -136,6 +138,41 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                 />
 
                 <Row className={"card-row"} gutter={[16, 16]}>
+                    {
+                        result?.data?.records?.length > 0 &&   <Col span={6} key={"add-card"} xs={24} sm={12} md={8} lg={6} >
+                            <Card
+                                style={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    cursor: 'pointer',
+                                }}
+                                bodyStyle={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '24px',
+                                }}
+                                actions={[]}
+                                onClick={() => {
+                                    setIsEditOpen(true)
+                                }}
+                            >
+                                <Image
+                                    src={addCardIcon}
+                                    style={{
+                                        height: '20px',
+                                        width: '20px',
+                                        borderRadius: '50%',
+                                        marginRight: '10px'
+                                    }}
+                                />
+                                <span style={{fontSize: '16px', color: '#0066FF '}}>{addCardTitle}</span>
+                            </Card>
+                        </Col>
+                    }
+
                     {result?.data?.records?.length > 0 ? result?.data?.records?.map((item: any) => (
                         <Col span={6} key={item.id}
                              xs={24}  // 在超小屏幕下占满一行
@@ -143,6 +180,7 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                              md={8}   // 在中等屏幕下每行显示3个
                              lg={6}   // 在大屏幕下每行显示4个（保持原来的span={6}效果）
                         >
+
                             <Card
                                 actions={[
                                 ...customActions(item, [

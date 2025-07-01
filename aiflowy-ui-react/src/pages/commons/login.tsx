@@ -140,19 +140,27 @@ const Login: React.FC = () => {
 
                         <Form.Item className={styles.agreement}>
                             <Form.Item name="agreement" valuePropName="checked" noStyle>
-                                <Checkbox>我已阅读《用户服务协议》以及《安全隐私协议》</Checkbox>
+                                <Checkbox style={{ color: "#757575 " }}>
+                                    <a href="#">《用户服务协议》</a>
+                                    以及
+                                    <a href="#">《安全隐私协议》</a>
+                                </Checkbox>
                             </Form.Item>
                         </Form.Item>
+                        <Form.Item className={styles.agreement} style={{ margin: "0" }}>
+                            <div className={styles.footer}>
+                                <a href="https://aiflowy.tech" target="_blank" rel="noopener noreferrer">
+                                    AIFlowy.tech
+                                </a>{" "}
+                                (v1.0.8)
+                            </div>
+                        </Form.Item>
                     </Form>
+
                 </Flex>
             </div>
 
-            <div className={styles.footer}>
-                <a href="https://aiflowy.tech" target="_blank" rel="noopener noreferrer">
-                    AIFlowy.tech
-                </a>{" "}
-                (v1.0.8)
-            </div>
+
         </div>
     ) : (
         <Loading />

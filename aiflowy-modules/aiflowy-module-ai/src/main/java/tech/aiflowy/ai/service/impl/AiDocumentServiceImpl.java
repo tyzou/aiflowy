@@ -162,50 +162,52 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
     @Override
     public Result textSplit(BigInteger knowledgeId, MultipartFile file, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
-        InputStream inputStream = null;
         try {
-            inputStream = file.getInputStream();
+            InputStream inputStream = file.getInputStream();
+            DocumentParser documentParser = DocumentParserFactory.getDocumentParser(file.getOriginalFilename());
+            AiDocument aiDocument = new AiDocument();
+            List<AiDocumentChunk> previewList = new ArrayList<>();
+            DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
+            Document document = null;
+            if (documentParser != null) {
+                document = documentParser.parse(inputStream);
+            }
+            inputStream.close();
+            List<Document> documents = documentSplitter.split(document);
+            FlexIDKeyGenerator flexIDKeyGenerator = new FlexIDKeyGenerator();
+            int sort = 1;
+            for (Document value : documents) {
+                AiDocumentChunk chunk = new AiDocumentChunk();
+                chunk.setId(new BigInteger(String.valueOf(flexIDKeyGenerator.generate(chunk, null))));
+                chunk.setContent(value.getContent());
+                chunk.setSorting(sort);
+                sort++;
+                previewList.add(chunk);
+            }
+            String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(file.getOriginalFilename());
+            String filePath = storageService.save(file);
+            aiDocument.setDocumentType(fileTypeByExtension);
+            aiDocument.setKnowledgeId(knowledgeId);
+            aiDocument.setDocumentPath(filePath);
+            aiDocument.setCreated(new Date());
+            aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
+            aiDocument.setModified(new Date());
+            if (document != null) {
+                aiDocument.setContent(document.getContent());
+            }
+            aiDocument.setChunkSize(chunkSize);
+            aiDocument.setOverlapSize(overlapSize);
+            aiDocument.setTitle(StringUtil.removeFileExtension(file.getOriginalFilename()));
+            Map<String, Object> res = new HashMap<>();
+            res.put("previewData", previewList);
+            res.put("aiDocumentData", aiDocument);
+            // 返回分割效果给用户
+            return Result.success(res);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.error(e.toString(), e);
         }
-        DocumentParser documentParser = DocumentParserFactory.getDocumentParser(file.getOriginalFilename());
-        AiDocument aiDocument = new AiDocument();
-        List<AiDocumentChunk> previewList = new ArrayList<>();
-        DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
-        Document document = null;
-        if (documentParser != null) {
-            document = documentParser.parse(inputStream);
-        }
-        List<Document> documents = documentSplitter.split(document);
-        FlexIDKeyGenerator flexIDKeyGenerator = new FlexIDKeyGenerator();
-        int sort = 1;
-        for (Document value : documents) {
-            AiDocumentChunk chunk = new AiDocumentChunk();
-            chunk.setId(new BigInteger(String.valueOf(flexIDKeyGenerator.generate(chunk, null))));
-            chunk.setContent(value.getContent());
-            chunk.setSorting(sort);
-            sort++;
-            previewList.add(chunk);
-        }
-        String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(file.getOriginalFilename());
-        String filePath = storageService.save(file);
-        aiDocument.setDocumentType(fileTypeByExtension);
-        aiDocument.setKnowledgeId(knowledgeId);
-        aiDocument.setDocumentPath(filePath);
-        aiDocument.setCreated(new Date());
-        aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
-        aiDocument.setModified(new Date());
-        if (document != null) {
-            aiDocument.setContent(document.getContent());
-        }
-        aiDocument.setChunkSize(chunkSize);
-        aiDocument.setOverlapSize(overlapSize);
-        aiDocument.setTitle(StringUtil.removeFileExtension(file.getOriginalFilename()));
-        Map<String, Object> res = new HashMap<>();
-        res.put("previewData", previewList);
-        res.put("aiDocumentData", aiDocument);
-        // 返回分割效果给用户
-        return Result.success(res);
+
+        return Result.fail();
     }
 
     @Override
