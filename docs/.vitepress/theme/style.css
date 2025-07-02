@@ -151,4 +151,9 @@
 
 .medium-zoom-image {
     z-index: 31;
+    border: 1px solid var(--vp-c-gray-3);
+}
+
+.medium-zoom-image--opened{
+    border: none;
 }

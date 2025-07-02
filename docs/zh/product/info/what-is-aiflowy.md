@@ -1,4 +1,9 @@
+
+
 # AIFlowy 是什么
+
+![bots.png](../../../assets/images/bots.png)
+
 
 ## 关于 AIFlowy
 
