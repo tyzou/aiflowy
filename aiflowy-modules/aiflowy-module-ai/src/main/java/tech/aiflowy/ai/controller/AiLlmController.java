@@ -33,8 +33,6 @@ public class AiLlmController extends BaseCurdController<AiLlmService, AiLlm> {
 
     @GetMapping("list")
     @SaCheckPermission("/api/v1/aiLlm/query")
-    @Override
-    @SaCheckPermission("/api/v1/aiLlm/query")
     public Result list(AiLlm entity, Boolean asTree, String sortKey, String sortType) {
         return super.list(entity, asTree, sortKey, sortType);
     }
