@@ -15,20 +15,19 @@ import {
     Typography
 } from "antd";
 import {
-    EditOutlined, EllipsisOutlined, PlusOutlined,
+    EditOutlined, EllipsisOutlined,
 } from "@ant-design/icons";
 import {usePage, useRemove} from "../../hooks/useApis.ts";
 import EditPage from "../EditPage";
-import {useBreadcrumbRightEl} from "../../hooks/useBreadcrumbRightEl.tsx";
 import {EditLayout} from "../AntdCrud/EditForm.tsx";
 import {Empty} from "antd";
 import "./card_page.less"
-import SearchForm from "../AntdCrud/SearchForm.tsx";
 import {Page} from "../../types/Page.ts";
 import {useUrlParams} from "../../hooks/useUrlParams.ts";
 import "../../pages/commons/commonStyle.less"
 import CustomDeleteIcon from "../CustomIcon/CustomDeleteIcon.tsx";
 import {useCheckPermission} from "../../hooks/usePermissions.tsx";
+import KeywordSearchForm from "../AntdCrud/KeywordSearchForm.tsx";
 export type CardPageProps = {
     ref?: any,
     tableAlias: string,
@@ -111,21 +110,6 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
 
     const savePermission = useCheckPermission(`/api/v1/${tableAlias}/save`)
     const removePermission = useCheckPermission(`/api/v1/${tableAlias}/remove`)
-    useBreadcrumbRightEl(
-        <>
-            <div>
-                {customHandleButton().map((item, index) =>
-                    (<div key={index}
-                          style={{display: "inline-block", marginRight: "5px", marginBottom: "5px"}}>{item}</div>))
-                }
-                {savePermission &&
-                    <Button type={"primary"} onClick={() => setIsEditOpen(true)}>
-                        <PlusOutlined/>{addButtonText}
-                    </Button>}
-            </div>
-        </>,
-        [savePermission]
-    )
 
     const closeEdit = () => {
         setIsEditOpen(false)
@@ -232,13 +216,15 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
             />
             <Spin spinning={loading}>
 
-                <SearchForm columns={columnsConfig} colSpan={6}
-                            onSearch={(values: any) => {
-                                setLocalPageNumber(1)
-                                setSearchParams(values)
-                                setUrlParams(values)
-                            }}
-                            onSearchValueInit={(key) => urlParams[key]}
+                <KeywordSearchForm
+                    onSearch={(values: any) => {
+                    setLocalPageNumber(1);
+                    setSearchParams(values);
+                    setUrlParams(values);
+                        }}
+                   columns={columnsConfig} addButtonText={addButtonText}
+                   customHandleButton={customHandleButton()}
+                   setIsEditOpen={() =>{setIsEditOpen(true)}}
                 />
 
                 <Row className={"card-row"} gutter={[16, 16]}>
