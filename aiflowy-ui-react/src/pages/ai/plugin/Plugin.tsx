@@ -418,6 +418,9 @@ const Plugin: React.FC = () => {
 								  borderRadius: '8px 8px 8px 8px'
 							  }}
 							  styles={{
+								  header: {
+									  padding: "24px"
+									  },
 								  body: {
 								  }
 							  }}
