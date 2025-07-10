@@ -15,9 +15,9 @@ import {
     DeleteOutlined,
     DownloadOutlined,
     EditOutlined,
-    EyeOutlined, FormatPainterOutlined,
+    EyeOutlined, FormatPainterOutlined, PlusOutlined,
     ReloadOutlined,
-    RestOutlined
+    RestOutlined, SearchOutlined
 } from "@ant-design/icons";
 import EditForm, {EditFormProps, EditLayout} from "./EditForm.tsx";
 import {useReactToPrint} from "react-to-print";
@@ -261,7 +261,7 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalRow, setModalRow] = useState<T | null>(null);
     const [confirmLoading, setConfirmLoading] = useState(false);
-    const [tableSize, setTableSize] = useState<"small" | "middle" | "large">("middle");
+    const [tableSize, setTableSize] = useState<"small" | "middle" | "large">("large");
     const [formItemDisabled, setFormItemDisabled] = useState<boolean>(false);
     const [defaultExpandedRowKeys, setDefaultExpandedRowKeys] = useState<Key[]>([]);
 
@@ -271,6 +271,8 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
     const [searchParams, setSearchParams] = useState(initSearchParams)
     const [sortKey, setSortKey] = useState<string | undefined>()
     const [sortType, setSortType] = useState<"asc" | "desc" | undefined>()
+
+    const [isHiddenSearch, setIsHiddenSearch] = useState(true)
 
     actionConfig = {
         title: '操作',
@@ -404,7 +406,7 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
         <div style={{padding: "0 20px 20px 20px"}}>
             {contextHolder}
             {
-                !needHideSearchForm &&   <SearchForm columns={columns} colSpan={6}
+                !needHideSearchForm &&  isHiddenSearch && <SearchForm columns={columns} colSpan={6}
                                                      onSearch={(values: any) => {
                                                          setLocalPageNumber(1)
                                                          setSearchParams(values)
@@ -466,7 +468,7 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
                         setModalRow(null);
                         setModalTitle("新增")
                         setIsModalOpen(!isModalOpen)
-                    }}>新增</Button>}
+                    }}><PlusOutlined />新增</Button>}
 
                     {selectCount > 0 &&
                         <div style={{
@@ -509,6 +511,16 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
                 </Space>
 
                 <Space align={"center"} size={"middle"}>
+                    {!needHideSearchForm &&
+                        <Tooltip placement="top" title={isHiddenSearch ? "展开" : "收起"}>
+                            <SearchOutlined onClick={()=>{
+                                setIsHiddenSearch(!isHiddenSearch)
+                            }
+                            }/>
+                        </Tooltip>
+                    }
+
+
                     <Tooltip placement="top" title="刷新">
                         <ReloadOutlined onClick={() => {
                             actions.onFetchList?.(pageNumber, pageSize, searchParams, sortKey, sortType);
