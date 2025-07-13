@@ -24,7 +24,7 @@ interface CurdPageProps {
     onRefresh?: () => void;
     externalRefreshTrigger?: number; // 当这个值变化时触发刷新
     needHideSearchForm?: boolean;
-
+    usePermission?: string;
 }
 
 const CrudPage: React.FC<CurdPageProps> = forwardRef(({
@@ -41,7 +41,8 @@ const CrudPage: React.FC<CurdPageProps> = forwardRef(({
                                                paramsToUrl = false,
                                                editLayout,
                                                externalRefreshTrigger,
-                                               needHideSearchForm
+                                               needHideSearchForm,
+                                               usePermission
                                            },ref) => {
 
     useImperativeHandle(ref, () => ({
@@ -156,6 +157,7 @@ const CrudPage: React.FC<CurdPageProps> = forwardRef(({
                   totalRow={((result?.data) as Page<any>)?.totalRow}
                   ref={ref}
                   needHideSearchForm={needHideSearchForm}
+                  usePermission={usePermission}
         />
     )
 });

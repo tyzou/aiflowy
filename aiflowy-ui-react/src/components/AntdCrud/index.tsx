@@ -182,6 +182,7 @@ export type AntdCrudProps<T> = {
 
     // 是否需要隐藏搜索框
     needHideSearchForm?: boolean,
+    usePermission?: string
 }
 
 
@@ -237,7 +238,8 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
                          onSearchValueInit,
                          editLayout,
                          tableAlias,
-                         needHideSearchForm = false
+                         needHideSearchForm = false,
+                         usePermission
                      }: AntdCrudProps<T>, ref: any) {
 
     const tableRef = useRef<any>(null);
@@ -249,6 +251,10 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
         // copyShadowRoots: false,
         // content: () => tableRef.current!,
     });
+
+    const hasQueryPermission = useCheckPermission(`/api/v1/${usePermission?usePermission:tableAlias}/query`)
+    const hasRemovePermission = useCheckPermission(`/api/v1/${usePermission?usePermission:tableAlias}/remove`)
+    const hasSavePermission = useCheckPermission(`/api/v1/${usePermission?usePermission:tableAlias}/save`)
 
     dataSource = convertObjetToAttrs(dataSource);
 
@@ -307,7 +313,7 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
             <Space size="middle">
 
                 {actionConfig?.customActions && actionConfig.customActions(row)}
-                {(actionConfig?.detailButtonEnable && useCheckPermission(`/api/v1/${tableAlias}/query`)) && <a onClick={() => {
+                {(actionConfig?.detailButtonEnable && hasQueryPermission) && <a onClick={() => {
                     setModalRow(row)
                     setModalTitle("查看")
                     setIsModalOpen(true)
@@ -315,14 +321,14 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
                 }}> <EyeOutlined/> 查看 </a>}
 
 
-                {(actionConfig?.editButtonEnable && useCheckPermission(`/api/v1/${tableAlias}/save`)) && <a onClick={() => {
+                {(actionConfig?.editButtonEnable && hasSavePermission) && <a onClick={() => {
                     setModalRow(row)
                     setModalTitle("编辑")
                     setIsModalOpen(true)
                 }}> <EditOutlined/> 编辑 </a>}
 
 
-                {(actionConfig?.deleteButtonEnable && useCheckPermission(`/api/v1/${tableAlias}/remove`)) && <Popconfirm
+                {(actionConfig?.deleteButtonEnable && hasRemovePermission) && <Popconfirm
                     title="确定删除？"
                     description="您确定要删除这条数据吗？"
                     okButtonProps={{loading: confirmLoading}}
@@ -464,7 +470,7 @@ const AntdCrud = forwardRef(function AntdCrud<T>({
                     }}><a target="_blank" href="https://aiflowy.tech/zh/product/llm/addLlm.html" style={{ fontSize: 12}}>大模型配置参考地址</a></Button>}
 
 
-                    {!needHideSearchForm && (addButtonEnable && useCheckPermission(`/api/v1/${tableAlias}/save`)) && <Button type="primary" onClick={() => {
+                    {!needHideSearchForm && (addButtonEnable && hasSavePermission) && <Button type="primary" onClick={() => {
                         setModalRow(null);
                         setModalTitle("新增")
                         setIsModalOpen(!isModalOpen)
