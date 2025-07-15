@@ -63,7 +63,7 @@ const DynamicFormItem: React.FC<{
         const onValuesChangeBefore = columnConfig.onValuesChange;
         columnConfig.onValuesChange = (changedValues, allValues) => {
             onValuesChangeBefore?.(changedValues, allValues)
-            for (let formItemName of (columnConfig.dict as DictConfig).paramKeys!) {
+            for (const formItemName of (columnConfig.dict as DictConfig).paramKeys!) {
                 if (Object.keys(changedValues).indexOf(formItemName) >= 0) {
                     doGet?.()
                     break;
@@ -93,6 +93,7 @@ const DynamicFormItem: React.FC<{
         const key = (columnConfig.dict as DictConfig)?.disabledItemAndChildrenKey;
         disabledDictItemAndChildren(dictData.data, data[key!])
     }
+
 
     function renderInput(column: ColumnConfig) {
 
@@ -164,16 +165,45 @@ const DynamicFormItem: React.FC<{
                 return (
                     <InputNumber placeholder={column.placeholder} {...column.form?.attrs} readOnly={readOnly}/>
                 )
-            case "select":
+            case "select":{
+                const columnOptions: any[] = [];
+                if (column?.form?.attrs?.options){
+                    column?.form?.attrs?.options.forEach((option:any) => {
+                        // 深拷贝一个 option
+                        const clonedOption = { ...option };
+                        // 移除 options 属性
+                        delete clonedOption.options
+                        // push 到 columnOptions
+                        columnOptions.push(clonedOption);
+                    })
+                }
+
+                if (dictData?.data){
+                    dictData.data.forEach((option:any) => {
+                        const clonedOption = { ...option };
+                        // 移除 options 属性
+                        delete clonedOption.options
+                        // push 到 columnOptions
+                        columnOptions.push(clonedOption);
+                    })
+                }
+
                 return (
+
                     <Select allowClear showSearch
                             filterOption={(input, option) => {
                                 return ((option?.label ?? '') as string).toLowerCase().includes(input.toLowerCase())
                             }}
                             placeholder={column.placeholder} {...column.form?.attrs}
-                            options={dictData?.data || column.form?.attrs?.options}
+                            options={(columnOptions)?.map(option => {
+                                console.log(option.id,option.title,option.options)
+                                return option
+                            })}
                     />
+
                 )
+            }
+
             case "treeselect":
                 return (
                     <TreeSelect allowClear showSearch treeDefaultExpandAll
@@ -229,7 +259,7 @@ const DynamicFormItem: React.FC<{
     return (
         <Form.Item name={columnConfig.key! as string} label={columnConfig.title! as string}
                    style={{display: isHidden(columnConfig) || !show ? "none" : ""}}
-                   rules={position == 'search' ? [] :columnConfig.form?.rules}
+                   rules={position == 'search' ? [] : columnConfig.form?.rules}
                    extra={columnConfig.form?.extra}
                    tooltip={columnConfig.form?.tooltip}
                    initialValue={onValueInit?.(columnConfig.key! as string)}
