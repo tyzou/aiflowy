@@ -51,9 +51,6 @@ export type ChatMessage = {
 };
 
 
-
-
-
 // 事件类型
 export type EventType = 'thinking' | 'thought' | 'toolCalling' | 'callResult' | 'messageSessionId' | string;
 
@@ -155,7 +152,7 @@ export const AiProChat = ({
     const voiceMapRef = useRef<Map<string, string[]>>(new Map());
     // 当前正在播放的 sessionId，用于多会话控制
     const currentSessionIdRef = useRef<string | null>(null);
-    const [playingSessionId,setPlayingSessionId] = useState<string | null>()
+    const [playingSessionId, setPlayingSessionId] = useState<string | null>()
     // 当前是否处于播放状态
     const isPlayingRef = useRef<boolean>(false);
     // 音频上下文 AudioContext 实例
@@ -163,7 +160,7 @@ export const AiProChat = ({
     // 当前正在播放的音频源（用于手动停止）
     const currentAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
-    const {loading:findVoiceLoading,doPost:findVoice} = usePostManual("/api/v1/aiBot/findVoice");
+    const {loading: findVoiceLoading, doPost: findVoice} = usePostManual("/api/v1/aiBot/findVoice");
 
     // 播放指定 sessionId 的音频片段队列
     const playAudioQueue = async (sessionId: string) => {
@@ -517,7 +514,6 @@ export const AiProChat = ({
                         }
 
 
-
                     } else {
                         console.warn(`Event ${eventType} has no id, skipping ThoughtChain processing`);
                     }
@@ -731,7 +727,7 @@ export const AiProChat = ({
                                 lastMsg.loading = false;
                                 lastMsg.content = currentContent;
 
-                                if (respData.metadataMap && respData.metadataMap.messageSessionId){
+                                if (respData.metadataMap && respData.metadataMap.messageSessionId) {
                                     lastMsg.options = {messageSessionId: respData.metadataMap.messageSessionId};
                                 }
 
@@ -1049,27 +1045,29 @@ export const AiProChat = ({
                                 }}
                             ></Button>}
                             {(
-                                chat.role === "assistant" &&
+                                chat.role === "assistant" && llmDetail?.options?.voiceEnabled &&
                                 !isStreaming &&
                                 <Button
                                     color="default"
                                     variant="text"
                                     size="small"
                                     loading={findVoiceLoading}
-                                    icon={ chat.options?.messageSessionId && playingSessionId === chat.options?.messageSessionId ? <PauseCircleOutlined /> :<PlayCircleOutlined  />}
+                                    icon={chat.options?.messageSessionId && playingSessionId === chat.options?.messageSessionId ?
+                                        <PauseCircleOutlined/> : <PlayCircleOutlined/>}
                                     onClick={async () => {
                                         // 如果没有 messageSessionId，先获取音频
-                                        if (!chat.options || !chat.options.messageSessionId) {
+                                        if (!chat.options || !chat.options.messageSessionId || !(voiceMapRef.current.has(chat.options.messageSessionId) && voiceMapRef.current.get(chat.options.messageSessionId)!.length > 0)) {
                                             const resp = await findVoice({
                                                 data: {
+                                                    botId:llmDetail.id,
                                                     fullText: chat.content,
                                                 }
                                             });
 
                                             if (resp.data.errorCode == 0) {
-                                                const { base64, messageSessionId } = resp.data.data;
+                                                const {base64, messageSessionId} = resp.data.data;
                                                 if (!chat.options) {
-                                                    chat.options = { messageSessionId: "" };
+                                                    chat.options = {messageSessionId: ""};
                                                 }
                                                 chat.options.messageSessionId = messageSessionId;
                                                 const voiceMap = voiceMapRef.current;
@@ -1095,13 +1093,7 @@ export const AiProChat = ({
                                             // 如果没有播放或播放的是其他消息，则开始播放当前消息
                                             stopCurrentPlayback(); // 先停止任何正在播放的音频
 
-                                            // 确保音频队列存在且不为空
-                                            const voiceMap = voiceMapRef.current;
-                                            if (voiceMap.has(messageSessionId) && voiceMap.get(messageSessionId)!.length > 0) {
-                                                playAudioQueue(messageSessionId);
-                                            } else {
-                                                console.warn(`Session ${messageSessionId} 没有可播放的音频数据`);
-                                            }
+                                            playAudioQueue(messageSessionId);
                                         }
 
                                     }}
@@ -1400,20 +1392,20 @@ export const AiProChat = ({
             return null;
         }
 
-            const formData = new FormData();
-            const blob = new Blob([pcmData.buffer], {type: 'audio/pcm'});
+        const formData = new FormData();
+        const blob = new Blob([pcmData.buffer], {type: 'audio/pcm'});
 
-            formData.append('audio', blob, 'voice_message.pcm');
-            formData.append('sampleRate', '16000');
-            formData.append('channels', '1');
-            formData.append('bitDepth', '16');
-            formData.append('duration', String(pcmData.length / 16000));
+        formData.append('audio', blob, 'voice_message.pcm');
+        formData.append('sampleRate', '16000');
+        formData.append('channels', '1');
+        formData.append('bitDepth', '16');
+        formData.append('duration', String(pcmData.length / 16000));
 
-            const response = await voiceInput({
-                data: formData
-            })
+        const response = await voiceInput({
+            data: formData
+        })
 
-            return response;
+        return response;
 
     };
 
