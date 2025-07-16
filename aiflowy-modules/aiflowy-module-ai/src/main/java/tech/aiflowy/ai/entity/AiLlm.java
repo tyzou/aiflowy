@@ -1,9 +1,9 @@
+
 package tech.aiflowy.ai.entity;
 
 import com.agentsflex.llm.deepseek.DeepseekConfig;
 import com.agentsflex.llm.deepseek.DeepseekLlm;
 import tech.aiflowy.ai.entity.base.AiLlmBase;
-import tech.aiflowy.common.util.PropertiesUtil;
 import tech.aiflowy.common.util.StringUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.llm.gitee.GiteeAiLlm;
@@ -21,6 +21,8 @@ import com.mybatisflex.annotation.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.springframework.util.StringUtils;
+import java.util.Map;
 
 /**
  * 实体类。
@@ -31,7 +33,6 @@ import java.util.Properties;
 
 @Table("tb_ai_llm")
 public class AiLlm extends AiLlmBase {
-
 
     public List<String> getSupportFeatures() {
         List<String> features = new ArrayList<>();
@@ -75,9 +76,9 @@ public class AiLlm extends AiLlmBase {
             features.add("图生视频");
         }
 
-        if (getOptions() != null && !getOptions().isEmpty()){
+        if (getOptions() != null && !getOptions().isEmpty()) {
             Boolean multimodal = (Boolean) getOptions().get("multimodal");
-            if (multimodal != null && multimodal){
+            if (multimodal != null && multimodal) {
                 features.add("多模态");
             }
         }
@@ -91,21 +92,12 @@ public class AiLlm extends AiLlmBase {
             return null;
         }
         switch (brand.toLowerCase()) {
-            case "openai":
-                return openaiLLm();
             case "spark":
                 return sparkLlm();
             case "ollama":
                 return ollamaLlm();
-            case "qwen":
-            case "aliyun":
-                return qwenLlm();
-            case "gitee":
-                return giteeLlm();
-            case "deepseek":
-                return deepseekLlm();
             default:
-                return null;
+                return openaiLLm();
         }
     }
 
@@ -142,25 +134,49 @@ public class AiLlm extends AiLlmBase {
         openAiLlmConfig.setApiKey(getLlmApiKey());
         openAiLlmConfig.setModel(getLlmModel());
         openAiLlmConfig.setDefaultEmbeddingModel(getLlmModel());
-//        openAiLlmConfig.setDebug(true);
-        String llmExtraConfig = getLlmExtraConfig();
-        if (llmExtraConfig != null && !llmExtraConfig.isEmpty()){
-            Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
-            String chatPath = prop.getProperty("chatPath");
-            String embedPath = prop.getProperty("embedPath");
-            if (chatPath != null && !chatPath.isEmpty()) {
-                openAiLlmConfig.setChatPath(chatPath);
-            }
-            if (embedPath != null && !embedPath.isEmpty()) {
-                openAiLlmConfig.setEmbedPath(embedPath);
-            }
+        openAiLlmConfig.setDebug(true);
+        Map<String,Object> extraConfigMap = getLlmExtraConfig();
+        String chatPath = (String)extraConfigMap.get("chatPath");
+        String embedPath = (String)extraConfigMap.get("embedPath");
+        if (StringUtils.hasLength(chatPath)){
+            openAiLlmConfig.setChatPath(chatPath);
         }
+
+        if (StringUtils.hasLength(embedPath)){
+            openAiLlmConfig.setEmbedPath(embedPath);
+        }
+        // if (llmExtraConfig != null && !llmExtraConfig.isEmpty()) {
+        //     Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
+        //     String chatPath = prop.getProperty("chatPath");
+        //     String embedPath = prop.getProperty("embedPath");
+        //     System.out.println("chatPath" + chatPath);
+        //     System.out.println("embdaPath" + embedPath);
+        //     if (chatPath != null && !chatPath.isEmpty()) {
+        //         openAiLlmConfig.setChatPath(chatPath);
+        //     }
+        //     if (embedPath != null && !embedPath.isEmpty()) {
+        //         openAiLlmConfig.setEmbedPath(embedPath);
+        //     }
+        // }
         return new OpenAILlm(openAiLlmConfig);
     }
 
     private Llm sparkLlm() {
-        SparkLlmConfig sparkLlmConfig = PropertiesUtil.propertiesTextToEntity(getLlmExtraConfig(), SparkLlmConfig.class);
+
+        SparkLlmConfig sparkLlmConfig = new SparkLlmConfig();
+
+        Map<String,Object> extraConfigMap = getLlmExtraConfig();
+        String version = (String)extraConfigMap.get("version");
+        String appId = (String)extraConfigMap.get("appId");
+        String apiSecret = (String)extraConfigMap.get("apiSecret");
+        sparkLlmConfig.setApiSecret(apiSecret);
+        sparkLlmConfig.setVersion(version);
+        sparkLlmConfig.setAppId(appId);
         sparkLlmConfig.setApiKey(getLlmApiKey());
+
+        // SparkLlmConfig sparkLlmConfig = PropertiesUtil.propertiesTextToEntity(getLlmExtraConfig(),
+        //     SparkLlmConfig.class);
+        
 //        sparkLlmConfig.setDebug(true);
         return new SparkLlm(sparkLlmConfig);
     }

@@ -6,6 +6,7 @@ import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.common.util.PropertiesUtil;
 
 import java.util.Properties;
+import java.util.Map;
 
 public class RagRerankModelUtil {
 
@@ -23,10 +24,10 @@ public class RagRerankModelUtil {
         if (aiLlmRerank.getLlmEndpoint() != null && !aiLlmRerank.getLlmEndpoint().isEmpty()){
             defaultRerankModelConfig.setEndpoint(aiLlmRerank.getLlmEndpoint());
         }
-        String llmExtraConfig = aiLlmRerank.getLlmExtraConfig();
+        Map<String,Object> llmExtraConfig = aiLlmRerank.getLlmExtraConfig();
         if (llmExtraConfig != null && !llmExtraConfig.isEmpty()){
-            Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
-            String basePath = prop.getProperty("basePath");
+            // Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
+            String basePath = (String)llmExtraConfig.get("basePath");
             if (basePath != null && !basePath.isEmpty()) {
                 defaultRerankModelConfig.setBasePath(basePath);
             }
