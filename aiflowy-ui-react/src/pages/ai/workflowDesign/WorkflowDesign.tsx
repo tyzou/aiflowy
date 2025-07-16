@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, {useEffect, useRef, useState} from 'react';
 import {useLayout} from '../../../hooks/useLayout.tsx';
-import {App, Button, Checkbox, Collapse, Drawer, Empty, Form, Input, Radio, Skeleton, Space, Spin} from "antd";
+import {App, Button, Collapse, Drawer, Empty, Form, Input, Skeleton, Space, Spin} from "antd";
 import {useParams} from "react-router-dom";
 import {useDetail, useGet, useGetManual, useUpdate} from "../../../hooks/useApis.ts";
 import {
@@ -23,6 +23,8 @@ import JsonView from "react18-json-view";
 import {useSse} from "../../../hooks/useSse.ts";
 import {sortNodes} from "../../../libs/workflowUtil";
 import '../style/workflow.design.css'
+import {ConfirmItem} from "./components/ConfirmItem.tsx";
+import {ConfirmItemMulti} from "./components/ConfirmItemMulti.tsx";
 
 export const WorkflowDesign = () => {
 
@@ -102,7 +104,7 @@ export const WorkflowDesign = () => {
     const tinyflowRef = useRef<TinyflowHandle>(null);
 
     const saveHandler = () => {
-        console.log("data: ", tinyflowRef.current!.getData())
+        //console.log("data: ", tinyflowRef.current!.getData())
         setSaveLoading(true)
         doUpdate({
             data: {
@@ -256,9 +258,14 @@ export const WorkflowDesign = () => {
             <div style={{fontWeight: "bold", marginBottom: "10px"}}>{msg.chainMessage}</div>
             <Form
                 form={confirmForm}
+                style={{
+                    backgroundColor: "#F5F8FD",
+                    borderRadius: "8px",
+                    padding: "24px 24px 8px 24px",
+            }}
             >
                 {msg.suspendForParameters.map((ops: any,i: number) => {
-
+                    // formLabel formDescription
                     if (ops.selectionMode === 'confirm') {
                         return null
                     }
@@ -274,12 +281,15 @@ export const WorkflowDesign = () => {
                             name={selectKey}
                             rules={[{ required: true, message: '请选择内容' }]}
                         >
-                            {renderSelectionComponent(selectionDataType, selectionMode, selectionData)}
+                            {selectionMode === 'single' ?
+                                <ConfirmItem selectionDataType={selectionDataType} selectionData={selectionData} />:
+                                <ConfirmItemMulti selectionDataType={selectionDataType} selectionData={selectionData} />
+                            }
                         </Form.Item>
                     )
                 })}
                 <Form.Item>
-                    <Space>
+                    <Space style={{float: "right"}}>
                         <Button
                             type="primary"
                             disabled={item.confirmBtnDisabled}
@@ -293,6 +303,8 @@ export const WorkflowDesign = () => {
                                         }
                                     }
                                     handleConfirmSubmit(value)
+                                }).catch(() => {
+                                    message.warning("请选择内容")
                                 })
                             }}
                         >
@@ -323,107 +335,6 @@ export const WorkflowDesign = () => {
     };
 
     const [activeCol, setActiveCol] = useState('')
-
-    const renderSelectionComponent = (dataType:any,mode:any,selectionData:any) => {
-
-        if (dataType === "text") {
-            if (mode === "single") {
-                return (
-                    <Radio.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Radio key={index} value={option}>
-                                {option}
-                            </Radio>
-                        ))}
-                    </Radio.Group>
-                );
-            }
-            if (mode === "multiple") {
-                return (
-                    <Checkbox.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Checkbox key={index} value={option}>
-                                {option}
-                            </Checkbox>
-                        ))}
-                    </Checkbox.Group>
-                );
-            }
-        }
-
-        if (dataType === "image") {
-            if (mode === "single") {
-                return (
-                    <Radio.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Radio key={index} value={option}>
-                                <img src={option} style={{width: "50px", height: "50px", marginBottom: "5px"}} />
-                            </Radio>
-                        ))}
-                    </Radio.Group>
-                );
-            }
-            if (mode === "multiple") {
-                return (
-                    <Checkbox.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Checkbox key={index} value={option}>
-                                <img src={option} style={{width: "50px", height: "50px", marginBottom: "5px"}} />
-                            </Checkbox>
-                        ))}
-                    </Checkbox.Group>
-                );
-            }
-        }
-        if (dataType === "video") {
-            if (mode === "single") {
-                return (
-                    <Radio.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Radio key={index} value={option}>
-                                <video controls src={option} style={{width: "150px", height: "150px"}} />
-                            </Radio>
-                        ))}
-                    </Radio.Group>
-                );
-            }
-            if (mode === "multiple") {
-                return (
-                    <Checkbox.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Checkbox key={index} value={option}>
-                                <video controls src={option} style={{width: "150px", height: "150px"}} />
-                            </Checkbox>
-                        ))}
-                    </Checkbox.Group>
-                );
-            }
-        }
-        if (dataType === "audio") {
-            if (mode === "single") {
-                return (
-                    <Radio.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Radio key={index} value={option}>
-                                <audio controls src={option} style={{width: "250px"}} />
-                            </Radio>
-                        ))}
-                    </Radio.Group>
-                );
-            }
-            if (mode === "multiple") {
-                return (
-                    <Checkbox.Group>
-                        {selectionData.map((option: any, index: number) => (
-                            <Checkbox key={index} value={option}>
-                                <audio controls src={option} style={{width: "250px"}} />
-                            </Checkbox>
-                        ))}
-                    </Checkbox.Group>
-                );
-            }
-        }
-    }
 
     const onFinishFailed = (errorInfo: any) => {
         setSubmitLoading(false)
