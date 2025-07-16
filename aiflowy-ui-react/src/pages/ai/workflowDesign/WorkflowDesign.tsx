@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, {useEffect, useRef, useState} from 'react';
 import {useLayout} from '../../../hooks/useLayout.tsx';
-import {App, Button, Collapse, Drawer, Empty, Form, Input, Skeleton, Spin} from "antd";
+import {App, Button, Checkbox, Collapse, Drawer, Empty, Form, Input, Radio, Skeleton, Space, Spin} from "antd";
 import {useParams} from "react-router-dom";
 import {useDetail, useGet, useGetManual, useUpdate} from "../../../hooks/useApis.ts";
 import {
@@ -184,70 +184,246 @@ export const WorkflowDesign = () => {
     const {start: runWithStream} = useSse("/api/v1/aiWorkflow/tryRunningStream");
 
     const onFinish = (values: any) => {
-        //console.log('submit', values)
-        setSubmitLoading(true)
-        // tryRunning({
-        //     data: {
-        //         id: params.id,
-        //         variables: values
-        //     }
-        // }).then((resp) => {
-        //     if (resp.data.errorCode === 0) {
-        //         message.success("成功")
-        //     }
-        //     setSubmitLoading(false)
-        //     setExecuteResult(JSON.stringify(resp.data))
-        // })
         collapseItems.map((item: any) => {
             item.extra = ""
             item.children = ""
         })
         setCollapseItems([...collapseItems])
+        setSubmitLoading(true)
         runWithStream({
             data: {
                 id: params.id,
                 variables: values
             },
             onMessage: (msg: any) => {
-                //console.log(msg)
-                if (msg.execResult) {
-                    setExecuteResult(msg.execResult)
-                }
-                if (msg.status === 'error') {
-                    setExecuteResult(msg)
-                    collapseItems.map((item: any) => {
-                        item.extra = <Spin indicator={<ExclamationCircleOutlined style={{color: "#EABB00"}} />} />
-                    })
-                    setCollapseItems([...collapseItems])
-                }
-                if (msg.nodeId && msg.status) {
-                    collapseItems.map((item: any) => {
-                        if (item.key == msg.nodeId) {
-                            if (msg.status === 'start') {
-                                item.extra = <Spin indicator={<LoadingOutlined/>}/>
-                                item.children = ""
-                            }
-                            if (msg.status === 'end') {
-                                item.extra = <Spin indicator={<CheckCircleOutlined style={{color: 'green'}} />} />
-                                item.children = msg.res ?
-                                    <div style={{wordWrap: "break-word",}}>
-                                        <JsonView src={msg.res}/>
-                                    </div> : ""
-                            }
-                            if (msg.status === 'nodeError') {
-                                item.extra = <Spin indicator={<CloseCircleOutlined style={{color: 'red'}} />} />
-                                item.children = <JsonView src={msg.errorMsg}/>
-                            }
-                        }
-                    })
-                    setCollapseItems([...collapseItems])
-                }
+                handleStreamMsg(msg)
             },
             onFinished: () => {
                 setSubmitLoading(false)
             },
         })
     };
+
+    const handleStreamMsg = (msg: any) => {
+        //console.log(msg)
+        if (msg.status === 'execOnce') {
+            message.warning("流程已执行完毕，请重新发起。")
+        }
+        if (msg.execResult) {
+            setExecuteResult(msg.execResult)
+        }
+        if (msg.status === 'error') {
+            setExecuteResult(msg)
+            collapseItems.map((item: any) => {
+                item.extra = <Spin indicator={<ExclamationCircleOutlined style={{color: "#EABB00"}} />} />
+            })
+            setCollapseItems([...collapseItems])
+        }
+        if (msg.nodeId && msg.status) {
+            collapseItems.map((item: any) => {
+                if (item.key == msg.nodeId) {
+                    if (msg.status === 'start') {
+                        item.extra = <Spin indicator={<LoadingOutlined/>}/>
+                        item.children = ""
+                    }
+                    if (msg.status === 'end') {
+                        item.extra = <Spin indicator={<CheckCircleOutlined style={{color: 'green'}} />} />
+                        item.children = msg.res ?
+                            <div style={{wordWrap: "break-word",}}>
+                                <JsonView src={msg.res}/>
+                            </div> : ""
+                    }
+                    if (msg.status === 'nodeError') {
+                        item.extra = <Spin indicator={<CloseCircleOutlined style={{color: 'red'}} />} />
+                        item.children = <JsonView src={msg.errorMsg}/>
+                    }
+                    if (msg.status === 'confirm') {
+                        setActiveCol(msg.nodeId)
+                        handleConfirmStep(msg, item)
+                    }
+                }
+            })
+            setCollapseItems([...collapseItems])
+        }
+    }
+    const [confirmForm] = Form.useForm();
+
+    const handleConfirmStep = (msg: any, item: any) => {
+        //console.log(msg)
+        const confirmKey = msg.suspendForParameters[0].name;
+
+        item.children = <>
+            <div style={{fontWeight: "bold", marginBottom: "10px"}}>{msg.chainMessage}</div>
+            <Form
+                form={confirmForm}
+            >
+                {msg.suspendForParameters.map((ops: any,i: number) => {
+
+                    if (ops.selectionMode === 'confirm') {
+                        return null
+                    }
+                    const selectKey = ops.name;
+                    const selectionDataType = ops.selectionDataType?ops.selectionDataType:"text"
+                    const selectionMode = ops.selectionMode?ops.selectionMode:"single"
+                    const selectionData = ops.selectionData
+
+                    return (
+                        <Form.Item
+                            key={i}
+                            style={{wordBreak: "break-all"}}
+                            name={selectKey}
+                            rules={[{ required: true, message: '请选择内容' }]}
+                        >
+                            {renderSelectionComponent(selectionDataType, selectionMode, selectionData)}
+                        </Form.Item>
+                    )
+                })}
+                <Form.Item>
+                    <Space>
+                        <Button
+                            type="primary"
+                            disabled={item.confirmBtnDisabled}
+                            onClick={() => {
+                                confirmForm.validateFields().then((values) => {
+                                    const value = {
+                                        chainId: msg.chainId,
+                                        confirmParams: {
+                                            [confirmKey]: 'yes',
+                                            ...values
+                                        }
+                                    }
+                                    handleConfirmSubmit(value)
+                                })
+                            }}
+                        >
+                            确认
+                        </Button>
+                    </Space>
+                </Form.Item>
+            </Form>
+        </>
+    }
+
+    const {start: runResume} = useSse("/api/v1/aiWorkflow/resumeChain");
+
+    const handleConfirmSubmit = (values: any) => {
+
+        setSubmitLoading(true)
+        runResume({
+            data: {
+                ...values
+            },
+            onMessage: (msg: any) => {
+                handleStreamMsg(msg)
+            },
+            onFinished: () => {
+                setSubmitLoading(false)
+            }
+        })
+    };
+
+    const [activeCol, setActiveCol] = useState('')
+
+    const renderSelectionComponent = (dataType:any,mode:any,selectionData:any) => {
+
+        if (dataType === "text") {
+            if (mode === "single") {
+                return (
+                    <Radio.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Radio key={index} value={option}>
+                                {option}
+                            </Radio>
+                        ))}
+                    </Radio.Group>
+                );
+            }
+            if (mode === "multiple") {
+                return (
+                    <Checkbox.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Checkbox key={index} value={option}>
+                                {option}
+                            </Checkbox>
+                        ))}
+                    </Checkbox.Group>
+                );
+            }
+        }
+
+        if (dataType === "image") {
+            if (mode === "single") {
+                return (
+                    <Radio.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Radio key={index} value={option}>
+                                <img src={option} style={{width: "50px", height: "50px", marginBottom: "5px"}} />
+                            </Radio>
+                        ))}
+                    </Radio.Group>
+                );
+            }
+            if (mode === "multiple") {
+                return (
+                    <Checkbox.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Checkbox key={index} value={option}>
+                                <img src={option} style={{width: "50px", height: "50px", marginBottom: "5px"}} />
+                            </Checkbox>
+                        ))}
+                    </Checkbox.Group>
+                );
+            }
+        }
+        if (dataType === "video") {
+            if (mode === "single") {
+                return (
+                    <Radio.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Radio key={index} value={option}>
+                                <video controls src={option} style={{width: "150px", height: "150px"}} />
+                            </Radio>
+                        ))}
+                    </Radio.Group>
+                );
+            }
+            if (mode === "multiple") {
+                return (
+                    <Checkbox.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Checkbox key={index} value={option}>
+                                <video controls src={option} style={{width: "150px", height: "150px"}} />
+                            </Checkbox>
+                        ))}
+                    </Checkbox.Group>
+                );
+            }
+        }
+        if (dataType === "audio") {
+            if (mode === "single") {
+                return (
+                    <Radio.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Radio key={index} value={option}>
+                                <audio controls src={option} style={{width: "250px"}} />
+                            </Radio>
+                        ))}
+                    </Radio.Group>
+                );
+            }
+            if (mode === "multiple") {
+                return (
+                    <Checkbox.Group>
+                        {selectionData.map((option: any, index: number) => (
+                            <Checkbox key={index} value={option}>
+                                <audio controls src={option} style={{width: "250px"}} />
+                            </Checkbox>
+                        ))}
+                    </Checkbox.Group>
+                );
+            }
+        }
+    }
 
     const onFinishFailed = (errorInfo: any) => {
         setSubmitLoading(false)
@@ -400,7 +576,9 @@ export const WorkflowDesign = () => {
                 <div style={{marginTop: "10px"}}>
                     <div>执行步骤：</div>
                     <div style={{marginTop: "10px"}}>
-                        <Collapse items={collapseItems}/>
+                        <Collapse activeKey={activeCol} items={collapseItems} onChange={(k:any) => {
+                            setActiveCol(k)
+                        }}/>
                     </div>
                 </div>
             </Drawer>
