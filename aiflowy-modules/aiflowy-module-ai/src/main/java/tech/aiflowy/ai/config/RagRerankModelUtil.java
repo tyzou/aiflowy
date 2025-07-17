@@ -6,6 +6,7 @@ import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.common.util.PropertiesUtil;
 
 import java.util.Properties;
+import java.util.Map;
 
 public class RagRerankModelUtil {
 

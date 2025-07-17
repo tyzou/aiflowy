@@ -13,12 +13,15 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 public class AiLlmBrand implements Serializable {
 
     private String title;
     private String icon;
     private String key;
+
+    private Map<String,Object> options;
 
     public String getTitle() {
         return title;
@@ -44,6 +47,16 @@ public class AiLlmBrand implements Serializable {
         this.key = key;
     }
 
+    
+
+    public Map<String, Object> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+        this.options = options;
+    }
+
     public static List<AiLlmBrand> fromJsonConfig() {
         Resource resource = new ClassPathResource("ai-brands.json");
         try (InputStream is = resource.getInputStream();
@@ -55,6 +68,9 @@ public class AiLlmBrand implements Serializable {
             }
 
             String json = jsonString.toString().trim();
+            System.out.println("*******************************************************************************");
+            System.out.println(json);
+            System.out.println("*******************************************************************************");
             if (StringUtil.hasText(json)) {
                 JSONArray jsonArray = JSON.parseArray(json);
                 return jsonArray.toJavaList(AiLlmBrand.class);

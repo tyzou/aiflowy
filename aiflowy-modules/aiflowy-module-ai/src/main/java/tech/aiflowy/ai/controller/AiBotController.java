@@ -179,7 +179,17 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
     @PostMapping("findVoice")
     @SaIgnore
-    public Result findVoice(@JsonBody("fullText") String fullText) {
+    public Result findVoice(
+        @JsonBody(value = "fullText",required = true)String fullText,
+        @JsonBody(value = "botId",required = true) BigInteger botId
+    ) {
+
+        AiBot aiBot = service.getById(botId);
+
+        if (aiBot == null || aiBot.getOptions() == null || aiBot.getOptions().get("voiceEnabled") == null || !(boolean)aiBot.getOptions().get("voiceEnabled")){
+            throw new BusinessException("此bot不支持语音播报！");
+        }
+
         List<Map<String, Object>> voiceList = (List<Map<String, Object>>) cache.get(VOICE_KEY);
 
         if (voiceList != null && !voiceList.isEmpty()) {
@@ -235,22 +245,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         // 保存WebSocket引用
         websocketRef.set(websocket);
 
-        // // 添加超时检查，如果连接在合理时间内未就绪，则发送消息
-        // CompletableFuture.runAsync(() -> {
-        // try {
-        // Thread.sleep(2000); // 等待2秒
-        // if (!connectionReady.get() && !messageSent.getAndSet(true)) {
-        // logger.warn("WebSocket连接超时，尝试发送TTS消息");
-        // WebSocket ws = websocketRef.get();
-        // if (ws != null) {
-        // ttsService.sendTTSMessage(ws, messageSessionId, fullText);
-        // ttsService.sendTTSMessage(ws, messageSessionId, "_end_");
-        // }
-        // }
-        // } catch (InterruptedException e) {
-        // Thread.currentThread().interrupt();
-        // }
-        // });
 
         try {
             Map<String, Object> result = future.get(30, TimeUnit.SECONDS);
@@ -364,43 +358,51 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         final String messageSessionId = UUID.randomUUID().toString().replace("-", "");
         final String connectId = UUID.randomUUID().toString();
         StringBuilder finalAnswerContentBuffer = new StringBuilder();
-        ;
+        
+        Map<String, Object> options = aiBot.getOptions();
+        boolean voiceEnabled = options != null && options.get("voiceEnabled") != null && (boolean)options.get("voiceEnabled");
 
-        WebSocket webSocket = ttsService.init(connectId, messageSessionId, base64 -> {
-            // logger.info("{}音频片段：{}",messageSessionId,base64);
-            ChatVoiceHandler.sendJsonVoiceMessage(sessionId, messageSessionId, base64);
-        }, (result) -> {
-            // logger.info("完整音频数据：{}",result);
-            // logger.info("音频文本：{}",finalAnswerContentBuffer);
+        WebSocket webSocket = null;
+        if (voiceEnabled){
+            webSocket = ttsService.init(connectId, messageSessionId, base64 -> {
+                ChatVoiceHandler.sendJsonVoiceMessage(sessionId, messageSessionId, base64);
+            }, (result) -> {
+                logger.info("tts 转语音 session 执行完毕，connection 已关闭，进行结果缓存");
 
-            List<Map<String, Object>> voiceList = (List<Map<String, Object>>) cache.get(VOICE_KEY);
+                List<Map<String, Object>> voiceList = (List<Map<String, Object>>) cache.get(VOICE_KEY);
 
-            if (voiceList == null) {
-                voiceList = new ArrayList<>();
-            }
+                if (voiceList == null) {
+                    voiceList = new ArrayList<>();
+                }
 
-            Map<String, Object> resultMap = new HashMap<>();
-            resultMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
-            resultMap.put(FULL_TEXT_KEY, finalAnswerContentBuffer.toString());
-            resultMap.put(BASE64_KEY, result);
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
+                resultMap.put(FULL_TEXT_KEY, finalAnswerContentBuffer.toString());
+                resultMap.put(BASE64_KEY, result);
 
-            voiceList.add(resultMap);
+                voiceList.add(resultMap);
 
-            // 缓存60分钟
-            cache.put("aiBot:voice", voiceList, 60, TimeUnit.MINUTES);
+                // 缓存60分钟
+                cache.put("aiBot:voice", voiceList, 60, TimeUnit.MINUTES);
 
-            // if (StringUtils.hasLength(result)) {
-            // File file = new File(messageSessionId + "_" + System.currentTimeMillis() +
-            // ".mp3");
-            // try (FileOutputStream fos = new FileOutputStream(file)){
-            // byte[] decode = Base64.getDecoder().decode(result);
-            // fos.write(decode);
-            // }catch (IOException e) {
-            // logger.error("合并语音文件失败", e);
-            // }
-            // }
+                // 将完整音频文件保存到本地的逻辑，如果需要则打开下面的注释 👇
+                // if (StringUtils.hasLength(result)) {
+                // File file = new File(messageSessionId + "_" + System.currentTimeMillis() +
+                // ".mp3");
+                // try (FileOutputStream fos = new FileOutputStream(file)){
+                // byte[] decode = Base64.getDecoder().decode(result);
+                // fos.write(decode);
+                // }catch (IOException e) {
+                // logger.error("合并语音文件失败", e);
+                // }
+                // }
 
-        }, null);
+            }, null);
+        }
+
+        WebSocket finalWebSocket = webSocket;
+
+        
 
         reActAgent.addListener(new ReActAgentListener() {
 
@@ -409,6 +411,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             private String chunk = "";
             private boolean isFinalAnswer = false;
             private boolean parsed = false;
+
+            private boolean actionExcute = false;
 
             @Override
             public void onChatResponseStream(ChatContext context, AiMessageResponse response) {
@@ -451,11 +455,14 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                                 String finalContent = chunk.replaceFirst("(?i)final answer\\s*:", "").trim();
                                 AiMessage message = new AiMessage();
                                 message.setContent(finalContent);
+                                logger.info("发送final answer:" + finalContent);
                                 emitter.send(JSON.toJSONString(message));
                                 message.setMetadataMap(Maps.of("messageSessionId", messageSessionId));
                                 finalAnswerContentBuffer.append(finalContent);
 
-                                ttsService.sendTTSMessage(webSocket, messageSessionId, finalContent);
+                                if (voiceEnabled){
+                                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, finalContent);
+                                }
 
                                 parsed = true;
                                 return;
@@ -492,7 +499,11 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             AiMessage message = new AiMessage();
                             message.setContent(chunk);
                             emitter.send(JSON.toJSONString(message));
-                            ttsService.sendTTSMessage(webSocket, messageSessionId, chunk);
+                            logger.info("发送final answer:" + chunk);
+                            if (voiceEnabled){
+                                ttsService.sendTTSMessage(finalWebSocket, messageSessionId, chunk);
+                            }
+                            
                             parsed = true;
                             return;
                         }
@@ -508,7 +519,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             emitter.send(JSON.toJSONString(aiMessage));
                             logger.info("发送final answer:" + content);
                             finalAnswerContentBuffer.append(content);
-                            ttsService.sendTTSMessage(webSocket, messageSessionId, content);
+                            if (voiceEnabled){
+                                ttsService.sendTTSMessage(finalWebSocket, messageSessionId, content);
+                            }
+                            
 
                         } else {
                             // Thought模式：发送thought事件
@@ -533,7 +547,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
                 RequestContextHolder.setRequestAttributes(sra, true);
 
-                ttsService.sendTTSMessage(webSocket, messageSessionId, "_end_");
+                if (voiceEnabled){
+                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
+                }
 
                 emitter.complete();
 
@@ -571,15 +587,25 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 logger.info("onNonActionResponseStream");
                 RequestContextHolder.setRequestAttributes(sra, true);
 
+                if (actionExcute){
+                    logger.info("执行了 action ，结果已在其他 hook 中输出，跳过");
+                    return;
+                }
+
                 String fullContent = context.getLastAiMessage().getFullContent();
+                
                 AiMessage message = new AiMessage();
                 message.setContent(fullContent);
                 message.setMetadataMap(Maps.of("messageSessionId", messageSessionId));
                 emitter.sendAndComplete(JSON.toJSONString(message));
                 finalAnswerContentBuffer.append(fullContent);
-                ttsService.sendTTSMessage(webSocket, messageSessionId, fullContent);
 
-                ttsService.sendTTSMessage(webSocket, messageSessionId, "_end_");
+                if (voiceEnabled){
+                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, fullContent);
+
+                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
+                }
+
 
             }
 
@@ -608,6 +634,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 builder[0].connectTimeout(Duration.ofSeconds(30));
                 builder[0].readTimeout(Duration.ofMinutes(20));
                 OkHttpClientUtil.setOkHttpClientBuilder(builder[0]);
+                actionExcute = true;
 
                 currentThoughtId = IdUtil.getSnowflake(1, 1).nextId();
                 parsed = false;

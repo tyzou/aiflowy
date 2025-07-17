@@ -134,7 +134,6 @@ public class AiLlmBase implements Serializable {
     /**
      * 大模型其他属性配置
      */
-    @Column(comment = "大模型其他属性配置")
     private String llmExtraConfig;
 
     /**
@@ -307,7 +306,7 @@ public class AiLlmBase implements Serializable {
         return llmExtraConfig;
     }
 
-    public void setLlmExtraConfig(String llmExtraConfig) {
+    public void setLlmExtraConfig(String  llmExtraConfig) {
         this.llmExtraConfig = llmExtraConfig;
     }
 
