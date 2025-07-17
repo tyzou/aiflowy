@@ -1,7 +1,9 @@
+
 package tech.aiflowy.ai.service.impl;
 
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.response.AiMessageResponse;
+import com.agentsflex.core.store.VectorData;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import tech.aiflowy.ai.entity.AiLlm;
@@ -13,14 +15,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.aiflowy.common.web.exceptions.BusinessException;
 
+import java.util.List;
 import java.util.Map;
 import com.agentsflex.core.prompt.ImagePrompt;
 import com.agentsflex.core.prompt.TextPrompt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.agentsflex.rerank.DefaultRerankModel;
+import com.agentsflex.rerank.DefaultRerankModelConfig;
+import java.util.ArrayList;
+import com.agentsflex.core.document.Document;
+import org.springframework.util.StringUtils;
 
 /**
- *  服务层实现。
+ * 服务层实现。
  *
  * @author michael
  * @since 2024-08-23
@@ -34,7 +42,7 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
     @Override
     public Result addAiLlm(AiLlm entity) {
         int insert = aiLlmMapper.insert(entity);
-        if (insert <= 0){
+        if (insert <= 0) {
             return Result.fail();
         }
         return Result.success();
@@ -47,15 +55,14 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
 
         Boolean supportChat = llm.getSupportChat();
 
-        if (supportChat != null && supportChat){
+        if (supportChat != null && supportChat) {
             // 走聊天验证逻辑
             verifyChatLlm(llm);
             return;
         }
 
-
         Boolean supportEmbed = llm.getSupportEmbed();
-        if (supportEmbed != null && supportEmbed){
+        if (supportEmbed != null && supportEmbed) {
 
             // 走向量化验证逻辑
             verifyEmbedLlm(llm);
@@ -64,7 +71,7 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
         }
 
         Boolean supportReranker = llm.getSupportReranker();
-        if (supportReranker != null && supportReranker){
+        if (supportReranker != null && supportReranker) {
 
             // 走重排验证逻辑
             verifyRerankLlm(llm);
@@ -75,13 +82,59 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
         // 以上不满足，视为验证失败
         throw new BusinessException("校验失败！");
 
-
     }
 
     private void verifyRerankLlm(AiLlm llm) {
+        try{
+            DefaultRerankModelConfig rerankModelConfig = new DefaultRerankModelConfig();
+
+            rerankModelConfig.setModel(llm.getLlmModel());
+            rerankModelConfig.setEndpoint(llm.getLlmEndpoint());
+            rerankModelConfig.setApiKey(llm.getLlmApiKey());
+            rerankModelConfig.setDebug(true);
+
+            Map<String, Object> options = llm.getOptions();
+            if (options == null) {
+                throw new BusinessException("options为空");
+            }
+
+            if (options.get("rerankPath") == null || !StringUtils.hasLength((String)options.get("rerankPath"))){
+                throw new BusinessException("rerankPath未配置");
+            }
+
+            String reankPath = (String)options.get("rerankPath");
+            rerankModelConfig.setBasePath(reankPath); 
+
+            DefaultRerankModel rerankModel = new DefaultRerankModel(rerankModelConfig);
+
+            String query = "我和吴彦祖谁帅？";
+            ArrayList<Document> documentList = new ArrayList<>();
+            documentList.add(new Document("你比陈冠希帅"));
+            documentList.add(new Document("你比吴彦祖帅"));
+            documentList.add(new Document("你比谢霆锋帅"));
+            List<Document> rerank = rerankModel.rerank(query, documentList);
+            log.info("校验结果：{}",rerank);
+        } catch (Exception e){
+            log.error("校验失败：{}",e.getMessage());
+            throw new BusinessException("校验未通过，请前往后端日志查看详情！");
+
+        }
+
     }
 
     private void verifyEmbedLlm(AiLlm llm) {
+        try {
+            Llm transLlm = llm.toLlm();
+            VectorData vectorData = transLlm.embed("这是一条校验模型配置的文本");
+            if (vectorData.getVector() == null) {
+                throw new BusinessException("校验未通过，请前往后端日志查看详情！");
+            }
+            log.info("取到向量数据，校验结果通过");
+        } catch (Exception e) {
+            log.error("模型配置校验失败:{}", e.getMessage());
+            throw new BusinessException("校验未通过，请前往后端日志查看详情！");
+        }
+
     }
 
     private void verifyChatLlm(AiLlm llm) {
@@ -91,20 +144,25 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
         TextPrompt textPrompt = null;
 
         Map<String, Object> options = llm.getOptions();
-        if (options != null && options.get("multimodal") != null && (boolean) options.get("multimodal") ){
+        if (options != null && options.get("multimodal") != null && (boolean) options.get("multimodal")) {
 
-            textPrompt = new ImagePrompt("描述一下这张图片", "http://115.190.9.61:7900/aiflowy-pro/public/aibot/files/40b64e32b081942bd7ab30f8a369f2a34fc7fafc04f45c50cd96d8a102fd7afa.jpg");
+            textPrompt = new ImagePrompt("我在对模型配置进行校验，你无需描述图片，只需回答“看到了图片”即可",
+                "http://115.190.9.61:7900/aiflowy-pro/public/aibot/files/40b64e32b081942bd7ab30f8a369f2a34fc7fafc04f45c50cd96d8a102fd7afa.jpg");
 
-        }else {
-            textPrompt = new TextPrompt("你好!");
+        } else {
+            textPrompt = new TextPrompt("我在对模型配置进行校验，你收到这条消息无需做任何思考，直接回复一个“你好”即可!");
         }
 
-        try{
+        try {
             AiMessageResponse chatResponse = transLlm.chat(textPrompt);
             JSONObject jsonObject = JSON.parseObject(chatResponse.getResponse());
-            log.info(jsonObject + "");
-        } catch (Exception e){
-            throw new BusinessException("校验失败！");
+            if (jsonObject.get("object") == null || "".equals((String) jsonObject.get("object"))) {
+                throw new BusinessException("校验未通过，请前往后端日志查看详情！");
+            }
+            log.info("校验结果：{}", jsonObject);
+        } catch (Exception e) {
+            log.error("模型配置校验失败:{}", e.getMessage());
+            throw new BusinessException("校验未通过，请前往后端日志查看详情！");
         }
 
     }
