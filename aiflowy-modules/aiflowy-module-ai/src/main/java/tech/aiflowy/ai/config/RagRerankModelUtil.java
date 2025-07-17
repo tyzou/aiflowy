@@ -29,19 +29,15 @@ public class RagRerankModelUtil {
         if (llmExtraConfig != null && !llmExtraConfig.isEmpty()){
             Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
             String basePath = prop.getProperty("basePath");
-            if (!StringUtils.hasLength(basePath)) {
-
-                Map<String, Object> options = aiLlmRerank.getOptions();
-                if (options != null) {
-                    String rerankPath = (String)options.get("rerankPath");
-                    if (StringUtils.hasLength(rerankPath)){
-                        basePath = rerankPath;
-                    }
-                }
-
-            }
-
             defaultRerankModelConfig.setBasePath(basePath);
+        }else{
+            Map<String, Object> options = aiLlmRerank.getOptions();
+            if (options != null) {
+                String rerankPath = (String)options.get("rerankPath");
+                if (StringUtils.hasLength(rerankPath)){
+                    defaultRerankModelConfig.setBasePath(rerankPath);
+                }
+            }
         }
 
         return new DefaultRerankModel(defaultRerankModelConfig);
