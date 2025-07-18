@@ -112,6 +112,7 @@ export const SysJobModal: React.FC<SysJobModalProps> = forwardRef((props, ref) =
         form.resetFields()
         setFormData(null)
         setWorkflowParams([])
+        setNextTimes([])
     }
 
     const getWorkflowParamsList = (v: any) => {
@@ -128,10 +129,23 @@ export const SysJobModal: React.FC<SysJobModalProps> = forwardRef((props, ref) =
 
     const [cronModalVisible, setCronModalVisible] = useState(false)
 
+    const {doGet: getNextTimes} = useGetManual('/api/v1/sysJob/getNextTimes')
+    const [nextTimes, setNextTimes] = useState<string[]>([])
     const handleOk = useCallback((value: string) => {
         form.setFieldsValue({
             cronExpression: value
         });
+        getNextTimes({
+            params: {
+                cronExpression: value
+            }
+        }).then(res => {
+            if (res.data.errorCode === 0) {
+                setNextTimes(res.data.data)
+            } else {
+                message.error(res.data.message)
+            }
+        })
         setCronModalVisible(false);
     }, [form]);
 
@@ -199,6 +213,7 @@ export const SysJobModal: React.FC<SysJobModalProps> = forwardRef((props, ref) =
                             label="cron表达式"
                             name="cronExpression"
                             rules={[{required: true, message: '请输入cron表达式'}]}
+                            extra={<><div>最近五次运行时间：</div>{nextTimes.map(item => <div>{item}</div>)}</>}
                         >
                             <Input suffix={<a onClick={() => setCronModalVisible(true)}>点击生成</a>}/>
                         </Form.Item>
