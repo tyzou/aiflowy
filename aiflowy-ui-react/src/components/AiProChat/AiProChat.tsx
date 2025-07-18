@@ -1411,7 +1411,6 @@ export const AiProChat = ({
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                background: '#fff',
                 ...appStyle,
                 ...style,
             }}
