@@ -30,8 +30,8 @@ export const useAppStore = create<AppStore>()(persist(
         },
         isLogin: () => {
             // const token = get().jwt;
-            const token = get().token;
-            if (!token) {
+            const token = localStorage.getItem(authKey);
+            if (!token && !token?.length) {
                 return false;
             }
             // const tokenParts = token.split('.');
