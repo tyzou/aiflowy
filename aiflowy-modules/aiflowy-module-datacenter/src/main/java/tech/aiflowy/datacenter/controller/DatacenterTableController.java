@@ -2,11 +2,14 @@ package tech.aiflowy.datacenter.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.FastExcel;
 import com.alibaba.fastjson2.JSONObject;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.row.Row;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.DatacenterQuery;
 import tech.aiflowy.common.entity.LoginAccount;
@@ -14,11 +17,16 @@ import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.datacenter.entity.DatacenterTable;
 import tech.aiflowy.datacenter.entity.DatacenterTableFields;
+import tech.aiflowy.datacenter.excel.ReadDataListener;
 import tech.aiflowy.datacenter.service.DatacenterTableFieldsService;
 import tech.aiflowy.datacenter.service.DatacenterTableService;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -128,5 +136,51 @@ public class DatacenterTableController extends BaseCurdController<DatacenterTabl
         LoginAccount account = SaTokenUtil.getLoginAccount();
         service.removeValue(tableId, id, account);
         return Result.success();
+    }
+
+    @PostMapping("/importData")
+    @SaCheckPermission("/api/v1/datacenterTable/save")
+    public Result importData(MultipartFile file, @RequestParam Map<String, Object> map) throws Exception {
+        Object tableId = map.get("tableId");
+        DatacenterTable record = service.getById(tableId.toString());
+        if (record == null) {
+            return Result.fail(99, "数据表不存在");
+        }
+        InputStream is = file.getInputStream();
+        List<DatacenterTableFields> fields = service.getFields(record.getId());
+
+        LoginAccount account = SaTokenUtil.getLoginAccount();
+        ReadDataListener listener = new ReadDataListener(record.getId(), fields, account);
+        FastExcel.read(is, listener)
+                .sheet()
+                .doRead();
+        return Result.success();
+    }
+
+    @GetMapping("/getTemplate")
+    public void getTemplate(BigInteger tableId, HttpServletResponse response) throws Exception {
+        List<DatacenterTableFields> fields = service.getFields(tableId);
+        // 设置响应内容类型
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+
+        // 设置文件名
+        String fileName = URLEncoder.encode("导入模板", "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+
+        // 动态表头数据
+        List<List<String>> headList = new ArrayList<>();
+
+        for (DatacenterTableFields field : fields) {
+            List<String> head = new ArrayList<>();
+            head.add(field.getFieldName());
+            headList.add(head);
+        }
+
+        // 写入Excel
+        EasyExcel.write(response.getOutputStream())
+                .head(headList)
+                .sheet("模板")
+                .doWrite(new ArrayList<>()); // 写入空数据，只生成模板
     }
 }

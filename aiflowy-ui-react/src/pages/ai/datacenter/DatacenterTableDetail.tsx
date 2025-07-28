@@ -1,6 +1,20 @@
 import React, {useEffect, useState} from 'react'
 import {useLocation} from "react-router-dom";
-import {Button, Col, Menu, message, Popconfirm, Row, Space, Spin, Table, Tooltip} from "antd";
+import {
+    Button,
+    Col,
+    GetProp,
+    Menu,
+    message,
+    Modal,
+    Popconfirm,
+    Row,
+    Space,
+    Spin,
+    Table,
+    Tooltip,
+    UploadProps
+} from "antd";
 import {useLayout} from "../../../hooks/useLayout.tsx";
 import css from './aitable.module.css'
 import {
@@ -8,11 +22,14 @@ import {
     LeftOutlined,
     PlusOutlined,
     ReloadOutlined,
-    RestOutlined,
+    RestOutlined, ToTopOutlined,
 } from "@ant-design/icons";
 import tableIcon from '../../../assets/table2x.png'
-import {useGetManual, usePostManual} from "../../../hooks/useApis.ts";
+import {useGetManual, usePostFile, usePostManual} from "../../../hooks/useApis.ts";
 import {DataSave} from "./DataSave.tsx";
+import Dragger from "antd/es/upload/Dragger";
+import uploadIcon from '../../../assets/upload.png'
+import {UploadFile} from "antd/es/upload";
 
 export const DatacenterTableDetail: React.FC = () => {
     const location = useLocation();
@@ -210,6 +227,56 @@ export const DatacenterTableDetail: React.FC = () => {
     const [currentData, setCurrentData] = useState<any>(null)
     const [dataModal, setDataModal] = useState(false)
 
+    const [importModalOpen, setImportModalOpen] = useState(false)
+
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
+
+    const props: UploadProps = {
+        name: 'file',
+        multiple: false,
+        accept: ".xlsx,.xls,.csv",
+        action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
+        beforeUpload: (file) => {
+            setFileList([...fileList, file]);
+            return false;
+        },
+        onRemove: (file) => {
+            const index = fileList.indexOf(file);
+            const newFileList = fileList.slice();
+            newFileList.splice(index, 1);
+            setFileList(newFileList);
+        },
+        onDrop(e) {
+            console.log('Dropped files', e.dataTransfer.files);
+        },
+        fileList: fileList,
+    };
+
+    type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
+
+    const {loading: importLoading, doPost: doPostFile} = usePostFile('/api/v1/datacenterTable/importData')
+
+    const handleUpload = () => {
+        const formData = new FormData();
+        formData.append('file', fileList[0] as FileType);
+        formData.append('tableId', tableId);
+        doPostFile({
+            data: formData,
+        }).then(res => {
+            if (res.data.errorCode === 0) {
+                message.success(`导入成功`);
+                getTableData()
+                setImportModalOpen(false)
+                setFileList([])
+            } else {
+                message.error(res.data.message);
+            }
+        })
+    };
+
+    const {doGet: getTemplate} = useGetManual('/api/v1/datacenterTable/getTemplate')
+    const [divLoading, setDivLoading] = useState(false)
+
     return (
         <div style={{padding: "24px"}}>
             <DataSave
@@ -227,6 +294,58 @@ export const DatacenterTableDetail: React.FC = () => {
                 }}
 
             />
+            <Modal
+                open={importModalOpen}
+                title={"批量导入"}
+                width={530}
+                confirmLoading={importLoading}
+                onCancel={() => {
+                    setImportModalOpen(false)
+                    setFileList([])
+                }}
+                onOk={() => {
+                    handleUpload()
+                }}
+            >
+                <Dragger {...props} style={{backgroundColor: "#fff",marginTop: "10px",marginBottom: "5px"}}>
+                    <div style={{padding: "39px 50px 69px 50px"}}>
+                    <p className="ant-upload-drag-icon">
+                        <img style={{width: "48px", height: "48px"}} src={uploadIcon} alt={""} />
+                    </p>
+                    <p className="ant-upload-text">点击或将文件拖拽到这里上传</p>
+                    <p className="ant-upload-hint" style={{fontSize: "13px"}}>
+                        上传一份Excel文档，文件大小限制10MB以内。
+                    </p>
+                    </div>
+                </Dragger>
+                <Spin spinning={divLoading}>
+                    <a onClick={() => {
+                        setDivLoading(true)
+                        getTemplate({
+                            params: {
+                                tableId: tableId
+                            },
+                            responseType: "blob"
+                        }).then(response => {
+                            setDivLoading(false)
+                            const finalFilename = "导入模板.xlsx";
+                            // @ts-ignore
+                            const blob = new Blob([response.data]);
+                            const downloadUrl = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.setAttribute('download', finalFilename);
+                            document.body.appendChild(link);
+                            link.click();
+                            // 清理
+                            setTimeout(() => {
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(downloadUrl);
+                            }, 100);
+                        })
+                    }}>下载模板</a>
+                </Spin>
+            </Modal>
             <Spin spinning={detailLoading}>
                 <Row>
                     <Col span={24}>
@@ -251,7 +370,11 @@ export const DatacenterTableDetail: React.FC = () => {
                                         setDataModal(true)
                                         setCurrentData(null)
                                     }}><PlusOutlined/>增加行</Button>}
-                                    {/*{activeKey === '2' && <Button type={"primary"}><ToTopOutlined/>批量导入</Button>}*/}
+                                    {activeKey === '2' && <Button type={"primary"} onClick={() => {
+                                        setImportModalOpen(true)
+                                    }}>
+                                        <ToTopOutlined/>批量导入
+                                    </Button>}
                                 </Space>
                             </div>
                         </div>

@@ -75,6 +75,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import tech.aiflowy.ai.message.NormalMessageBuilder;
 
 /**
  * 控制层。
@@ -352,7 +353,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         ChatOptions chatOptions = getChatOptions(llmOptions);
         reActAgent.setChatOptions(chatOptions);
 
-
         String promptTemplate = "你是一个 ReAct Agent，结合 Reasoning（推理）和 Action（行动）来解决问题。\n" + "但在处理用户问题时，请首先判断：\n"
             + "1. 如果问题可以通过你的常识或已有知识直接回答 → 请忽略 ReAct 框架，直接输出自然语言回答。\n"
             + "2. 如果问题需要调用特定工具才能解决（如查询、计算、获取外部信息等）→ 请严格按照 ReAct 格式响应。\n\n" + "如果你选择使用 ReAct 模式，请遵循以下格式：\n"
@@ -373,7 +373,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         // 解决 https://gitee.com/aiflowy/aiflowy/issues/ICMRM2 根据大模型配置属性决定是否构建多模态消息
         Map<String, Object> aiLlmOptions = aiLlm.getOptions();
-        if (aiLlmOptions != null && aiLlmOptions.get("multimodal") != null && (boolean) aiLlmOptions.get("multimodal")) {
+        if (aiLlmOptions != null && aiLlmOptions.get("multimodal") != null &&
+            (boolean) aiLlmOptions.get("multimodal")) {
 
             // if (!"ollama".equals(aiLlm.getBrand()) && !"spark".equals(aiLlm.getBrand())){
             HashMap<String, Object> promptMap = new HashMap<>();
@@ -386,6 +387,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             MultimodalMessageBuilder multimodalMessageBuilder = new MultimodalMessageBuilder();
             reActAgent.setMessageBuilder(multimodalMessageBuilder);
         } else {
+
+            NormalMessageBuilder normalMessageBuilder = new NormalMessageBuilder();
+            reActAgent.setMessageBuilder(normalMessageBuilder);
             reActAgent.setPromptTemplate(promptTemplate);
         }
 
@@ -716,6 +720,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                     thinkingMessage.setContent("");
                     thinkingMessage.setMetadataMap(null);
                     thinkingIdMap.put("id", null);
+                    thinkingIdMap.put("type", 0);
                 }
 
                 RequestContextHolder.setRequestAttributes(sra, true);
@@ -1027,8 +1032,13 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @Override
     @SaIgnore
     public Result detail(String id) {
-        Result detail = super.detail(id);
+        Result detail = aiBotService.getDetail(id);
         AiBot data = detail.get("data");
+
+        if (data == null) {
+            return detail;
+        }
+
         Map<String, Object> llmOptions = data.getLlmOptions();
         if (llmOptions == null) {
             llmOptions = new HashMap<>();

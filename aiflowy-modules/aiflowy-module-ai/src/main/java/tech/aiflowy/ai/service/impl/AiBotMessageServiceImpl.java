@@ -58,7 +58,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
             List<Maps> finalMessages = new ArrayList<>();
             for (AiBotMessage message : messages){
                 Map<String, Object> options = message.getOptions();
-                if (options != null && (Integer) options.get("type") == 2) {
+                if (options != null && "user".equalsIgnoreCase(message.getRole()) && (Integer) options.get("type") == 2) {
                     continue;
                 }
 
@@ -95,7 +95,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                     List<Maps> finalMessageList = new ArrayList<>();
                     for (AiBotMessage aiBotMessage : aiBotMessageList) {
                         Map<String, Object> options = aiBotMessage.getOptions();
-                        if (options != null && (Integer) options.get("type") == 2) {
+                        if (options != null && "user".equalsIgnoreCase(aiBotMessage.getRole()) && (Integer) options.get("type") == 2) {
                             continue;
                         }
 
