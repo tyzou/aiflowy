@@ -1051,6 +1051,11 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         BigInteger llmId = data.getLlmId();
         AiLlm llm = aiLlmService.getById(llmId);
 
+        if (llm == null) {
+            data.setLlmId(null);
+            return detail;
+        }
+
         Map<String, Object> options = llm.getOptions();
 
         if (options != null && !options.isEmpty()) {
