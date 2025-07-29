@@ -35,6 +35,22 @@ const columnsColumns: ColumnsConfig<any> = [
         }
     },
     {
+        title: '别名',
+        dataIndex: 'alias',
+        key: 'alias',
+        placeholder: "请输入 Bot 别名",
+        supportSearch: true,
+        form: {
+            rules: [
+                {required: true, message: '请输入 Bot 别名'},
+                {
+                    pattern: /^(?=.*[a-zA-Z])[a-zA-Z0-9_]+$/,
+                    message: '必须包含字母，可包含数字和下划线',
+                },
+            ]
+        }
+    },
+    {
         title: '英文名称',
         dataIndex: 'englishName',
         key: 'englishName',
