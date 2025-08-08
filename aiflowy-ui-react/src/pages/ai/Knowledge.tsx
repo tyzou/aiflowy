@@ -42,7 +42,6 @@ const columnsColumns: ColumnsConfig<any> = [
         supportSearch: true,
         form: {
             rules: [
-                {required: true, message: '请输入 Bot 别名'},
                 {
                     pattern: /^(?=.*[a-zA-Z])[a-zA-Z0-9_]+$/,
                     message: '必须包含字母，可包含数字和下划线',
