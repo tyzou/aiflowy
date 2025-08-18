@@ -283,7 +283,7 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                         }
                     >
 
-                        {useCheckPermission(`/api/v1/${tableAlias}/save`) && (
+                        {savePermission && (
                             <Button
                                 style={{borderColor: '#0066FF', color: '#0066FF', width: '195px', height: '48px'}}
                                 onClick={() => {
