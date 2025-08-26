@@ -50,18 +50,15 @@ import tech.aiflowy.common.ai.ChatManager;
 import tech.aiflowy.common.ai.MySseEmitter;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
+import tech.aiflowy.common.util.HashUtil;
 import tech.aiflowy.common.util.Maps;
 import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
-import tech.aiflowy.system.entity.SysApiKey;
 import tech.aiflowy.system.mapper.SysApiKeyMapper;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -114,7 +111,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private Cache<String, Object> cache;
 
     // 转语音相关缓存 key
-    private static final String VOICE_KEY = "aibot:voice"; // 音频列表 key
+    private static final String VOICE_KEY = "aibot:voice:"; // 音频列表 key
     private static final String FULL_TEXT_KEY = "fullText"; // 转语音的完整文本 key
     private static final String MESSAGE_SESSION_ID_KEY = "messageSessionId"; // 转语音消息会话 id key
     private static final String BASE64_KEY = "base64"; // 完整的base64音频 key
@@ -122,7 +119,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private static final Logger logger = LoggerFactory.getLogger(AiBotController.class);
 
     public AiBotController(AiBotService service, AiLlmService aiLlmService, AiBotWorkflowService aiBotWorkflowService,
-        AiBotKnowledgeService aiBotKnowledgeService, AiBotMessageService aiBotMessageService) {
+                           AiBotKnowledgeService aiBotKnowledgeService, AiBotMessageService aiBotMessageService) {
         super(service);
         this.aiLlmService = aiLlmService;
         this.aiBotWorkflowService = aiBotWorkflowService;
@@ -138,8 +135,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("updateOptions")
     @SaCheckPermission("/api/v1/aiBot/save")
     public Result updateOptions(@JsonBody("id")
-    BigInteger id, @JsonBody("options")
-    Map<String, Object> options) {
+                                BigInteger id, @JsonBody("options")
+                                Map<String, Object> options) {
         AiBot aiBot = service.getById(id);
         Map<String, Object> existOptions = aiBot.getOptions();
         if (existOptions == null) {
@@ -156,8 +153,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("updateLlmOptions")
     @SaCheckPermission("/api/v1/aiBot/save")
     public Result updateLlmOptions(@JsonBody("id")
-    BigInteger id, @JsonBody("llmOptions")
-    Map<String, Object> llmOptions) {
+                                   BigInteger id, @JsonBody("llmOptions")
+                                   Map<String, Object> llmOptions) {
         AiBot aiBot = service.getById(id);
         Map<String, Object> existLlmOptions = aiBot.getLlmOptions();
         if (existLlmOptions == null) {
@@ -174,11 +171,11 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("voiceInput")
     @SaIgnore
     public Result voiceInput(@RequestParam("audio")
-    MultipartFile audioFile, @RequestParam("sampleRate")
-    String sampleRate, @RequestParam("channels")
-    String channels, @RequestParam("bitDepth")
-    String bitDepth, @RequestParam("duration")
-    String duration) {
+                             MultipartFile audioFile, @RequestParam("sampleRate")
+                             String sampleRate, @RequestParam("channels")
+                             String channels, @RequestParam("bitDepth")
+                             String bitDepth, @RequestParam("duration")
+                             String duration) {
 
         String recognize = null;
         try {
@@ -193,29 +190,24 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("findVoice")
     @SaIgnore
     public Result findVoice(
-        @JsonBody(value = "fullText", required = true)
-        String fullText,
-        @JsonBody(value = "botId", required = true)
-        BigInteger botId
+            @JsonBody(value = "fullText", required = true)
+            String fullText,
+            @JsonBody(value = "botId", required = true)
+            BigInteger botId
     ) {
 
         AiBot aiBot = service.getById(botId);
 
         if (aiBot == null || aiBot.getOptions() == null || aiBot.getOptions().get("voiceEnabled") == null
-            || !(boolean) aiBot.getOptions().get("voiceEnabled")) {
+                || !(boolean) aiBot.getOptions().get("voiceEnabled")) {
             throw new BusinessException("此bot不支持语音播报！");
         }
 
-        List<Map<String, Object>> voiceList = (List<Map<String, Object>>) cache.get(VOICE_KEY);
-
-        if (voiceList != null && !voiceList.isEmpty()) {
-            Map<String, Object> voiceMap = voiceList.stream()
-                .filter(voice -> ((String) voice.get(FULL_TEXT_KEY)).equalsIgnoreCase(fullText))
-                .findFirst()
-                .orElse(null);
-            if (voiceMap != null && !voiceMap.isEmpty()) {
-                return Result.success(voiceMap);
-            }
+        String cacheKey = VOICE_KEY + HashUtil.md5(fullText);
+        //noinspection unchecked
+        Map<String, Object> voiceMap = (Map<String, Object>) cache.get(cacheKey);
+        if (voiceMap != null && !voiceMap.isEmpty()) {
+            return Result.success(voiceMap);
         }
 
         // 发请求转语音
@@ -230,36 +222,31 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         final AtomicReference<WebSocket> websocketRef = new AtomicReference<>();
 
         WebSocket websocket = ttsService.init(connectId, messageSessionId, base64 -> {
-            // 处理音频片段
-        }, finalResult -> {
-            // 保存到缓存
-            Map<String, Object> finalVoicesMap = new HashMap<>();
-            finalVoicesMap.put(FULL_TEXT_KEY, fullText);
-            finalVoicesMap.put(BASE64_KEY, finalResult);
-            finalVoicesMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
+                    // 处理音频片段
+                }, finalResult -> {
+                    // 保存到缓存
+                    Map<String, Object> finalVoicesMap = new HashMap<>();
+                    finalVoicesMap.put(FULL_TEXT_KEY, fullText);
+                    finalVoicesMap.put(BASE64_KEY, finalResult);
+                    finalVoicesMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
 
-            List<Map<String, Object>> finalVoiceList = (List<Map<String, Object>>) cache.get("VOICE_KEY");
-            if (finalVoiceList == null) {
-                finalVoiceList = new ArrayList<>();
-            }
-            finalVoiceList.add(finalVoicesMap);
-            cache.put(VOICE_KEY, finalVoiceList);
+                    cache.put(cacheKey, finalVoicesMap);
 
-            future.complete(finalVoicesMap);
-        },
-            // 连接就绪回调
-            () -> {
-                connectionReady.set(true);
-                // 连接就绪后发送TTS消息
-                if (!messageSent.getAndSet(true)) {
-                    logger.info("WebSocket连接就绪，开始发送TTS消息");
-                    WebSocket ws = websocketRef.get();
-                    if (ws != null) {
-                        ttsService.sendTTSMessage(ws, messageSessionId, fullText);
-                        ttsService.sendTTSMessage(ws, messageSessionId, "_end_");
+                    future.complete(finalVoicesMap);
+                },
+                // 连接就绪回调
+                () -> {
+                    connectionReady.set(true);
+                    // 连接就绪后发送TTS消息
+                    if (!messageSent.getAndSet(true)) {
+                        logger.info("WebSocket连接就绪，开始发送TTS消息");
+                        WebSocket ws = websocketRef.get();
+                        if (ws != null) {
+                            ttsService.sendTTSMessage(ws, messageSessionId, fullText);
+                            ttsService.sendTTSMessage(ws, messageSessionId, "_end_");
+                        }
                     }
-                }
-            });
+                });
 
         // 保存WebSocket引用
         websocketRef.set(websocket);
@@ -286,16 +273,16 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("chat")
     @SaIgnore
     public SseEmitter chat(@JsonBody(value = "prompt", required = true)
-    String prompt, @JsonBody(value = "botId", required = true)
-    BigInteger botId, @JsonBody(value = "sessionId", required = true)
-    String sessionId, @JsonBody(value = "isExternalMsg")
-    int isExternalMsg, @JsonBody(value = "tempUserId")
-    String tempUserId, @JsonBody(value = "fileList")
-    List<String> fileList, HttpServletResponse response) {
+                           String prompt, @JsonBody(value = "botId", required = true)
+                           BigInteger botId, @JsonBody(value = "sessionId", required = true)
+                           String sessionId, @JsonBody(value = "isExternalMsg")
+                           int isExternalMsg, @JsonBody(value = "tempUserId")
+                           String tempUserId, @JsonBody(value = "fileList")
+                           List<String> fileList, HttpServletResponse response) {
         response.setContentType("text/event-stream");
 
 
-        if (!StringUtils.hasLength(prompt)){
+        if (!StringUtils.hasLength(prompt)) {
             throw new BusinessException("提示词不能为空！");
         }
 
@@ -313,9 +300,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         Map<String, Object> llmOptions = aiBot.getLlmOptions();
-        String systemPrompt = llmOptions != null ? 
-        (String) llmOptions.get("systemPrompt") == null || !StringUtils.hasLength((String)llmOptions.get("systemPrompt")) ? "你是一个AI助手，请根据用户的问题给出清晰、准确的回答。" : (String)llmOptions.get("systemPrompt")
-        : null;
+        String systemPrompt = llmOptions != null ?
+                (String) llmOptions.get("systemPrompt") == null || !StringUtils.hasLength((String) llmOptions.get("systemPrompt")) ? "你是一个AI助手，请根据用户的问题给出清晰、准确的回答。" : (String) llmOptions.get("systemPrompt")
+                : null;
         AiLlm aiLlm = aiLlmService.getById(aiBot.getLlmId());
 
         if (aiLlm == null) {
@@ -337,12 +324,12 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
         if (StpUtil.isLogin()) {
             AiBotMessageMemory memory = new AiBotMessageMemory(botId, SaTokenUtil.getLoginAccount().getId(), sessionId,
-                isExternalMsg, aiBotMessageService, aiBotConversationMessageMapper, aiBotConversationMessageService);
+                    isExternalMsg, aiBotMessageService, aiBotConversationMessageMapper, aiBotConversationMessageService);
             historiesPrompt.setMemory(memory);
 
         } else {
             AiBotMessageIframeMemory memory = new AiBotMessageIframeMemory(botId, tempUserId, sessionId, cache,
-                aiBotConversationMessageService, prompt);
+                    aiBotConversationMessageService, prompt);
             historiesPrompt.setMemory(memory);
 
         }
@@ -355,7 +342,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         } catch (Exception throwables) {
             logger.error("构建工具列表时报错：", throwables);
             return ChatManager.getInstance()
-                .sseEmitterForContent(JSON.toJSONString(Maps.of("content", "大模型调用出错，请检查配置后重试！")));
+                    .sseEmitterForContent(JSON.toJSONString(Maps.of("content", "大模型调用出错，请检查配置后重试！")));
         }
 
         ChatOptions chatOptions = getChatOptions(llmOptions);
@@ -378,7 +365,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         Map<String, Object> options = aiBot.getOptions();
         boolean voiceEnabled = options != null && options.get("voiceEnabled") != null && (boolean) options.get(
-            "voiceEnabled");
+                "voiceEnabled");
 
         WebSocket webSocket = null;
         if (voiceEnabled) {
@@ -387,21 +374,15 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             }, (result) -> {
                 logger.info("tts 转语音 session 执行完毕，connection 已关闭，进行结果缓存");
 
-                List<Map<String, Object>> voiceList = (List<Map<String, Object>>) cache.get(VOICE_KEY);
-
-                if (voiceList == null) {
-                    voiceList = new ArrayList<>();
-                }
-
                 Map<String, Object> resultMap = new HashMap<>();
                 resultMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
-                resultMap.put(FULL_TEXT_KEY, finalAnswerContentBuffer.toString());
+                String voiceText = finalAnswerContentBuffer.toString();
+                resultMap.put(FULL_TEXT_KEY, voiceText);
                 resultMap.put(BASE64_KEY, result);
 
-                voiceList.add(resultMap);
-
                 // 缓存60分钟
-                cache.put("aiBot:voice", voiceList, 60, TimeUnit.MINUTES);
+                String cacheKey = VOICE_KEY + HashUtil.md5(voiceText);
+                cache.put(cacheKey, resultMap, 60, TimeUnit.MINUTES);
 
                 // 将完整音频文件保存到本地的逻辑，如果需要则打开下面的注释 👇
                 // if (StringUtils.hasLength(result)) {
@@ -421,16 +402,16 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         WebSocket finalWebSocket = webSocket;
 
         boolean reActEnabled = options != null && options.get("reActModeEnabled") != null && (Boolean) options.get(
-            "reActModeEnabled");
+                "reActModeEnabled");
 
         if (!reActEnabled) {
             // 普通模式
             return normalChat(emitter, aiLlm, functions, prompt, fileList, historiesPrompt, chatOptions, finalWebSocket,
-                finalAnswerContentBuffer, messageSessionId, voiceEnabled, builder,sessionId);
+                    finalAnswerContentBuffer, messageSessionId, voiceEnabled, builder, sessionId);
         } else {
             // ReAct 模式
             return reActChat(emitter, aiLlm, functions, prompt, fileList, historiesPrompt, chatOptions, finalWebSocket,
-                finalAnswerContentBuffer, messageSessionId, voiceEnabled, builder);
+                    finalAnswerContentBuffer, messageSessionId, voiceEnabled, builder);
         }
 
     }
@@ -439,18 +420,18 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
      * ReAct 模式对话
      */
     private SseEmitter reActChat(
-        MySseEmitter emitter,
-        AiLlm aiLlm,
-        List<Function> functions,
-        String prompt,
-        List<String> fileList,
-        HistoriesPrompt historiesPrompt,
-        ChatOptions chatOptions,
-        WebSocket finalWebSocket,
-        StringBuilder finalAnswerContentBuffer,
-        String messageSessionId,
-        boolean voiceEnabled,
-        OkHttpClient.Builder[] builder
+            MySseEmitter emitter,
+            AiLlm aiLlm,
+            List<Function> functions,
+            String prompt,
+            List<String> fileList,
+            HistoriesPrompt historiesPrompt,
+            ChatOptions chatOptions,
+            WebSocket finalWebSocket,
+            StringBuilder finalAnswerContentBuffer,
+            String messageSessionId,
+            boolean voiceEnabled,
+            OkHttpClient.Builder[] builder
 
     ) {
 
@@ -462,43 +443,43 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         reActAgent.setChatOptions(chatOptions);
 
         String promptTemplate = "你是一个 ReAct Agent,结合 Reasoning（推理）和 Action（行动）来解决问题。\n" +
-            "但在处理用户问题时，请首先判断：\n" +
-            "1. 如果问题可以通过你的常识或已有知识直接回答 → 请忽略 ReAct 框架，直接输出自然语言回答。\n" +
-            "2. 如果问题需要调用特定工具才能解决（如查询、计算、获取外部信息等）→ 请严格按照 ReAct 格式响应。\n\n" +
-            "如果你选择使用 ReAct 模式，请遵循以下格式：\n" +
-            "Thought: 描述你对当前问题的理解，包括已知信息和缺失信息，说明你下一步将采取什么行动及其原因。\n" +
-            "Action: 从下方列出的工具中选择一个合适的工具，仅输出工具名称，不得虚构。\n" +
-            "Action Input: 使用标准 JSON 格式提供该工具所需的参数，禁止使用任何形式的代码块格式，包括但不限于'```json'、'```sql'、'```java'，确保字段名与工具描述一致。\n\n" +
-            "在 ReAct 模式下，如果你已获得足够信息可以直接回答用户，请输出：\n" +
-            "Final Answer: [你的回答]\n\n" +
-            "注意事项：\n" +
-            "1. 每次只能选择一个工具并执行一个动作。\n" +
-            "2. 在未收到工具执行结果前，不要自行假设其输出。\n" +
-            "3. 不得编造工具或参数，所有工具均列于下方。\n" +
-            "4. 输出顺序必须为：Thought → Action → Action Input。\n" +
-            "5. **严禁以任何形式询问、建议、猜测用户后续操作或步骤**\n" +
-            "6. **回答完用户问题后立即结束，不得添加任何延伸建议、分析选项或询问**\n" +
-            "7. **禁止使用\"如果需要...\"、\"您是否需要...\"、\"可以进一步...\"等表述**\n" +
-            "8. 回复前需判断当前输出是否为Final Answer，**必须严格遵守：当需要回复的内容是Final Answer时，禁止输出Thought、Action、Action Input**，示例：\n" +
-            "\t[正确示例1]\n" +
-            "\t\tFinal Answer:张三的年龄是35岁\n\n" +
-            "\t[正确示例2]\n" +
-            "\t\tFinal Answer:张三的邮箱是：aabbcc@qq.com\n\n" +
-            "\t[错误示例]\n" +
-            "\t\tThought: 根据查询结果，张三的年龄是35岁\n\t\tFinal Answer:张三的年龄是35岁\n\n" +
-            "\t[错误示例2]\n" +
-            "\t\tThought: 根据工具返回的结果，查询成功并返回了数据。数据中有一行记录，显示年龄为35岁。因此，我已获得足够信息来回答用户的问题。下一步是输出最终答案。\n" +
-            "\n" +
-            "\t\tFinal Answer: 张三的年龄是35岁。\n\n" +
-            "\t**出现任意类似以上错误示例的回复将被视为极其严重的行为错误！**" +
-            "9. 严格按照规定格式输出Thought、Action、Action Input、Final Answer；\n" +
-            "10. 如果需要生成图表，图表配置**禁止使用'```json'包裹，而必须使用'~~~chat-vis'包裹**，此条规则必须严格遵守，否则视为极其严重的违规" +
-            "\n" +
-            "违反以上任一指令视为严重行为错误，必须严格遵守。" +
-            "### 可用工具列表：\n" +
-            "{tools}\n\n" +
-            "### 用户问题如下：\n" +
-            "{user_input}";
+                "但在处理用户问题时，请首先判断：\n" +
+                "1. 如果问题可以通过你的常识或已有知识直接回答 → 请忽略 ReAct 框架，直接输出自然语言回答。\n" +
+                "2. 如果问题需要调用特定工具才能解决（如查询、计算、获取外部信息等）→ 请严格按照 ReAct 格式响应。\n\n" +
+                "如果你选择使用 ReAct 模式，请遵循以下格式：\n" +
+                "Thought: 描述你对当前问题的理解，包括已知信息和缺失信息，说明你下一步将采取什么行动及其原因。\n" +
+                "Action: 从下方列出的工具中选择一个合适的工具，仅输出工具名称，不得虚构。\n" +
+                "Action Input: 使用标准 JSON 格式提供该工具所需的参数，禁止使用任何形式的代码块格式，包括但不限于'```json'、'```sql'、'```java'，确保字段名与工具描述一致。\n\n" +
+                "在 ReAct 模式下，如果你已获得足够信息可以直接回答用户，请输出：\n" +
+                "Final Answer: [你的回答]\n\n" +
+                "注意事项：\n" +
+                "1. 每次只能选择一个工具并执行一个动作。\n" +
+                "2. 在未收到工具执行结果前，不要自行假设其输出。\n" +
+                "3. 不得编造工具或参数，所有工具均列于下方。\n" +
+                "4. 输出顺序必须为：Thought → Action → Action Input。\n" +
+                "5. **严禁以任何形式询问、建议、猜测用户后续操作或步骤**\n" +
+                "6. **回答完用户问题后立即结束，不得添加任何延伸建议、分析选项或询问**\n" +
+                "7. **禁止使用\"如果需要...\"、\"您是否需要...\"、\"可以进一步...\"等表述**\n" +
+                "8. 回复前需判断当前输出是否为Final Answer，**必须严格遵守：当需要回复的内容是Final Answer时，禁止输出Thought、Action、Action Input**，示例：\n" +
+                "\t[正确示例1]\n" +
+                "\t\tFinal Answer:张三的年龄是35岁\n\n" +
+                "\t[正确示例2]\n" +
+                "\t\tFinal Answer:张三的邮箱是：aabbcc@qq.com\n\n" +
+                "\t[错误示例]\n" +
+                "\t\tThought: 根据查询结果，张三的年龄是35岁\n\t\tFinal Answer:张三的年龄是35岁\n\n" +
+                "\t[错误示例2]\n" +
+                "\t\tThought: 根据工具返回的结果，查询成功并返回了数据。数据中有一行记录，显示年龄为35岁。因此，我已获得足够信息来回答用户的问题。下一步是输出最终答案。\n" +
+                "\n" +
+                "\t\tFinal Answer: 张三的年龄是35岁。\n\n" +
+                "\t**出现任意类似以上错误示例的回复将被视为极其严重的行为错误！**" +
+                "9. 严格按照规定格式输出Thought、Action、Action Input、Final Answer；\n" +
+                "10. 如果需要生成图表，图表配置**禁止使用'```json'包裹，而必须使用'~~~chat-vis'包裹**，此条规则必须严格遵守，否则视为极其严重的违规" +
+                "\n" +
+                "违反以上任一指令视为严重行为错误，必须严格遵守。" +
+                "### 可用工具列表：\n" +
+                "{tools}\n\n" +
+                "### 用户问题如下：\n" +
+                "{user_input}";
 
         // 解决 https://gitee.com/aiflowy/aiflowy/issues/ICMRM2 根据大模型配置属性决定是否构建多模态消息
         Map<String, Object> aiLlmOptions = aiLlm.getOptions();
@@ -568,7 +549,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                         // 第一阶段：如果内容足够少且能明确判断Final Answer，立即处理
                         if (chunk.trim().length() >= 12) {
                             if (lowerChunk.trim().startsWith("final answer:") || lowerChunk.trim()
-                                .startsWith("final answer :") || lowerChunk.trim().startsWith("final answer ")) {
+                                    .startsWith("final answer :") || lowerChunk.trim().startsWith("final answer ")) {
                                 isFinalAnswer = true;
                                 // 处理Final Answer，去掉"Final Answer:"前缀
                                 String finalContent = chunk.replaceFirst("(?i)final answer\\s*:", "").trim();
@@ -592,8 +573,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                         if (chunk.trim().length() >= 50) {
                             // 检查是否包含ReAct的关键模式
                             boolean hasReActPattern = lowerChunk.contains("thought:") || lowerChunk.contains("thought ")
-                                || lowerChunk.matches(".*\\d+\\..*thought.*") ||  // 匹配 "1. xxx Thought" 模式
-                                lowerChunk.contains("思考：") || lowerChunk.contains("分析：");
+                                    || lowerChunk.matches(".*\\d+\\..*thought.*") ||  // 匹配 "1. xxx Thought" 模式
+                                    lowerChunk.contains("思考：") || lowerChunk.contains("分析：");
 
                             if (hasReActPattern) {
                                 isFinalAnswer = false;
@@ -602,15 +583,15 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                                 thoughtMessage.setContent(chunk);
                                 thoughtMessage.setFullContent(chunk);
                                 thoughtMessage.setMetadataMap(Maps.of("showContent", chunk)
-                                    .set("type", 1)
-                                    .set("chainTitle", "💭 思路")
-                                    .set("chainContent", chunk)
-                                    .set("id", currentThoughtId + ""));
+                                        .set("type", 1)
+                                        .set("chainTitle", "💭 思路")
+                                        .set("chainContent", chunk)
+                                        .set("id", currentThoughtId + ""));
 
                                 try {
                                     emitter.send(SseEmitter.event()
-                                        .name("thought")
-                                        .data(JSON.toJSONString(thoughtMessage)));
+                                            .name("thought")
+                                            .data(JSON.toJSONString(thoughtMessage)));
                                 } catch (IOException e) {
                                     throw new BusinessException("发送思路事件报错");
                                 }
@@ -654,10 +635,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             aiMessage.setFullContent(content);
                             aiMessage.setContent(content);
                             aiMessage.setMetadataMap(Maps.of("showContent", content)
-                                .set("type", 1)
-                                .set("chainTitle", "💭 思路")
-                                .set("chainContent", content)
-                                .set("id", currentThoughtId + ""));
+                                    .set("type", 1)
+                                    .set("chainTitle", "💭 思路")
+                                    .set("chainContent", content)
+                                    .set("id", currentThoughtId + ""));
 
                             try {
                                 emitter.send(SseEmitter.event().name("thought").data(JSON.toJSONString(aiMessage)));
@@ -703,10 +684,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 aiMessage.setFullContent("工具执行过程出现异常....正在尝试解决....");
                 aiMessage.setContent("工具执行过程出现异常....正在尝试解决....");
                 aiMessage.setMetadataMap(Maps.of("showContent", "工具执行过程出现异常....正在尝试解决....")
-                    .set("type", 1)
-                    .set("chainTitle", "💭 思路")
-                    .set("chainContent", "工具执行过程出现异常....正在尝试解决....")
-                    .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
+                        .set("type", 1)
+                        .set("chainTitle", "💭 思路")
+                        .set("chainContent", "工具执行过程出现异常....正在尝试解决....")
+                        .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
 
                 try {
                     emitter.send(SseEmitter.event().name("thought").data(JSON.toJSONString(aiMessage)));
@@ -751,8 +732,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 boolean hasUnsupportedApiError = containsUnsupportedApiError(error.getMessage());
                 if (hasUnsupportedApiError) {
                     String errMessage = error.getMessage()
-                        + "\n**以下是 AIFlowy 提供的可查找当前错误的方向**\n**1: 在 AIFlowy 中，Bot 对话需要大模型携带 function_calling 功能**"
-                        + "\n**2: 请查看当前模型是否支持 function_calling 调用？**";
+                            + "\n**以下是 AIFlowy 提供的可查找当前错误的方向**\n**1: 在 AIFlowy 中，Bot 对话需要大模型携带 function_calling 功能**"
+                            + "\n**2: 请查看当前模型是否支持 function_calling 调用？**";
                     aiMessage.setContent(errMessage);
                 }
                 emitter.send(JSON.toJSONString(aiMessage));
@@ -792,10 +773,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 toolCallMessage.setContent(step.getAction());
                 toolCallMessage.setFullContent(step.getAction());
                 toolCallMessage.setMetadataMap(Maps.of("showContent", toolCallMessage.getContent())
-                    .set("type", 1)
-                    .set("chainTitle", "\n\n\uD83D\uDCCB 调用工具中..." + "\n\n")
-                    .set("chainContent", step.getAction())
-                    .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
+                        .set("type", 1)
+                        .set("chainTitle", "\n\n\uD83D\uDCCB 调用工具中..." + "\n\n")
+                        .set("chainContent", step.getAction())
+                        .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
                 historiesPrompt.addMessage(toolCallMessage);
                 try {
                     emitter.send(SseEmitter.event().name("toolCalling").data(JSON.toJSONString(toolCallMessage)));
@@ -820,10 +801,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 aiMessage.setFullContent("\uD83D\uDD0D 调用结果:" + result + "\n\n");
                 aiMessage.setContent("\uD83D\uDD0D 调用结果:" + result + "\n\n");
                 aiMessage.setMetadataMap(Maps.of("showContent", aiMessage.getContent())
-                    .set("type", 2)
-                    .set("chainTitle", "\uD83D\uDD0D 调用结果")
-                    .set("chainContent", result.toString())
-                    .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
+                        .set("type", 2)
+                        .set("chainTitle", "\uD83D\uDD0D 调用结果")
+                        .set("chainContent", result.toString())
+                        .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
                 historiesPrompt.addMessage(aiMessage);
                 try {
                     emitter.send(SseEmitter.event().name("callResult").data(JSON.toJSONString(aiMessage)));
@@ -839,19 +820,19 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     }
 
     private SseEmitter normalChat(
-        MySseEmitter emitter,
-        AiLlm aiLlm,
-        List<Function> functions,
-        String prompt,
-        List<String> fileList,
-        HistoriesPrompt historiesPrompt,
-        ChatOptions chatOptions,
-        WebSocket finalWebSocket,
-        StringBuilder finalAnswerContentBuffer,
-        String messageSessionId,
-        boolean voiceEnabled,
-        OkHttpClient.Builder[] builder,
-        String sessionId
+            MySseEmitter emitter,
+            AiLlm aiLlm,
+            List<Function> functions,
+            String prompt,
+            List<String> fileList,
+            HistoriesPrompt historiesPrompt,
+            ChatOptions chatOptions,
+            WebSocket finalWebSocket,
+            StringBuilder finalAnswerContentBuffer,
+            String messageSessionId,
+            boolean voiceEnabled,
+            OkHttpClient.Builder[] builder,
+            String sessionId
     ) {
         Llm llm = aiLlm.toLlm();
         HumanMessage humanMessage = new HumanMessage(prompt);
@@ -861,9 +842,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             // 构建多模态消息
 
             humanMessage.setMetadataMap(
-                Maps.of("type", 1)
-                    .set("fileList", fileList)
-                    .set("user_input", prompt)
+                    Maps.of("type", 1)
+                            .set("fileList", fileList)
+                            .set("user_input", prompt)
             );
 
         }
@@ -872,7 +853,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         humanMessage.addFunctions(functions);
         historiesPrompt.addMessage(humanMessage);
 
-        
 
         ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         final Boolean[] needClose = {true};
@@ -888,21 +868,21 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                     if (response != null) {
                         // 检查是否需要触发 Function Calling
                         logger.info("是否需要调用function calling:{}", response.getFunctionCallers() != null && CollectionUtil
-                            .hasItems(response.getFunctionCallers()));
+                                .hasItems(response.getFunctionCallers()));
                         if (response.getFunctionCallers() != null && CollectionUtil.hasItems(response
-                            .getFunctionCallers())) {
+                                .getFunctionCallers())) {
                             needClose[0] = false;
                             functionCall(
-                                response, 
-                                emitter, 
-                                historiesPrompt, 
-                                llm, 
-                                sessionId,
-                                finalAnswerContentBuffer,
-                                chatOptions,
-                                messageSessionId,
-                                voiceEnabled,
-                                thinkingMessage    
+                                    response,
+                                    emitter,
+                                    historiesPrompt,
+                                    llm,
+                                    sessionId,
+                                    finalAnswerContentBuffer,
+                                    chatOptions,
+                                    messageSessionId,
+                                    voiceEnabled,
+                                    thinkingMessage
                             );
                         } else {
 
@@ -910,7 +890,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             String fullReasoningContent = response.getMessage().getFullReasoningContent();
                             String content = response.getMessage().getContent();
 
-                            if (StringUtils.hasLength(thinkingContent)){
+                            if (StringUtils.hasLength(thinkingContent)) {
                                 if (thinkingIdMap.get("id") == null) {
                                     thinkingIdMap.put("id", IdUtil.getSnowflake(1, 1).nextId());
                                 }
@@ -919,7 +899,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
                                 thinkingMessage.setContent(thinkingContent);
                                 thinkingMessage.setFullContent(fullReasoningContent);
-                                logger.info("fullReasongingContent:{}",fullReasoningContent);
+                                logger.info("fullReasongingContent:{}", fullReasoningContent);
                                 thinkingMessage.setMetadataMap(thinkingIdMap);
 
                                 try {
@@ -973,7 +953,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                     }
 
 
-
                     emitter.complete();
                 }
             }
@@ -986,8 +965,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 boolean hasUnsupportedApiError = containsUnsupportedApiError(throwable.getMessage());
                 if (hasUnsupportedApiError) {
                     String errMessage = throwable.getMessage()
-                        + "\n**以下是 AIFlowy 提供的可查找当前错误的方向**\n**1: 在 AIFlowy 中，Bot 对话需要大模型携带 function_calling 功能**" +
-                        "\n**2: 请查看当前模型是否支持 function_calling 调用？**";
+                            + "\n**以下是 AIFlowy 提供的可查找当前错误的方向**\n**1: 在 AIFlowy 中，Bot 对话需要大模型携带 function_calling 功能**" +
+                            "\n**2: 请查看当前模型是否支持 function_calling 调用？**";
                     aiMessage.setContent(errMessage);
                 }
                 emitter.send(JSON.toJSONString(aiMessage));
@@ -1002,7 +981,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("updateLlmId")
     @SaCheckPermission("/api/v1/aiBot/save")
     public Result updateBotLlmId(@RequestBody
-    AiBot aiBot) {
+                                 AiBot aiBot) {
         service.updateBotLlmId(aiBot);
         return Result.success();
     }
@@ -1056,32 +1035,32 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
      * @param llm               大模型
      */
     private String functionCall(
-        AiMessageResponse aiMessageResponse, 
-        MySseEmitter emitter, 
-        HistoriesPrompt historiesPrompt, 
-        Llm llm,
-        String sessionId,
-        StringBuilder finalAnswerContentBuffer,
-        ChatOptions chatOptions,
-        String messageSessionId,
-        boolean voiceEnabled,
-        AiMessage thinkingMessage
+            AiMessageResponse aiMessageResponse,
+            MySseEmitter emitter,
+            HistoriesPrompt historiesPrompt,
+            Llm llm,
+            String sessionId,
+            StringBuilder finalAnswerContentBuffer,
+            ChatOptions chatOptions,
+            String messageSessionId,
+            boolean voiceEnabled,
+            AiMessage thinkingMessage
     ) {
         ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         RequestContextHolder.setRequestAttributes(sra, true);
 
-        String connectId = UUID.randomUUID().toString().replace("-","");
+        String connectId = UUID.randomUUID().toString().replace("-", "");
         finalAnswerContentBuffer.setLength(0);
 
         AiMessage toolCallMessage = new AiMessage();
         toolCallMessage.setContent("\n\n\uD83D\uDCCB 调用工具中..." + "\n\n");
         toolCallMessage.setFullContent("\n\n\uD83D\uDCCB 调用工具中..." + "\n\n");
         toolCallMessage.setMetadataMap(Maps.of("showContent", toolCallMessage.getContent())
-            .set("type", 1)
-            .set("chainTitle", "\n\n\uD83D\uDCCB 调用工具" + "\n\n")
-            .set("chainContent", "\n\n\uD83D\uDCCB 调用工具中..." + "\n\n")
-            .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
-        
+                .set("type", 1)
+                .set("chainTitle", "\n\n\uD83D\uDCCB 调用工具" + "\n\n")
+                .set("chainContent", "\n\n\uD83D\uDCCB 调用工具中..." + "\n\n")
+                .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));
+
         try {
             emitter.send(SseEmitter.event().name("toolCalling").data(JSON.toJSONString(toolCallMessage)));
         } catch (IOException e) {
@@ -1089,7 +1068,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         boolean[] alreadyAdd = {false};
-        
+
 
         WebSocket webSocket = null;
         if (voiceEnabled) {
@@ -1136,20 +1115,20 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
                 RequestContextHolder.setRequestAttributes(sra, true);
-                
-                AiMessage message = response.getMessage();
-                if (!alreadyAdd[0]){
 
-                    if (thinkingMessage != null && StringUtils.hasLength(thinkingMessage.getFullContent())){
+                AiMessage message = response.getMessage();
+                if (!alreadyAdd[0]) {
+
+                    if (thinkingMessage != null && StringUtils.hasLength(thinkingMessage.getFullContent())) {
                         thinkingMessage.setFullContent("thinking:" + thinkingMessage.getFullContent());
                         historiesPrompt.addMessage(thinkingMessage);
                     }
 
-                    
+
                     historiesPrompt.addMessage(toolCallMessage);
                     alreadyAdd[0] = true;
                 }
-                
+
 
                 // 检查是否已设置 messageSessionId，如果没有则设置
                 Map<String, Object> metadataMap = message.getMetadataMap();
@@ -1167,7 +1146,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
                 // 发送TTS消息
                 if (voiceEnabled && finalWebSocket != null && StringUtil.hasLength(message.getContent())) {
-                    logger.info("发送语音播报消息：{}",message.getContent());
+                    logger.info("发送语音播报消息：{}", message.getContent());
                     finalAnswerContentBuffer.append(message.getContent());
                     ttsService.sendTTSMessage(finalWebSocket, messageSessionId, message.getContent());
                 }
@@ -1182,7 +1161,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 if (voiceEnabled && finalWebSocket != null) {
                     ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
                 }
-                
+
                 emitter.complete();
             }
 
@@ -1249,15 +1228,15 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         String alias = entity.getAlias();
 
-        if (StringUtils.hasLength(alias)){
+        if (StringUtils.hasLength(alias)) {
             AiBot aiBot = service.getByAlias(alias);
 
 
-            if (aiBot != null && isSave){
+            if (aiBot != null && isSave) {
                 throw new BusinessException("别名已存在！");
             }
 
-            if (aiBot != null && aiBot.getId().compareTo(entity.getId()) != 0){
+            if (aiBot != null && aiBot.getId().compareTo(entity.getId()) != 0) {
                 throw new BusinessException("别名已存在！");
             }
 
@@ -1326,7 +1305,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     }
 
     private AiMessageResponse jsonResultJsonFunctionCall(AiMessageResponse aiMessageResponse,
-        HistoriesPrompt historiesPrompt, Llm llm, String prompt, ChatOptions chatOptions) {
+                                                         HistoriesPrompt historiesPrompt, Llm llm, String prompt, ChatOptions chatOptions) {
         List<FunctionCaller> functionCallers = aiMessageResponse.getFunctionCallers();
         if (CollectionUtil.hasItems(functionCallers)) {
             for (FunctionCaller functionCaller : functionCallers) {
@@ -1363,7 +1342,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         // 工作流 function 集合
         queryWrapper.eq(AiBotWorkflow::getBotId, botId);
         List<AiBotWorkflow> aiBotWorkflows = aiBotWorkflowService.getMapper()
-            .selectListWithRelationsByQuery(queryWrapper);
+                .selectListWithRelationsByQuery(queryWrapper);
         if (aiBotWorkflows != null && !aiBotWorkflows.isEmpty()) {
             for (AiBotWorkflow aiBotWorkflow : aiBotWorkflows) {
                 Function function = aiBotWorkflow.getWorkflow().toFunction(needEnglishName);
@@ -1375,7 +1354,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         queryWrapper = QueryWrapper.create();
         queryWrapper.eq(AiBotKnowledge::getBotId, botId);
         List<AiBotKnowledge> aiBotKnowledges = aiBotKnowledgeService.getMapper()
-            .selectListWithRelationsByQuery(queryWrapper);
+                .selectListWithRelationsByQuery(queryWrapper);
         if (aiBotKnowledges != null && !aiBotKnowledges.isEmpty()) {
             for (AiBotKnowledge aiBotKnowledge : aiBotKnowledges) {
                 Function function = aiBotKnowledge.getKnowledge().toFunction(needEnglishName);
@@ -1390,9 +1369,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 .selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
         if (pluginToolIds != null && !pluginToolIds.isEmpty()) {
             QueryWrapper queryTool = QueryWrapper.create()
-                .select("*")
-                .from("tb_ai_plugin_tool")
-                .in("id", pluginToolIds);
+                    .select("*")
+                    .from("tb_ai_plugin_tool")
+                    .in("id", pluginToolIds);
             List<AiPluginTool> aiPluginTools = aiPluginToolService.getMapper().selectListWithRelationsByQuery(queryTool);
             if (aiPluginTools != null && !aiPluginTools.isEmpty()) {
                 for (AiPluginTool aiPluginTool : aiPluginTools) {
@@ -1400,7 +1379,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 }
             }
         }
-        
+
 
         return functionList;
     }
@@ -1408,7 +1387,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private void appendWorkflowFunctions(BigInteger botId, HumanMessage humanMessage, boolean needEnglishName) {
         QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotWorkflow::getBotId, botId);
         List<AiBotWorkflow> aiBotWorkflows = aiBotWorkflowService.getMapper()
-            .selectListWithRelationsByQuery(queryWrapper);
+                .selectListWithRelationsByQuery(queryWrapper);
         if (aiBotWorkflows != null) {
             for (AiBotWorkflow aiBotWorkflow : aiBotWorkflows) {
                 Function function = aiBotWorkflow.getWorkflow().toFunction(needEnglishName);
@@ -1420,7 +1399,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private void appendKnowledgeFunctions(BigInteger botId, HumanMessage humanMessage, boolean needEnglishName) {
         QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotKnowledge::getBotId, botId);
         List<AiBotKnowledge> aiBotKnowledges = aiBotKnowledgeService.getMapper()
-            .selectListWithRelationsByQuery(queryWrapper);
+                .selectListWithRelationsByQuery(queryWrapper);
         if (aiBotKnowledges != null) {
             for (AiBotKnowledge aiBotKnowledge : aiBotKnowledges) {
                 Function function = aiBotKnowledge.getKnowledge().toFunction(needEnglishName);
@@ -1432,7 +1411,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private void appendPluginToolFunction(BigInteger botId, HumanMessage humanMessage) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").eq(AiBotPlugins::getBotId, botId);
         List<BigInteger> pluginToolIds = aiBotPluginsService.getMapper()
-            .selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
+                .selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
 
         if (pluginToolIds == null || pluginToolIds.isEmpty()) {
             return;
@@ -1452,6 +1431,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
         // 检查是否包含"暂不支持该接口"或其他相关关键词
         return message.contains("暂不支持该接口") || message.contains("不支持接口") || message.contains("接口不支持") || message
-            .contains("The tool call is not supported");
+                .contains("The tool call is not supported");
     }
 }
