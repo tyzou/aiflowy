@@ -7,11 +7,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Map;
 
@@ -33,8 +35,19 @@ public class RequestUtil {
 
 
     public static String readBodyString(HttpServletRequest request) {
+        String ce = request.getCharacterEncoding();
+        if (request instanceof ContentCachingRequestWrapper) {
+            ContentCachingRequestWrapper wrapper = (ContentCachingRequestWrapper) request;
+            byte[] contentAsByteArray = wrapper.getContentAsByteArray();
+            if (contentAsByteArray.length != 0) {
+                try {
+                    return new String(contentAsByteArray, ce != null ? ce : "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
         try {
-            String ce = request.getCharacterEncoding();
             InputStreamReader reader = new InputStreamReader(request.getInputStream(), ce != null ? ce : "UTF-8");
             StringBuilder sb = new StringBuilder();
             char[] buf = new char[1024];
