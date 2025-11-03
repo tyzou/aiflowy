@@ -507,6 +507,7 @@ CREATE TABLE `tb_ai_plugin_tool`  (
   `id` bigint(0) NOT NULL COMMENT '插件工具id',
   `plugin_id` bigint(0) NOT NULL COMMENT '插件id',
   `name` varchar(255) CHARACTER SET utf8mb4 NOT NULL COMMENT '名称',
+  `english_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL COMMENT '英文名称',
   `description` varchar(255) CHARACTER SET utf8mb4 NULL DEFAULT NULL COMMENT '描述',
   `base_path` varchar(255) CHARACTER SET utf8mb4 NULL DEFAULT NULL COMMENT '基础路径',
   `created` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
