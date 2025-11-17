@@ -5,6 +5,7 @@ import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.tree.Tree;
 
+import tech.aiflowy.common.vo.MenuVo;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.system.entity.SysMenu;
 import tech.aiflowy.system.entity.SysRoleMenu;
@@ -69,6 +70,15 @@ public class SysMenuController extends BaseCurdController<SysMenuService, SysMen
         return Result.ok(Tree.tryToTree(sysMenus, "id", "parentId"));
     }
 
+    @GetMapping("treeV2")
+    public Result<List<MenuVo>> treeV2(SysMenu entity) {
+        LoginAccount account = SaTokenUtil.getLoginAccount();
+        BigInteger accountId = account.getId();
+        List<SysMenu> sysMenus = service.getMenusByAccountId(entity,accountId);
+        List<MenuVo> menuVos = buildMenuVos(sysMenus);
+        return Result.ok(Tree.tryToTree(menuVos, "id", "parentId"));
+    }
+
     /**
      * 根据角色id获取菜单树
      */
@@ -120,5 +130,32 @@ public class SysMenuController extends BaseCurdController<SysMenuService, SysMen
             entity.setModifiedBy(loginUser.getId());
         }
         return null;
+    }
+
+    private List<MenuVo> buildMenuVos(List<SysMenu> sysMenus) {
+        List<MenuVo> menuVos = new ArrayList<>();
+        for (SysMenu sysMenu : sysMenus) {
+            if (sysMenu.getIsShow() != 1) {
+                continue;
+            }
+            if (sysMenu.getMenuType() == 1) {
+                continue;
+            }
+            MenuVo menuVo = new MenuVo();
+            menuVo.setId(sysMenu.getId());
+            menuVo.setParentId(sysMenu.getParentId());
+
+            MenuVo.MetaVo metaVo = new MenuVo.MetaVo();
+            metaVo.setTitle(sysMenu.getMenuTitle());
+            metaVo.setIcon(sysMenu.getMenuIcon());
+            metaVo.setOrder(sysMenu.getSortNo());
+
+            menuVo.setMeta(metaVo);
+            menuVo.setName(sysMenu.getId().toString());
+            menuVo.setPath(sysMenu.getMenuUrl());
+            menuVo.setComponent(sysMenu.getComponent());
+            menuVos.add(menuVo);
+        }
+        return menuVos;
     }
 }
