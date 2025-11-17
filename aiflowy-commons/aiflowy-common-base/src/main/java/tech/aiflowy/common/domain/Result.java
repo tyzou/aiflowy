@@ -36,11 +36,11 @@ public class Result<T> implements Serializable {
         return Result;
     }
 
-
-    public static Result<Void> ok(String msg) {
-        Result<Void> Result = new Result<>();
+    public static <T> Result<T> ok(T data) {
+        Result<T> Result = new Result<>();
         Result.setErrorCode(EnumRes.SUCCESS.getCode());
-        Result.setMessage(msg);
+        Result.setMessage(EnumRes.SUCCESS.getMsg());
+        Result.setData(data);
         return Result;
     }
 
