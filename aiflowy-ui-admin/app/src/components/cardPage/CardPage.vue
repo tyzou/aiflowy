@@ -1,119 +1,125 @@
-<template>
-  <div class="card-list-container">
-    <div class="card-list">
-      <el-card
-        v-for="item in data"
-        :key="item.id"
-        class="card-item"
-      >
-      <div class="card-content">
-        <!-- 卡片头部：头像和基本信息 -->
-        <div class="card-header">
-          <el-avatar  :src="item[avatarKey]" />
-          <div class="card-info">
-            <h3 class="card-title">{{ item[titleKey] }}</h3>
-            <p class="card-desc">{{ item[descriptionKey] }}</p>
-          </div>
-        </div>
-        <!-- 操作按钮区域 -->
-        <div class="card-actions">
-          <!-- 最多显示3个操作按钮 -->
-          <el-button
-            v-for="(action, index) in visibleActions"
-            :key="action.name"
-            :type="action.type || 'primary'"
-            :icon="action.icon"
-            size="small"
-            @click="handleActionClick(action, item)"
-          >
-            {{ action.label }}
-          </el-button>
-
-          <!-- 更多操作下拉菜单 -->
-          <el-dropdown
-            v-if="dropdownActions.length > 0"
-            @command="(command) => handleActionClick(command, item)"
-          >
-            <el-button size="small" style="margin-left: 8px;">
-              更多
-              <el-icon class="el-icon--right">
-                <ArrowDown />
-              </el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item
-                  v-for="action in dropdownActions"
-                  :key="action.name"
-                  :command="action"
-                  :icon="action.icon"
-                >
-                  {{ action.label }}
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </div>
-      </el-card>
-    </div>
-
-    <!-- 空状态（保留） -->
-    <div v-if="data.length === 0" class="empty-state">
-      <el-empty description="暂无数据" />
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { computed } from 'vue'
-import { ElAvatar, ElCard, ElDropdown, ElMessage, ElButton, ElIcon, ElDropdownMenu, ElDropdownItem, ElEmpty  } from 'element-plus';
-import { ArrowDown } from '@element-plus/icons-vue'
+import { computed } from 'vue';
+
+import { ArrowDown } from '@element-plus/icons-vue';
+import {
+  ElAvatar,
+  ElButton,
+  ElCard,
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
+  ElEmpty,
+  ElIcon,
+  ElMessage,
+} from 'element-plus';
+
 const props = defineProps({
   titleKey: {
     type: String,
-    default: 'title'
+    default: 'title',
   },
   avatarKey: {
     type: String,
-    default: 'avatar'
+    default: 'avatar',
   },
   descriptionKey: {
     type: String,
-    default: 'description'
+    default: 'description',
   },
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   // 操作按钮配置
   actions: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
 // 定义组件事件
-const emit = defineEmits([
-  'action-click'
-])
+const emit = defineEmits(['actionClick']);
 
 // 可见的操作按钮（最多3个）
 const visibleActions = computed(() => {
-  return props.actions.slice(0, 3)
-})
+  return props.actions.slice(0, 3);
+});
 
 // 下拉菜单中的操作按钮
 const dropdownActions = computed(() => {
-  return props.actions.slice(3)
-})
+  return props.actions.slice(3);
+});
 
 // 处理操作按钮点击
 const handleActionClick = (action, item) => {
-  emit('action-click', { action, item })
-  ElMessage.success(`执行操作: ${action.label} - ${item[props.titleKey]}`)
-}
+  emit('actionClick', { action, item });
+  ElMessage.success(`执行操作: ${action.label} - ${item[props.titleKey]}`);
+};
 </script>
+
+<template>
+  <div class="card-list-container">
+    <div class="card-list">
+      <ElCard v-for="item in data" :key="item.id" class="card-item">
+        <div class="card-content">
+          <!-- 卡片头部：头像和基本信息 -->
+          <div class="card-header">
+            <ElAvatar :src="item[avatarKey]" />
+            <div class="card-info">
+              <h3 class="card-title">{{ item[titleKey] }}</h3>
+              <p class="card-desc">{{ item[descriptionKey] }}</p>
+            </div>
+          </div>
+          <!-- 操作按钮区域 -->
+          <div class="card-actions">
+            <!-- 最多显示3个操作按钮 -->
+            <ElButton
+              v-for="(action, index) in visibleActions"
+              :key="index"
+              :type="action.type || 'primary'"
+              :icon="action.icon"
+              size="small"
+              @click="handleActionClick(action, item)"
+            >
+              {{ action.label }}
+            </ElButton>
+
+            <!-- 更多操作下拉菜单 -->
+            <ElDropdown
+              v-if="dropdownActions.length > 0"
+              @command="(command) => handleActionClick(command, item)"
+            >
+              <ElButton size="small" style="margin-left: 8px">
+                更多
+                <ElIcon class="el-icon--right">
+                  <ArrowDown />
+                </ElIcon>
+              </ElButton>
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <ElDropdownItem
+                    v-for="action in dropdownActions"
+                    :key="action.name"
+                    :command="action"
+                    :icon="action.icon"
+                  >
+                    {{ action.label }}
+                  </ElDropdownItem>
+                </ElDropdownMenu>
+              </template>
+            </ElDropdown>
+          </div>
+        </div>
+      </ElCard>
+    </div>
+
+    <!-- 空状态（保留） -->
+    <div v-if="data.length === 0" class="empty-state">
+      <ElEmpty description="暂无数据" />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .card-list-container {
