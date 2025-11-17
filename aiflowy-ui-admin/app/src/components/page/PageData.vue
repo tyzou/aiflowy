@@ -126,4 +126,11 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-data-container {
+  margin-top: 10px;
+}
+.pagination-container {
+  margin-top: 10px;
+}
+</style>
