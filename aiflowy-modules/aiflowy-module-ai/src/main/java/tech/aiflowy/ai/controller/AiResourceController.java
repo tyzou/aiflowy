@@ -25,7 +25,7 @@ public class AiResourceController extends BaseCurdController<AiResourceService, 
     }
 
     @Override
-    protected Result onSaveOrUpdateBefore(AiResource entity, boolean isSave) {
+    protected Result<?> onSaveOrUpdateBefore(AiResource entity, boolean isSave) {
         LoginAccount loginUser = SaTokenUtil.getLoginAccount();
         if (isSave) {
             String resourceUrl = entity.getResourceUrl();

@@ -1,7 +1,9 @@
 package tech.aiflowy.ai.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.agentsflex.core.document.Document;
 import com.mybatisflex.core.query.QueryWrapper;
+import dev.tinyflow.core.knowledge.Knowledge;
 import org.springframework.util.StringUtils;
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.ai.service.AiBotKnowledgeService;
@@ -22,6 +24,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +50,7 @@ public class AiKnowledgeController extends BaseCurdController<AiKnowledgeService
     }
 
     @Override
-    protected Result onSaveOrUpdateBefore(AiKnowledge entity, boolean isSave) {
+    protected Result<?> onSaveOrUpdateBefore(AiKnowledge entity, boolean isSave) {
 
         String alias = entity.getAlias();
 
@@ -79,27 +82,27 @@ public class AiKnowledgeController extends BaseCurdController<AiKnowledgeService
 
     @GetMapping("search")
     @SaCheckPermission("/api/v1/aiKnowledge/query")
-    public Result search(@RequestParam BigInteger id, @RequestParam String keyword) {
-        return service.search(id, keyword);
+    public Result<List<Document>> search(@RequestParam BigInteger id, @RequestParam String keyword) {
+        return Result.ok(service.search(id, keyword));
     }
 
 
     @Override
-    protected Result onRemoveBefore(Collection<Serializable> ids) {
+    protected Result<Void> onRemoveBefore(Collection<Serializable> ids) {
 
         QueryWrapper queryWrapper = QueryWrapper.create();
         queryWrapper.in("knowledge_id", ids);
 
         boolean exists = aiBotKnowledgeService.exists(queryWrapper);
         if (exists){
-            return  Result.fail(1, "此知识库还关联着bot，请先取消关联！");
+            throw new BusinessException("此知识库还关联着bot，请先取消关联！");
         }
 
-        return null;
+        return Result.ok();
     }
 
     @Override
-    public Result detail(String id) {
-        return service.getDetail(id);
+    public Result<AiKnowledge> detail(String id) {
+        return Result.ok(service.getDetail(id));
     }
 }

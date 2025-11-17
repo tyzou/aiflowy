@@ -45,7 +45,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
      * @return
      */
     @Override
-    public Result messageList(String botId, String sessionId, int isExternalMsg, String tempUserId, String tempUserSessionId) {
+    public Result<?> messageList(String botId, String sessionId, int isExternalMsg, String tempUserId, String tempUserSessionId) {
         boolean login = StpUtil.isLogin();
         if (login) {
             QueryWrapper queryConversation = QueryWrapper.create()
@@ -83,12 +83,12 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
 
 
 
-            return Result.success(finalMessages);
+            return Result.ok(finalMessages);
         } else {
             AtomicReference<List<Maps>> messages = new AtomicReference<>(new ArrayList<>());
             List<AiBotConversationMessage> result = (List<AiBotConversationMessage>)cache.get(tempUserId + ":" + botId);
             if (result == null || result.isEmpty()) {
-                return Result.success(new ArrayList<>());
+                return Result.ok(new ArrayList<>());
             }
             result.forEach(conversationMessage -> {
                 if (conversationMessage.getSessionId().equals(sessionId)) {
@@ -120,12 +120,12 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                     messages.set(finalMessageList);
                 }
             });
-            return Result.success(messages);
+            return Result.ok(messages);
         }
     }
 
     @Override
-    public Result removeMsg(String botId, String sessionId, int isExternalMsg) {
+    public boolean removeMsg(String botId, String sessionId, int isExternalMsg) {
         QueryWrapper queryWrapper =  QueryWrapper.create()
                  .select("*")
                  .from("tb_ai_bot_message")
@@ -134,7 +134,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                  .where("is_external_msg = ? ", isExternalMsg);
 
         aiBotMessageMapper.deleteByQuery(queryWrapper);
-        return Result.success();
+        return true;
     }
 
 

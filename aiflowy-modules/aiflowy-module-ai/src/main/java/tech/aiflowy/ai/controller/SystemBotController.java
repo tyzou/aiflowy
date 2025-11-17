@@ -174,9 +174,9 @@ public class SystemBotController {
     }
 
     @GetMapping("/clearMessage")
-    public Result clearMessage(){
+    public Result<Void> clearMessage(){
         cache.remove(tempUserId + ":" + botId);
-        return Result.success();
+        return Result.ok();
     }
 
     private Llm getLlm(String brand,String apiKey,String modelName,String endpoint,String chatPath){

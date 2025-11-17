@@ -28,7 +28,7 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
     private static final Logger log = LoggerFactory.getLogger(AiBotServiceImpl.class);
 
     @Override
-    public Result getDetail(String id) {
+    public AiBot getDetail(String id) {
         AiBot aiBot = null;
 
         if (id.matches(RegexUtils.ALL_NUMBER)){
@@ -42,7 +42,7 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
             aiBot = getByAlias(id);
         }
 
-        return Result.success(aiBot);
+        return aiBot;
     }
 
     @Override

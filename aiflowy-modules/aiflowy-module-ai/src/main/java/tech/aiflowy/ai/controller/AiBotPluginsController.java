@@ -1,6 +1,7 @@
 package tech.aiflowy.ai.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import tech.aiflowy.ai.entity.AiPlugin;
 import tech.aiflowy.common.annotation.UsePermission;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.tree.Tree;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -35,7 +37,7 @@ public class AiBotPluginsController extends BaseCurdController<AiBotPluginsServi
     private AiBotPluginsService aiBotPluginsService;
 
     @GetMapping("list")
-    public Result list(AiBotPlugins entity, Boolean asTree, String sortKey, String sortType){
+    public Result<List<AiBotPlugins>> list(AiBotPlugins entity, Boolean asTree, String sortKey, String sortType){
 
         QueryWrapper queryWrapper = QueryWrapper.create(entity, buildOperators(entity));
         queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
@@ -44,25 +46,23 @@ public class AiBotPluginsController extends BaseCurdController<AiBotPluginsServi
 
         List<AiBotPlugins> list = Tree.tryToTree(aiBotPlugins, asTree);
 
-         return Result.success(list);
+         return Result.ok(list);
     }
 
     @PostMapping("/getList")
-    public Result getList(@JsonBody(value = "botId", required = true) String botId){
-//        QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_id").where("bot_id = ?", botId);
-//        List<AiBotPlugins> list = service.list(queryWrapper);
-        return aiBotPluginsService.getList(botId);
+    public Result<List<AiPlugin>> getList(@JsonBody(value = "botId", required = true) String botId){
+        return Result.ok(aiBotPluginsService.getList(botId));
     }
 
     @PostMapping("/getBotPluginToolIds")
-    public Result getBotPluginToolIds(@JsonBody(value = "botId", required = true) String botId){
-        return aiBotPluginsService.getBotPluginToolIds(botId);
+    public Result<List<BigInteger>> getBotPluginToolIds(@JsonBody(value = "botId", required = true) String botId){
+        return Result.ok(aiBotPluginsService.getBotPluginToolIds(botId));
     }
 
     @PostMapping("/doRemove")
-    public Result doRemove(@JsonBody(value = "botId", required = true) String botId,
+    public Result<Boolean> doRemove(@JsonBody(value = "botId", required = true) String botId,
                            @JsonBody(value = "pluginToolId", required = true) String pluginToolId){
-        return aiBotPluginsService.doRemove(botId, pluginToolId);
+        return Result.ok(aiBotPluginsService.doRemove(botId, pluginToolId));
     }
 
 }

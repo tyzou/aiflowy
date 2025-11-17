@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import tech.aiflowy.ai.entity.AiBotConversationMessage;
-import tech.aiflowy.ai.entity.AiBotMessage;
-import tech.aiflowy.ai.entity.base.AiBotConversationMessageBase;
 import tech.aiflowy.ai.service.AiBotConversationMessageService;
 import tech.aiflowy.ai.service.AiBotMessageService;
 import tech.aiflowy.common.domain.Result;
@@ -45,7 +43,7 @@ public class AIBotConversationExternalMessageController extends BaseCurdControll
 
     @GetMapping("externalList")
     @SaIgnore
-    public Result externalList(@RequestParam(value = "botId") BigInteger botId, @RequestParam(value = "tempUserId") String tempUserId) {
+    public Result<?> externalList(@RequestParam(value = "botId") BigInteger botId, @RequestParam(value = "tempUserId") String tempUserId) {
         boolean login = StpUtil.isLogin();
         if (login) {
             return conversationMessageService.externalList(botId);
@@ -54,13 +52,13 @@ public class AIBotConversationExternalMessageController extends BaseCurdControll
             System.out.println(result);
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("cons", result);
-            return Result.success(resultMap);
+            return Result.ok(resultMap);
         }
     }
 
     @GetMapping("deleteConversation")
     @SaIgnore
-    public Result deleteConversation(@RequestParam(value = "botId") String botId,
+    public Result<?> deleteConversation(@RequestParam(value = "botId") String botId,
                                      @RequestParam(value = "sessionId") String sessionId,
                                      @RequestParam(value = "tempUserId") String tempUserId
     ) {
@@ -72,13 +70,13 @@ public class AIBotConversationExternalMessageController extends BaseCurdControll
 
         List<AiBotConversationMessage> messages = (List<AiBotConversationMessage>) cache.get(tempUserId + ":" + botId);
         if (messages == null || messages.isEmpty()) {
-            return Result.success();
+            return Result.ok();
         }
         List<AiBotConversationMessage> collect = messages.stream().filter(message -> !message.getSessionId().equals(sessionId)).collect(Collectors.toList());
 
         cache.put(tempUserId + ":" + botId, collect);
 
-        return   Result.success() ;
+        return   Result.ok() ;
 
     }
 
@@ -107,22 +105,22 @@ public class AIBotConversationExternalMessageController extends BaseCurdControll
 
         cache.put(tempUserId + ":" + botId, messages);
 
-        return Result.success();
+        return Result.ok();
     }
 
     @PostMapping("clearMessage")
     @SaIgnore
-    public Result clearMessage(@JsonBody("botId") String botId,@JsonBody("sessionId") String sessionId, @JsonBody("tempUserId") String tempUserId) {
+    public Result<Void> clearMessage(@JsonBody("botId") String botId,@JsonBody("sessionId") String sessionId, @JsonBody("tempUserId") String tempUserId) {
         boolean login = StpUtil.isLogin();
 
         if (login) {
             aiBotMessageService.removeMsg(botId,sessionId,1);
-            return Result.success();
+            return Result.ok();
         }
 
         List<AiBotConversationMessage> messages = (List<AiBotConversationMessage>) cache.get(tempUserId + ":" + botId);
         if (messages == null || messages.isEmpty()) {
-            return Result.success();
+            return Result.ok();
         }
         messages.forEach(message -> {
             if (message.getSessionId().equals(sessionId)) {
@@ -132,6 +130,6 @@ public class AIBotConversationExternalMessageController extends BaseCurdControll
 
         cache.put(tempUserId + ":" + botId, messages);
 
-        return Result.success();
+        return Result.ok();
     }
 }

@@ -32,8 +32,8 @@ public class AiPluginCategoriesController extends BaseCurdController<AiPluginCat
 
     @GetMapping("/doRemoveCategory")
     @SaCheckPermission("/api/v1/aiPlugin/remove")
-    public Result doRemoveCategory(@RequestParam("id") Integer id){
+    public Result<Boolean> doRemoveCategory(@RequestParam("id") Integer id){
 
-        return aiPluginCategoriesService.doRemoveCategory(id);
+        return Result.ok(aiPluginCategoriesService.doRemoveCategory(id));
     }
 }

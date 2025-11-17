@@ -1,10 +1,12 @@
 package tech.aiflowy.ai.service;
 
+import com.agentsflex.core.document.Document;
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.common.domain.Result;
 import com.mybatisflex.core.service.IService;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  *  服务层。
@@ -14,9 +16,9 @@ import java.math.BigInteger;
  */
 public interface AiKnowledgeService extends IService<AiKnowledge> {
 
-    Result search(BigInteger id, String keyword);
+    List<Document> search(BigInteger id, String keyword);
 
-    Result getDetail(String idOrAlias);
+    AiKnowledge getDetail(String idOrAlias);
 
     AiKnowledge getByAlias(String idOrAlias);
 }

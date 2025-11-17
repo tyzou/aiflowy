@@ -42,31 +42,31 @@ public class AiLlmController extends BaseCurdController<AiLlmService, AiLlm> {
 
     @GetMapping("list")
     @SaCheckPermission("/api/v1/aiLlm/query")
-    public Result list(AiLlm entity, Boolean asTree, String sortKey, String sortType) {
+    public Result<?> list(AiLlm entity, Boolean asTree, String sortKey, String sortType) {
         return super.list(entity, asTree, sortKey, sortType);
     }
 
     @PostMapping("/addAiLlm")
     @SaCheckPermission("/api/v1/aiLlm/save")
-    public Result addAiLlm(AiLlm entity) {
+    public Result<Boolean> addAiLlm(AiLlm entity) {
         LoginAccount account = SaTokenUtil.getLoginAccount();
         commonFiled(entity, account.getId(), account.getTenantId(), account.getDeptId());
-        return aiLlmService.addAiLlm(entity);
+        return Result.ok(aiLlmService.addAiLlm(entity));
     }
 
 
     @PostMapping("verifyLlmConfig")
     @SaCheckPermission("/api/v1/aiLlm/save")
-    public Result verifyLlmConfig(@RequestBody AiLlm llm) {
+    public Result<Void> verifyLlmConfig(@RequestBody AiLlm llm) {
 
         service.verifyLlmConfig(llm);
 
-        return Result.success();
+        return Result.ok();
     }
 
     @PostMapping("quickAdd")
     @SaCheckPermission("/api/v1/aiLlm/save")
-    public Result quickAdd(@JsonBody(value = "brand",required = true) String brand,@JsonBody(value = "apiKey",required = true) String apiKey){
+    public Result<Void> quickAdd(@JsonBody(value = "brand",required = true) String brand,@JsonBody(value = "apiKey",required = true) String apiKey){
 
 
         if (!StringUtils.hasLength(brand)){
@@ -76,6 +76,6 @@ public class AiLlmController extends BaseCurdController<AiLlmService, AiLlm> {
 
         aiLlmService.quickAdd(brand,apiKey);
 
-        return Result.success();
+        return Result.ok();
     }
 }

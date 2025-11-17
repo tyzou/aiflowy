@@ -30,32 +30,27 @@ public class AiBotPluginsServiceImpl extends ServiceImpl<AiBotPluginsMapper, AiB
     private AiPluginMapper aiPluginMapper;
 
     @Override
-    public Result getList(String botId) {
+    public List<AiPlugin> getList(String botId) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").where("bot_id = ?", botId);
         List<BigInteger> pluginIds = aiBotPluginsMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
         List<AiPlugin> aiPlugins = aiPluginMapper.selectListByIds(pluginIds);
-        return Result.success(aiPlugins);
+        return aiPlugins;
     }
 
     @Override
-    public Result doRemove(String botId, String pluginToolId) {
+    public boolean doRemove(String botId, String pluginToolId) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("id")
                 .from("tb_ai_bot_plugins")
                 .where("bot_id = ?", botId)
                 .where("plugin_tool_id = ?", pluginToolId);
         BigInteger id = aiBotPluginsMapper.selectOneByQueryAs(queryWrapper, BigInteger.class);
         int delete = aiBotPluginsMapper.deleteById(id);
-        if (delete <= 0) {
-            return Result.fail();
-        }
-        return Result.success();
+        return delete > 0;
     }
 
     @Override
-    public Result getBotPluginToolIds(String botId) {
+    public List<BigInteger> getBotPluginToolIds(String botId) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").where("bot_id = ?", botId);
-        List<BigInteger> pluginToolIds = aiBotPluginsMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
-
-        return Result.success(pluginToolIds);
+        return aiBotPluginsMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
     }
 }

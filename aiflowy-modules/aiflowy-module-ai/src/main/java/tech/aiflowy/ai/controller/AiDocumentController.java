@@ -25,6 +25,7 @@ import tech.aiflowy.common.tree.Tree;
 import tech.aiflowy.common.util.RequestUtil;
 import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 
 import javax.servlet.http.HttpServletResponse;
@@ -65,17 +66,17 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
     @PostMapping("removeDoc")
     @Transactional
     @SaCheckPermission("/api/v1/aiKnowledge/remove")
-    public Result remove(@JsonBody(value = "id", required = true) String id) {
+    public Result<?> remove(@JsonBody(value = "id", required = true) String id) {
         List<Serializable> ids = Collections.singletonList(id);
-        Result result = onRemoveBefore(ids);
+        Result<?> result = onRemoveBefore(ids);
         if (result != null) return result;
         boolean isSuccess = aiDocumentService.removeDoc(id);
         if (!isSuccess){
-            return Result.fail(1,"删除失败");
+            return Result.ok(false);
         }
         boolean success = service.removeById(id);
         onRemoveAfter(ids);
-        return Result.create(success);
+        return Result.ok(success);
     }
 
 
@@ -91,10 +92,10 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
     @GetMapping("list")
     @Override
     @SaCheckPermission("/api/v1/aiKnowledge/query")
-    public Result list(AiDocument entity, Boolean asTree, String sortKey, String sortType) {
+    public Result<List<AiDocument>> list(AiDocument entity, Boolean asTree, String sortKey, String sortType) {
         String kbSlug = RequestUtil.getParamAsString("id");
         if (StringUtil.noText(kbSlug)) {
-            return Result.fail(1, "知识库id不能为空");
+            throw new BusinessException("知识库id不能为空");
         }
 
         AiKnowledge knowledge = StringUtil.isNumeric(kbSlug)
@@ -102,7 +103,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
                 : knowledgeService.getOne(QueryWrapper.create().eq(AiKnowledge::getSlug, kbSlug));
 
         if (knowledge == null) {
-            return Result.fail(2, "知识库不存在");
+            throw new BusinessException("知识库不存在");
         }
 
         QueryWrapper queryWrapper = QueryWrapper.create()
@@ -110,18 +111,18 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
         List<AiDocument> aiDocuments = service.list(queryWrapper);
         List<AiDocument> list = Tree.tryToTree(aiDocuments, asTree);
-        return Result.success(list);
+        return Result.ok(list);
     }
 
     @GetMapping("documentList")
     @SaCheckPermission("/api/v1/aiKnowledge/query")
-    public Result documentList(@RequestParam(name="title", required = false) String fileName, @RequestParam(name="pageSize") int pageSize, @RequestParam(name = "current") int current) {
+    public Result<Page<AiDocument>> documentList(@RequestParam(name="title", required = false) String fileName, @RequestParam(name="pageSize") int pageSize, @RequestParam(name = "current") int current) {
         String kbSlug = RequestUtil.getParamAsString("id");
         if (StringUtil.noText(kbSlug)) {
-            return Result.fail(1, "知识库id不能为空");
+            throw new BusinessException("知识库id不能为空");
         }
         Page<AiDocument> documentList = aiDocumentService.getDocumentList(kbSlug, pageSize, current,fileName);
-        return Result.success(documentList);
+        return Result.ok(documentList);
     }
 
 
@@ -134,9 +135,9 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
     @PostMapping("update")
     @Override
     @SaCheckPermission("/api/v1/aiKnowledge/save")
-    public Result update(@JsonBody AiDocument entity) {
+    public Result<Boolean> update(@JsonBody AiDocument entity) {
         super.update(entity);
-        return updatePosition(entity);
+        return Result.ok(updatePosition(entity));
     }
 
     /**
@@ -151,7 +152,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
      */
     @PostMapping(value = {"textSplit", "/saveText"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SaCheckPermission("/api/v1/aiKnowledge/save")
-    public Result textSplit(
+    public Result<?> textSplit(
                               @RequestParam("pageNumber") Integer pageNumber,
                               @RequestParam("pageSize") Integer pageSize,
                               @RequestParam("operation") String operation,
@@ -189,7 +190,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
      * @param entity
      * @return Result
      */
-    private Result updatePosition(AiDocument entity) {
+    private boolean updatePosition(AiDocument entity) {
         Integer orderNo = entity.getOrderNo();
         if (orderNo != null) {
             if (orderNo <= 0) orderNo = 0;
@@ -217,7 +218,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
             service.updateBatch(updateList);
         }
 
-        return Result.success();
+        return true;
     }
 
 

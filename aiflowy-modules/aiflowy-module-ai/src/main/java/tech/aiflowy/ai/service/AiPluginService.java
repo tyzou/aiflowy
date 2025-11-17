@@ -4,6 +4,8 @@ import com.mybatisflex.core.service.IService;
 import tech.aiflowy.ai.entity.AiPlugin;
 import tech.aiflowy.common.domain.Result;
 
+import java.util.List;
+
 /**
  *  服务层。
  *
@@ -12,13 +14,13 @@ import tech.aiflowy.common.domain.Result;
  */
 public interface AiPluginService extends IService<AiPlugin> {
 
-    Result savePlugin(AiPlugin aiPlugin);
+    boolean savePlugin(AiPlugin aiPlugin);
 
-    Result removePlugin(String id);
+    boolean removePlugin(String id);
 
-    Result updatePlugin(AiPlugin aiPlugin);
+    boolean updatePlugin(AiPlugin aiPlugin);
 
-    Result getList();
+    List<AiPlugin> getList();
 
     Result pageByCategory(Long pageNumber, Long pageSize, int category);
 }

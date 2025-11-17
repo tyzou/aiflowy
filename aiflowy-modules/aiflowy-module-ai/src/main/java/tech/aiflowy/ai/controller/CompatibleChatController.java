@@ -438,7 +438,7 @@ public class CompatibleChatController {
         }
 
         // 绑定插件
-        List<AiPluginTool> aiPluginToolList = (List<AiPluginTool>) aiPluginToolService.getPluginToolList(botId).data();
+        List<AiPluginTool> aiPluginToolList = aiPluginToolService.getPluginToolList(botId);
         if (aiPluginToolList != null && !aiPluginToolList.isEmpty()) {
             aiPluginToolList.forEach(aiPluginTool -> {
                 Function function = aiPluginTool.toFunction();

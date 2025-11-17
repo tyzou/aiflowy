@@ -16,15 +16,15 @@ import java.util.List;
  */
 public interface AiPluginToolService extends IService<AiPluginTool> {
 
-    Result savePluginTool(AiPluginTool aiPluginTool);
+    boolean savePluginTool(AiPluginTool aiPluginTool);
 
     Result searchPlugin(BigInteger aiPluginToolId);
 
-    Result updatePlugin(AiPluginTool aiPluginTool);
+    boolean updatePlugin(AiPluginTool aiPluginTool);
 
-    Result searchPluginToolByPluginId(BigInteger pluginId, BigInteger botId);
+    List<AiPluginTool> searchPluginToolByPluginId(BigInteger pluginId, BigInteger botId);
 
-    Result getPluginToolList(BigInteger botId);
+    List<AiPluginTool> getPluginToolList(BigInteger botId);
 
     Result pluginToolTest(String inputData, BigInteger pluginToolId);
 

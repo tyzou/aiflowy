@@ -78,7 +78,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @PostMapping("/importWorkFlow")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result importWorkFlow(AiWorkflow workflow, MultipartFile jsonFile) throws Exception {
+    public Result<Void> importWorkFlow(AiWorkflow workflow, MultipartFile jsonFile) throws Exception {
         InputStream is = jsonFile.getInputStream();
         String content = IoUtil.read(is, StandardCharsets.UTF_8);
         workflow.setContent(content);
@@ -86,19 +86,19 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         //     workflow.setAlias(UUID.randomUUID().toString().replaceAll("-",""));
         // }
         save(workflow);
-        return Result.success();
+        return Result.ok();
     }
 
     @GetMapping("/exportWorkFlow")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result exportWorkFlow(BigInteger id) {
+    public Result<?> exportWorkFlow(BigInteger id) {
         AiWorkflow workflow = service.getById(id);
-        return Result.success("content", workflow.getContent());
+        return Result.ok("content", workflow.getContent());
     }
 
     @GetMapping("getRunningParameters")
     @SaCheckPermission("/api/v1/aiWorkflow/query")
-    public Result getRunningParameters(@RequestParam BigInteger id) {
+    public Result<?> getRunningParameters(@RequestParam BigInteger id) {
         AiWorkflow workflow = service.getById(id);
 
         if (workflow == null) {
@@ -115,15 +115,17 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             return Result.fail(2, "节点配置错误，请检查! ");
         }
         List<Parameter> chainParameters = chain.getParameters();
-        return Result.success("parameters", chainParameters)
-                .set("title", workflow.getTitle())
-                .set("description", workflow.getDescription())
-                .set("icon", workflow.getIcon());
+        Map<String, Object> res = new HashMap<>();
+        res.put("parameters", chainParameters);
+        res.put("title", workflow.getTitle());
+        res.put("description", workflow.getDescription());
+        res.put("icon", workflow.getIcon());
+        return Result.ok(res);
     }
 
     @PostMapping("tryRunning")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result tryRunning(@JsonBody(value = "id", required = true) BigInteger id, @JsonBody("variables") Map<String, Object> variables) {
+    public Result<?> tryRunning(@JsonBody(value = "id", required = true) BigInteger id, @JsonBody("variables") Map<String, Object> variables) {
         AiWorkflow workflow = service.getById(id);
 
         if (workflow == null) {
@@ -138,8 +140,10 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         }
 
         Map<String, Object> result = chain.executeForResult(variables);
-
-        return Result.success("result", result).set("message", chain.getMessage());
+        HashMap<String, Object> res = new HashMap<>();
+        res.put("result", result);
+        res.put("message", chain.getMessage());
+        return Result.ok(res);
     }
 
     @PostMapping("tryRunningStream")
@@ -221,7 +225,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
 
     @Override
-    public Result detail(String id) {
+    public Result<?> detail(String id) {
         return service.getDetail(id);
     }
 
@@ -314,7 +318,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     @SaIgnore
     @GetMapping(value = "/external/getRunningParams", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Result externalGetRunningParameters(HttpServletRequest request,
+    public Result<?> externalGetRunningParameters(HttpServletRequest request,
                                                @RequestParam BigInteger id) {
         String apiKey = request.getHeader("Authorization");
         apiKeyService.checkApiKey(apiKey);
@@ -324,7 +328,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     @SaIgnore
     @PostMapping(value = "/external/run", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Result externalRun(HttpServletRequest request,
+    public Result<?> externalRun(HttpServletRequest request,
                               @JsonBody(value = "id", required = true) BigInteger id,
                               @JsonBody("variables") Map<String, Object> variables) {
         String apiKey = request.getHeader("Authorization");
@@ -334,7 +338,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @PostMapping("/singleRun")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result singleRun(
+    public Result<?> singleRun(
             @JsonBody(value = "id", required = true) BigInteger id,
             @JsonBody(value = "node", required = true) Map<String, Object> node,
             @JsonBody("variables") Map<String, Object> variables) {
@@ -369,19 +373,19 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
         chain.addNode(currentNode);
         Map<String, Object> res = chain.executeForResult(variables);
-        return Result.success(res);
+        return Result.ok(res);
     }
 
     @GetMapping("/copy")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result copy(BigInteger id) {
+    public Result<Void> copy(BigInteger id) {
         LoginAccount account = SaTokenUtil.getLoginAccount();
         AiWorkflow workflow = service.getById(id);
         workflow.setId(null);
         workflow.setAlias(IdUtil.fastSimpleUUID());
         commonFiled(workflow, account.getId(), account.getTenantId(), account.getDeptId());
         service.save(workflow);
-        return Result.success();
+        return Result.ok();
     }
 
     /**

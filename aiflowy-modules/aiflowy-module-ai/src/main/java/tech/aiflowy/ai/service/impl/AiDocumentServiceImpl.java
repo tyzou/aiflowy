@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.filestorage.FileStorageService;
 import tech.aiflowy.common.util.StringUtil;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.core.utils.JudgeFileTypeUtil;
 
 import javax.annotation.Resource;
@@ -162,15 +163,13 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
     @Override
     @Transactional
-    public Result textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
+    public Result<?> textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
         try {
             InputStream inputStream = storageService.readStream(filePath);
-            String fileExtension = null;
             if (getFileExtension(filePath) == null){
                 Log.error("获取文件后缀失败");
-                return Result.fail();
+                throw new BusinessException("获取文件后缀失败");
             }
-            fileExtension = getFileExtension(filePath);
             DocumentParser documentParser = DocumentParserFactory.getDocumentParser(filePath);
             AiDocument aiDocument = new AiDocument();
             List<AiDocumentChunk> previewList = new ArrayList<>();
@@ -228,18 +227,18 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             res.put("previewData", aiDocumentChunks);
             res.put("aiDocumentData", aiDocument);
             // 返回分割效果给用户
-            return Result.success(res);
+            return Result.ok(res);
         } catch (IOException e) {
             Log.error(e.toString(), e);
         }
 
-        return Result.fail();
+        return Result.fail("操作失败");
     }
 
     @Override
-    public Result saveTextResult(List<AiDocumentChunk> aiDocumentChunks, AiDocument aiDocument) {
-        Result result = storeDocument(aiDocument, aiDocumentChunks);
-        if (result.isSuccess()) {
+    public Result<?> saveTextResult(List<AiDocumentChunk> aiDocumentChunks, AiDocument aiDocument) {
+        Boolean result = storeDocument(aiDocument, aiDocumentChunks);
+        if (result) {
             this.getMapper().insert(aiDocument);
             AtomicInteger sort = new AtomicInteger(1);
             aiDocumentChunks.forEach(item -> {
@@ -249,25 +248,24 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
                 sort.getAndIncrement();
                 documentChunkService.save(item);
             });
-            return Result.success();
+            return Result.ok();
         }
         return Result.fail(1, "保存失败");
     }
 
-    protected Result storeDocument(AiDocument entity, List<AiDocumentChunk> aiDocumentChunks) {
+    protected Boolean storeDocument(AiDocument entity, List<AiDocumentChunk> aiDocumentChunks) {
         AiKnowledge knowledge = knowledgeService.getById(entity.getKnowledgeId());
         if (knowledge == null) {
-            return Result.fail(1, "知识库不存在");
+            throw new BusinessException("知识库不存在");
         }
         DocumentStore documentStore = knowledge.toDocumentStore();
         if (documentStore == null) {
-            return Result.fail(2, "向量数据库类型未设置");
+            throw new BusinessException("向量数据库类型未设置");
         }
         // 设置向量模型
         AiLlm aiLlm = aiLlmService.getById(knowledge.getVectorEmbedLlmId());
         if (aiLlm == null) {
-            return Result.fail(3, "该知识库未配置大模型");
-
+            throw new BusinessException("该知识库未配置大模型");
         }
         // 设置向量模型
         Llm embeddingModel = aiLlm.toLlm();
@@ -289,7 +287,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         StoreResult result = documentStore.store(documents, options);
         if (!result.isSuccess()) {
             Log.error("DocumentStore.store failed: " + result);
-            return Result.fail();
+            throw new BusinessException("DocumentStore.store failed");
         }
 
         if (knowledge.isSearchEngineEnabled()) {
@@ -312,7 +310,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         }
         aiKnowledge.setOptions(knowledgeoptions);
         knowledgeService.updateById(aiKnowledge);
-        return Result.success();
+        return true;
     }
 
     public DocumentSplitter getDocumentSplitter(String splitterName, int chunkSize, int overlapSize, String regex, int excelRows) {

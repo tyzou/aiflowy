@@ -24,6 +24,7 @@ import cn.dev33.satoken.annotation.SaIgnore;
 import tech.aiflowy.ai.service.AiBotApiKeyService;
 import org.springframework.util.StringUtils;
 import tech.aiflowy.ai.service.AiBotService;
+import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.web.exceptions.BusinessException;
 
 @RestController
@@ -88,34 +89,31 @@ public class ThirdPartMessageController {
      * 微信签名验证接口（GET请求）
      */
     @GetMapping("/wechat")
-    public String verifyWeChatSignature(@RequestParam("signature")
-    String signature,
-        @RequestParam("timestamp")
-        String timestamp,
-        @RequestParam("nonce")
-        String nonce,
-        @RequestParam("echostr")
-        String echostr,
-        @RequestParam ("apiKey") String apiKey
+    public Result<Void> verifyWeChatSignature(
+            @RequestParam("signature") String signature,
+            @RequestParam("timestamp") String timestamp,
+            @RequestParam("nonce") String nonce,
+            @RequestParam("echostr") String echostr,
+            @RequestParam ("apiKey") String apiKey
     ) {
 
         if (!StringUtils.hasLength(apiKey)) {
             log.error("微信服务未配置");
-            return "";
+            return Result.ok("");
         }
 
         // 解析 apiKey
         BigInteger botId = aiBotApiKeyService.decryptApiKey(apiKey);
         if (botId == null){
             log.error("apiKey 解析失败");
-            return "";
+            return Result.ok("");
         }
 
         // 查询 bot信息
         AiBot aiBot = aiBotService.getById(botId);
         if (aiBot == null || aiBot.getOptions() == null){
             log.error("bot 不存在或未配置微信公众号信息");
-            return "";
+            return Result.ok("");
         }
 
         Map<String, Object> options = aiBot.getOptions();
@@ -151,14 +149,14 @@ public class ThirdPartMessageController {
         try {
             if (wxMpService.checkSignature(timestamp, nonce, signature)) {
                 log.info("微信签名验证成功");
-                return echostr;
+                return Result.ok(echostr);
             } else {
                 log.error("微信签名验证失败");
-                return "";
+                return Result.ok();
             }
         } catch (Exception e) {
             log.error("微信签名验证异常", e);
-            return "";
+            return Result.ok();
         }
     }
 

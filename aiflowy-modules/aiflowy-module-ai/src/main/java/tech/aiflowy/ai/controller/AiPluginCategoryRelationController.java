@@ -1,6 +1,7 @@
 package tech.aiflowy.ai.controller;
 
 import org.springframework.web.bind.annotation.*;
+import tech.aiflowy.ai.entity.AiPluginCategories;
 import tech.aiflowy.ai.entity.AiPluginCategoryRelation;
 import tech.aiflowy.ai.service.AiPluginCategoryRelationService;
 import tech.aiflowy.common.domain.Result;
@@ -11,6 +12,7 @@ import javax.annotation.Resource;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  控制层。
@@ -29,16 +31,16 @@ public class AiPluginCategoryRelationController extends BaseCurdController<AiPlu
     private AiPluginCategoryRelationService relationService;
 
     @PostMapping("/updateRelation")
-    public Result updateRelation(
+    public Result<Boolean> updateRelation(
             @JsonBody(value="pluginId") long pluginId,
             @JsonBody(value="categoryIds") ArrayList<Integer> categoryIds
     ){
-        return relationService.updateRelation(pluginId, categoryIds);
+        return Result.ok(relationService.updateRelation(pluginId, categoryIds));
     }
 
     @GetMapping("/getPluginCategories")
-    public Result getPluginCategories(@RequestParam(value="pluginId") long pluginId
+    public Result<List<AiPluginCategories>> getPluginCategories(@RequestParam(value="pluginId") long pluginId
     ){
-        return relationService.getPluginCategories(pluginId);
+        return Result.ok(relationService.getPluginCategories(pluginId));
     }
 }

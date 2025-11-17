@@ -50,18 +50,18 @@ public class AiPluginServiceImpl extends ServiceImpl<AiPluginMapper, AiPlugin> i
     private AiPluginToolService aiPluginToolService;
 
     @Override
-    public Result savePlugin(AiPlugin aiPlugin) {
+    public boolean savePlugin(AiPlugin aiPlugin) {
         aiPlugin.setCreated(new Date());
         int insert = aiPluginMapper.insert(aiPlugin);
         if (insert <= 0) {
-            return Result.fail(1, "保存失败");
+            throw new BusinessException("保存失败");
         }
-        return Result.success();
+        return true;
     }
 
     @Override
     @Transactional
-    public Result removePlugin(String id) {
+    public boolean removePlugin(String id) {
 
         List<AiPluginTool> aiPluginTools = aiPluginToolService.getByPluginId(id);
         List<BigInteger> pluginToolIds = new ArrayList<>();
@@ -75,7 +75,7 @@ public class AiPluginServiceImpl extends ServiceImpl<AiPluginMapper, AiPlugin> i
 
             boolean exists = aiBotPluginsService.exists(queryWrapper);
             if (exists){
-                return Result.fail(1, "插件中有工具还关联着bot，请先取消关联！");
+                throw new BusinessException("插件中有工具还关联着bot，请先取消关联！");
             }
 
         }
@@ -95,29 +95,28 @@ public class AiPluginServiceImpl extends ServiceImpl<AiPluginMapper, AiPlugin> i
             throw new BusinessException("删除失败，请稍后重试！");
         }
 
-        return Result.success();
+        return true;
 
     }
 
     @Override
-    public Result updatePlugin(AiPlugin aiPlugin) {
+    public boolean updatePlugin(AiPlugin aiPlugin) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("id")
                 .from("tb_ai_plugin")
                 .where("id = ?", aiPlugin.getId());
         int update = aiPluginMapper.updateByQuery(aiPlugin, queryWrapper);
         if (update <= 0) {
-            return Result.fail(1, "修改失败");
-
+            throw new BusinessException("修改失败");
         }
-        return Result.success();
+        return true;
     }
 
     @Override
-    public Result getList() {
+    public List<AiPlugin> getList() {
         QueryWrapper queryWrapper = QueryWrapper.create().select("id, name, description, icon")
                 .from("tb_ai_plugin");
         List<AiPlugin> aiPlugins = aiPluginMapper.selectListByQueryAs(queryWrapper, AiPlugin.class);
-        return Result.success(aiPlugins);
+        return aiPlugins;
     }
 
     @Override

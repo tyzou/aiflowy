@@ -18,6 +18,7 @@ import tech.aiflowy.ai.service.AiPluginToolService;
 import tech.aiflowy.common.ai.util.PluginParam;
 import tech.aiflowy.common.ai.util.PluginParamConverter;
 import tech.aiflowy.common.domain.Result;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import javax.annotation.Resource;
 import java.math.BigInteger;
@@ -43,18 +44,18 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
     private AiBotPluginsMapper aiBotPluginsMapper;
 
     @Override
-    public Result savePluginTool(AiPluginTool aiPluginTool) {
+    public boolean savePluginTool(AiPluginTool aiPluginTool) {
         aiPluginTool.setCreated(new Date());
         aiPluginTool.setRequestMethod("Post");
         int insert = aiPluginToolMapper.insert(aiPluginTool);
         if (insert <= 0) {
-            return Result.fail(1, "插入失败");
+            throw new BusinessException("保存失败");
         }
-        return Result.success();
+        return true;
     }
 
     @Override
-    public Result searchPlugin(BigInteger aiPluginToolId) {
+    public Result<?> searchPlugin(BigInteger aiPluginToolId) {
         //查询当前插件工具
         QueryWrapper queryAiPluginToolWrapper = QueryWrapper.create()
                 .select("*")
@@ -70,20 +71,20 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
         Map<String, Object> result = new HashMap<>();
         result.put("data", aiPluginTool);
         result.put("aiPlugin", aiPlugin);
-        return Result.success(result);
+        return Result.ok(result);
     }
 
     @Override
-    public Result updatePlugin(AiPluginTool aiPluginTool) {
+    public boolean updatePlugin(AiPluginTool aiPluginTool) {
         int update = aiPluginToolMapper.update(aiPluginTool);
         if (update <= 0) {
-            return Result.fail(1, "修改失败");
+            throw new BusinessException("修改失败");
         }
-        return Result.success();
+        return true;
     }
 
     @Override
-    public Result searchPluginToolByPluginId(BigInteger pluginId, BigInteger botId) {
+    public List<AiPluginTool> searchPluginToolByPluginId(BigInteger pluginId, BigInteger botId) {
         QueryWrapper queryAiPluginToolWrapper = QueryWrapper.create()
                 .select("*")
                 .from("tb_ai_plugin_tool")
@@ -102,31 +103,31 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
                 }
             });
         });
-        return Result.success(aiPluginTools);
+        return aiPluginTools;
     }
 
     @Override
-    public Result getPluginToolList(BigInteger botId) {
+    public List<AiPluginTool> getPluginToolList(BigInteger botId) {
         QueryWrapper queryAiPluginToolWrapper = QueryWrapper.create()
                 .select("plugin_tool_id")
                 .from("tb_ai_bot_plugins")
                 .where("bot_id = ? ", botId);
         List<BigInteger> pluginToolIds = aiBotPluginsMapper.selectListByQueryAs(queryAiPluginToolWrapper, BigInteger.class);
         if (pluginToolIds == null || pluginToolIds.isEmpty()) {
-            return Result.success();
+            return Collections.emptyList();
         }
         // 查询当前bots对应的有哪些pluginTool
         List<AiPluginTool> aiPluginTools = aiPluginToolMapper.selectListByIds(pluginToolIds);
-        return Result.success(aiPluginTools);
+        return aiPluginTools;
     }
 
     @Override
-    public Result pluginToolTest(String inputData, BigInteger pluginToolId) {
+    public Result<?> pluginToolTest(String inputData, BigInteger pluginToolId) {
         AiPluginTool aiPluginTool = new AiPluginTool();
         aiPluginTool.setId(pluginToolId);
         aiPluginTool.setInputData(inputData);
         AiPluginFunction aiPluginFunction = new AiPluginFunction(aiPluginTool);
-        return Result.success(aiPluginFunction.runPluginTool(null, inputData, pluginToolId));
+        return Result.ok(aiPluginFunction.runPluginTool(null, inputData, pluginToolId));
     }
 
     @Override

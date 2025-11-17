@@ -23,6 +23,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *  控制层。
@@ -46,46 +47,44 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
 
     @PostMapping("/tool/save")
     @SaCheckPermission("/api/v1/aiPlugin/save")
-    public Result savePlugin(@JsonBody AiPluginTool aiPluginTool){
+    public Result<Boolean> savePlugin(@JsonBody AiPluginTool aiPluginTool){
 
-        return aiPluginToolService.savePluginTool(aiPluginTool);
+        return Result.ok(aiPluginToolService.savePluginTool(aiPluginTool));
     }
 
     // 插件工具修改页面查询
     @PostMapping("/tool/search")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result searchPlugin(@JsonBody(value = "aiPluginToolId", required = true) BigInteger aiPluginToolId){
+    public Result<?> searchPlugin(@JsonBody(value = "aiPluginToolId", required = true) BigInteger aiPluginToolId){
         return aiPluginToolService.searchPlugin(aiPluginToolId);
     }
 
     @PostMapping("/toolsList")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result searchPluginToolByPluginId(@JsonBody(value = "pluginId", required = true) BigInteger pluginId,
-                                             @JsonBody(value = "botId", required = false) BigInteger botId){
-        return aiPluginToolService.searchPluginToolByPluginId(pluginId, botId);
+    public Result<List<AiPluginTool>> searchPluginToolByPluginId(@JsonBody(value = "pluginId", required = true) BigInteger pluginId,
+                                                                 @JsonBody(value = "botId", required = false) BigInteger botId){
+        return Result.ok(aiPluginToolService.searchPluginToolByPluginId(pluginId, botId));
     }
 
     @PostMapping("/tool/update")
     @SaCheckPermission("/api/v1/aiPlugin/save")
-    public Result updatePlugin(@JsonBody AiPluginTool aiPluginTool){
-
-        return aiPluginToolService.updatePlugin(aiPluginTool);
+    public Result<Boolean> updatePlugin(@JsonBody AiPluginTool aiPluginTool){
+        return Result.ok(aiPluginToolService.updatePlugin(aiPluginTool));
     }
 
     @PostMapping("/tool/list")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result getPluginToolList(@JsonBody(value = "botId", required = true) BigInteger botId){
-
-        return aiPluginToolService.getPluginToolList(botId);
+    public Result<List<AiPluginTool>> getPluginToolList(@JsonBody(value = "botId", required = true) BigInteger botId){
+        return Result.ok(aiPluginToolService.getPluginToolList(botId));
     }
 
     @GetMapping("/getTinyFlowData")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result getTinyFlowData(BigInteger id) {
+    public Result<?> getTinyFlowData(BigInteger id) {
         JSONObject nodeData = new JSONObject();
         AiPluginTool record = aiPluginToolService.getById(id);
         if (record == null) {
-            return Result.success(nodeData);
+            return Result.ok(nodeData);
         }
         nodeData.put("pluginId", record.getId().toString());
         nodeData.put("pluginName", record.getName());
@@ -106,7 +105,7 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
         }
         nodeData.put("parameters", parameters);
         nodeData.put("outputDefs", outputDefs);
-        return Result.success(nodeData);
+        return Result.ok(nodeData);
     }
 
     /**
@@ -114,7 +113,7 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
      * @return
      */
     @PostMapping("/test")
-    public Result pluginToolTest(@JsonBody(value = "inputData", required = true) String inputData,
+    public Result<?> pluginToolTest(@JsonBody(value = "inputData", required = true) String inputData,
                                  @JsonBody(value = "pluginToolId", required = true) BigInteger pluginToolId){
         return aiPluginToolService.pluginToolTest(inputData, pluginToolId);
     }
@@ -135,7 +134,7 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
     }
 
     @Override
-    protected Result onRemoveBefore(Collection<Serializable> ids) {
+    protected Result<?> onRemoveBefore(Collection<Serializable> ids) {
 
         QueryWrapper queryWrapper = QueryWrapper.create();
         queryWrapper.in("plugin_tool_id", ids);

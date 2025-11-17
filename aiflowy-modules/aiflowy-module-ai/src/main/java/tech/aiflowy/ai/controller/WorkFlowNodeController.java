@@ -29,7 +29,7 @@ public class WorkFlowNodeController {
     private AiWorkflowService aiWorkflowService;
 
     @GetMapping("/getChainParams")
-    public Result getChainParams(String currentId, String workflowId) {
+    public Result<?> getChainParams(String currentId, String workflowId) {
         if (workflowId.equals(currentId)) {
             throw new BusinessException("工作流不能作为自身子节点");
         }
@@ -60,7 +60,7 @@ public class WorkFlowNodeController {
         }
         nodeData.put("parameters", inputs);
         nodeData.put("outputDefs", outputs);
-        return Result.success(nodeData);
+        return Result.ok(nodeData);
     }
 
     private void handleArray(JSONArray array) {

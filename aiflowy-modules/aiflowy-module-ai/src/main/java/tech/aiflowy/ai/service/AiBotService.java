@@ -12,7 +12,7 @@ import tech.aiflowy.common.domain.Result;
  */
 public interface AiBotService extends IService<AiBot> {
 
-    Result getDetail(String id);
+    AiBot getDetail(String id);
 
     void updateBotLlmId(AiBot aiBot);
 

@@ -59,20 +59,20 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
 
 
     @Override
-    public Result search(BigInteger id, String keyword) {
+    public List<Document> search(BigInteger id, String keyword) {
         AiKnowledge knowledge = getById(id);
         if (knowledge == null) {
-            return Result.fail(1, "知识库不存在");
+            throw new BusinessException("知识库不存在");
         }
 
         DocumentStore documentStore = knowledge.toDocumentStore();
         if (documentStore == null) {
-            return Result.fail(2, "知识库没有配置向量库");
+            throw new BusinessException("知识库没有配置向量库");
         }
 
         AiLlm aiLlm = llmService.getById(knowledge.getVectorEmbedLlmId());
         if (aiLlm == null) {
-            return Result.fail(3, "知识库没有配置向量模型");
+            throw new BusinessException("知识库没有配置向量模型");
         }
 
         documentStore.setEmbeddingModel(aiLlm.toLlm());
@@ -121,21 +121,22 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
 
             });
             if (needRerankDocuments.isEmpty()) {
-                return Result.success();
+
+                return Collections.emptyList();
             }
 
             if (!knowledge.getSearchEngineEnable()) {
-                return Result.success(needRerankDocuments);
+                return needRerankDocuments;
             }
 
             AiLlm aiLlmRerank = llmService.getById(knowledge.getRerankLlmId());
             if (aiLlmRerank == null) {
-                return Result.success(needRerankDocuments);
+                return needRerankDocuments;
             }
 
             DefaultRerankModel rerankModel = getRerankModel(aiLlmRerank);
             if (rerankModel == null) {
-                return Result.fail(4, "重排模型配置失败");
+                throw new BusinessException("重排模型配置失败");
             }
 
             needRerankDocuments.forEach(item -> item.setScore(null));
@@ -143,16 +144,16 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
             List<Document> filteredList = rerank.stream()
                     .filter(doc -> doc.getScore() >= 0.001)
                     .collect(Collectors.toList());
-            return Result.success(filteredList);
+            return filteredList;
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
             e.printStackTrace();
-            return Result.fail(5, "查询过程中发生异常: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Result getDetail(String idOrAlias) {
+    public AiKnowledge getDetail(String idOrAlias) {
 
         AiKnowledge knowledge = null;
 
@@ -167,7 +168,7 @@ public class AiKnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKno
             knowledge = getByAlias(idOrAlias);
         }
 
-        return Result.success(knowledge);
+        return knowledge;
     }
 
     @Override

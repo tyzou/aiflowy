@@ -12,7 +12,7 @@ import com.mybatisflex.core.service.IService;
  */
 public interface AiLlmService extends IService<AiLlm> {
 
-    Result addAiLlm(AiLlm entity);
+    boolean addAiLlm(AiLlm entity);
 
     void verifyLlmConfig(AiLlm llm);
 

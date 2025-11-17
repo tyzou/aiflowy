@@ -47,14 +47,14 @@ public class AiBotConversationMessageServiceImpl extends ServiceImpl<AiBotConver
      * @return
      */
     @Override
-    public Result deleteConversation(String botId, String sessionId) {
+    public Result<Void> deleteConversation(String botId, String sessionId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where("bot_id = ?", botId)
                 .where("session_id = ?", sessionId)
                 .where("account_id = ?", SaTokenUtil.getLoginAccount().getId());
         int res = aiBotConversationMessageMapper.deleteByQuery(queryWrapper);
         if (res <= 0){
-            return Result.fail();
+            return Result.fail("删除失败");
         }
         // 删除消息记录中的数据
         QueryWrapper msgQuery = QueryWrapper.create()
@@ -63,13 +63,13 @@ public class AiBotConversationMessageServiceImpl extends ServiceImpl<AiBotConver
                 .where("account_id = ?", SaTokenUtil.getLoginAccount().getId());
         int r = aiBotMessageMapper.deleteByQuery(msgQuery);
         if (r <= 0){
-            return Result.fail();
+            return Result.fail("删除失败");
         }
-        return Result.success();
+        return Result.ok();
     }
 
     @Override
-    public Result updateConversation(String botId, String sessionId, String title) {
+    public Result<Void> updateConversation(String botId, String sessionId, String title) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where("bot_id = ? ", botId)
                 .where("session_id = ? ", sessionId)
@@ -78,13 +78,13 @@ public class AiBotConversationMessageServiceImpl extends ServiceImpl<AiBotConver
         conversationMessage.setTitle(title);
         int res = aiBotConversationMessageMapper.updateByQuery(conversationMessage, queryWrapper);
         if (res <= 0){
-            return Result.fail();
+            return Result.fail("更新失败");
         }
-        return Result.success();
+        return Result.ok();
     }
 
     @Override
-    public Result externalList(BigInteger botId) {
+    public Result<?> externalList(BigInteger botId) {
         LoginAccount loginUser = SaTokenUtil.getLoginAccount();
         BigInteger accountId = loginUser.getId();
         QueryWrapper query = QueryWrapper.create()
@@ -95,7 +95,7 @@ public class AiBotConversationMessageServiceImpl extends ServiceImpl<AiBotConver
                 .where("account_id = ? ", accountId);
         AiBotMessage aiBotMessage = aiBotMessageMapper.selectOneByQuery(query);
         if (aiBotMessage == null){
-            return Result.fail();
+            return Result.fail("消息为空");
         }
         QueryWrapper queryConversation = QueryWrapper.create()
                 .select("session_id","title", "bot_id") // 选择字段
@@ -106,7 +106,7 @@ public class AiBotConversationMessageServiceImpl extends ServiceImpl<AiBotConver
         List<AiBotConversationMessage> cons = aiBotMessageMapper.selectListByQueryAs(queryConversation, AiBotConversationMessage.class);
         Map<String, Object> result = new HashMap<>();
         result.put("cons", cons);
-        return Result.success(result);
+        return Result.ok(result);
     }
 
     @Override

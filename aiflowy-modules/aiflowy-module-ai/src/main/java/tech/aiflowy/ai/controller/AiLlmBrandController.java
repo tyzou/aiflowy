@@ -32,7 +32,7 @@ public class AiLlmBrandController extends BaseController {
 
     @RequestMapping("list")
     @SaCheckPermission("/api/v1/aiLlm/query")
-    public Result list(){
+    public Result<List<AiLlmBrand>> list(){
 
         Object o = cache.get(LLM_BRAND_KEY);
 
@@ -49,6 +49,6 @@ public class AiLlmBrandController extends BaseController {
         }
 
 
-        return Result.success(brandList);
+        return Result.ok(brandList);
     }
 }

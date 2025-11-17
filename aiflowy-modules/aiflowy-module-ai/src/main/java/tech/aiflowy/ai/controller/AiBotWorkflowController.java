@@ -29,11 +29,11 @@ public class AiBotWorkflowController extends BaseCurdController<AiBotWorkflowSer
 
     @GetMapping("list")
     @Override
-    public Result list(AiBotWorkflow entity, Boolean asTree, String sortKey, String sortType) {
+    public Result<List<AiBotWorkflow>> list(AiBotWorkflow entity, Boolean asTree, String sortKey, String sortType) {
         QueryWrapper queryWrapper = QueryWrapper.create(entity, buildOperators(entity));
         queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
         List<AiBotWorkflow> aiBotWorkflows = service.getMapper().selectListWithRelationsByQuery(queryWrapper);
         List<AiBotWorkflow> list = Tree.tryToTree(aiBotWorkflows, asTree);
-        return Result.success(list);
+        return Result.ok(list);
     }
 }

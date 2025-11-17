@@ -9,6 +9,7 @@ import tech.aiflowy.ai.mapper.AiPluginCategoryRelationMapper;
 import tech.aiflowy.ai.service.AiPluginCategoryRelationService;
 import org.springframework.stereotype.Service;
 import tech.aiflowy.common.domain.Result;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Array;
@@ -32,16 +33,16 @@ public class AiPluginCategoryRelationServiceImpl extends ServiceImpl<AiPluginCat
     private AiPluginCategoriesMapper aiPluginCategoriesMapper;
 
     @Override
-    public Result updateRelation(long pluginId, ArrayList<Integer> categoryIds) {
+    public boolean updateRelation(long pluginId, ArrayList<Integer> categoryIds) {
         if (categoryIds == null){
             QueryWrapper queryWrapper = QueryWrapper.create().select("*")
                     .from("tb_ai_plugin_category_relation")
                     .where("plugin_id  = ?", pluginId);
             int delete = relationMapper.deleteByQuery(queryWrapper);
             if (delete <= 0){
-                return Result.fail(1, "修改失败");
+                throw new BusinessException("删除失败");
             }
-            return Result.success();
+            return true;
         }
         for (Integer categoryId : categoryIds) {
             QueryWrapper queryWrapper = QueryWrapper.create().select("*")
@@ -55,7 +56,7 @@ public class AiPluginCategoryRelationServiceImpl extends ServiceImpl<AiPluginCat
             if (selectedOneByQuery == null) {
                 int insert = relationMapper.insert(aiPluginCategoryRelation);
                 if (insert <= 0) {
-                    return Result.fail(3, "新增失败");
+                    throw new BusinessException("新增失败");
                 }
             } else {
                 QueryWrapper queryWrapperUpdate = QueryWrapper.create().select("*")
@@ -67,28 +68,28 @@ public class AiPluginCategoryRelationServiceImpl extends ServiceImpl<AiPluginCat
                 }
                 int update = relationMapper.updateByQuery(aiPluginCategoryRelation, queryWrapperUpdate);
                 if (update <= 0){
-                    return Result.fail(4, "更新失败");
+                    throw new BusinessException("更新失败");
                 }
             }
 
         }
-        return Result.success();
+        return true;
     }
 
     @Override
-    public Result getPluginCategories(long pluginId) {
+    public List<AiPluginCategories>  getPluginCategories(long pluginId) {
         QueryWrapper categoryQueryWrapper =   QueryWrapper.create().select("category_id")
                 .from("tb_ai_plugin_category_relation")
                 .where("plugin_id  = ?", pluginId);
         List<BigInteger> categoryIdList =  relationMapper.selectListByQueryAs(categoryQueryWrapper, BigInteger.class);
         List<AiPluginCategories> aiPluginCategories = new ArrayList<AiPluginCategories>();
         if (categoryIdList.isEmpty()){
-            return Result.success(aiPluginCategories);
+            return aiPluginCategories;
         }
         QueryWrapper categoryQuery =  QueryWrapper.create().select("id, name")
                 .from("tb_ai_plugin_categories")
                 .in("id", categoryIdList);
         aiPluginCategories = aiPluginCategoriesMapper.selectListByQuery(categoryQuery);
-        return Result.success(aiPluginCategories);
+        return aiPluginCategories;
     }
 }

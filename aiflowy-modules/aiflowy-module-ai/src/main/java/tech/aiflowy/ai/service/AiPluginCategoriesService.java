@@ -12,5 +12,5 @@ import tech.aiflowy.common.domain.Result;
  */
 public interface AiPluginCategoriesService extends IService<AiPluginCategories> {
 
-    Result doRemoveCategory(Integer id);
+    boolean doRemoveCategory(Integer id);
 }

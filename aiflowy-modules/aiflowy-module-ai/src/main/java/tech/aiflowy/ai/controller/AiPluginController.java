@@ -16,6 +16,7 @@ import tech.aiflowy.common.web.jsonbody.JsonBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  *  控制层。
@@ -34,43 +35,40 @@ public class AiPluginController extends BaseCurdController<AiPluginService, AiPl
     AiPluginService aiPluginService;
 
     @Override
-    protected Result onSaveOrUpdateBefore(AiPlugin entity, boolean isSave) {
-//        LoginAccount loginUser = SaTokenUtil.getLoginAccount();
-//        commonFiled(entity,loginUser.getId(),loginUser.getTenantId(), loginUser.getDeptId());
-//
+    protected Result<?> onSaveOrUpdateBefore(AiPlugin entity, boolean isSave) {
         return super.onSaveOrUpdateBefore(entity, isSave);
     }
 
     @PostMapping("/plugin/save")
     @SaCheckPermission("/api/v1/aiPlugin/save")
-    public Result savePlugin(@JsonBody AiPlugin aiPlugin){
+    public Result<Boolean> savePlugin(@JsonBody AiPlugin aiPlugin){
 
-        return aiPluginService.savePlugin(aiPlugin);
+        return Result.ok(aiPluginService.savePlugin(aiPlugin));
     }
 
     @PostMapping("/plugin/remove")
     @SaCheckPermission("/api/v1/aiPlugin/remove")
-    public Result removePlugin(@JsonBody(value = "id", required = true) String id){
+    public Result<Boolean> removePlugin(@JsonBody(value = "id", required = true) String id){
 
-        return aiPluginService.removePlugin(id);
+        return Result.ok(aiPluginService.removePlugin(id));
     }
 
     @PostMapping("/plugin/update")
     @SaCheckPermission("/api/v1/aiPlugin/save")
-    public Result updatePlugin(@JsonBody AiPlugin aiPlugin){
+    public Result<Boolean> updatePlugin(@JsonBody AiPlugin aiPlugin){
 
-        return aiPluginService.updatePlugin(aiPlugin);
+        return Result.ok(aiPluginService.updatePlugin(aiPlugin));
     }
 
     @PostMapping("/getList")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result getList(){
-        return aiPluginService.getList();
+    public Result<List<AiPlugin>> getList(){
+        return Result.ok(aiPluginService.getList());
     }
 
     @GetMapping("/pageByCategory")
     @SaCheckPermission("/api/v1/aiPlugin/query")
-    public Result pageByCategory(HttpServletRequest request, String sortKey, String sortType, Long pageNumber, Long pageSize, int category) {
+    public Result<?> pageByCategory(HttpServletRequest request, String sortKey, String sortType, Long pageNumber, Long pageSize, int category) {
         if (pageNumber == null || pageNumber < 1) {
             pageNumber = 1L;
         }
@@ -80,7 +78,7 @@ public class AiPluginController extends BaseCurdController<AiPluginService, AiPl
         if (category == 0){
             QueryWrapper queryWrapper = buildQueryWrapper(request);
             queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
-            return Result.success(queryPage(new Page<>(pageNumber, pageSize), queryWrapper));
+            return Result.ok(queryPage(new Page<>(pageNumber, pageSize), queryWrapper));
         } else {
             return aiPluginService.pageByCategory(pageNumber, pageSize, category);
         }

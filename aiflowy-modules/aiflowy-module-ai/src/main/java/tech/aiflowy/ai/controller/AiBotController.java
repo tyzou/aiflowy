@@ -114,7 +114,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
     @PostMapping("updateOptions")
     @SaCheckPermission("/api/v1/aiBot/save")
-    public Result updateOptions(@JsonBody("id")
+    public Result<Void> updateOptions(@JsonBody("id")
                                 BigInteger id, @JsonBody("options")
                                 Map<String, Object> options) {
         AiBot aiBot = service.getById(id);
@@ -127,12 +127,12 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
         aiBot.setOptions(existOptions);
         service.updateById(aiBot);
-        return Result.success();
+        return Result.ok();
     }
 
     @PostMapping("updateLlmOptions")
     @SaCheckPermission("/api/v1/aiBot/save")
-    public Result updateLlmOptions(@JsonBody("id")
+    public Result<Void> updateLlmOptions(@JsonBody("id")
                                    BigInteger id, @JsonBody("llmOptions")
                                    Map<String, Object> llmOptions) {
         AiBot aiBot = service.getById(id);
@@ -145,12 +145,12 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
         aiBot.setLlmOptions(existLlmOptions);
         service.updateById(aiBot);
-        return Result.success();
+        return Result.ok();
     }
 
     @PostMapping("voiceInput")
     @SaIgnore
-    public Result voiceInput(@RequestParam("audio")
+    public Result<String> voiceInput(@RequestParam("audio")
                              MultipartFile audioFile) {
 
         String recognize = null;
@@ -160,7 +160,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             throw new RuntimeException(e);
         }
 
-        return Result.success(recognize);
+        return Result.ok("", recognize);
     }
 
     /**
@@ -826,10 +826,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
     @PostMapping("updateLlmId")
     @SaCheckPermission("/api/v1/aiBot/save")
-    public Result updateBotLlmId(@RequestBody
+    public Result<Void> updateBotLlmId(@RequestBody
                                  AiBot aiBot) {
         service.updateBotLlmId(aiBot);
-        return Result.success();
+        return Result.ok();
     }
 
 
@@ -974,18 +974,16 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
     @GetMapping("getDetail")
     @SaIgnore
-    public Result getDetail(String id) {
-        return aiBotService.getDetail(id);
+    public Result<AiBot> getDetail(String id) {
+        return Result.ok(aiBotService.getDetail(id));
     }
 
     @Override
     @SaIgnore
-    public Result detail(String id) {
-        Result detail = aiBotService.getDetail(id);
-        AiBot data = detail.get("data");
-
+    public Result<AiBot> detail(String id) {
+        AiBot data = aiBotService.getDetail(id);
         if (data == null) {
-            return detail;
+            return Result.ok(data);
         }
 
         Map<String, Object> llmOptions = data.getLlmOptions();
@@ -994,7 +992,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         if (data.getLlmId() == null) {
-            return detail;
+            return Result.ok(data);
         }
 
         BigInteger llmId = data.getLlmId();
@@ -1002,7 +1000,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         if (llm == null) {
             data.setLlmId(null);
-            return detail;
+            return Result.ok(data);
         }
 
         Map<String, Object> options = llm.getOptions();
@@ -1015,11 +1013,11 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         }
 
-        return detail;
+        return Result.ok(data);
     }
 
     @Override
-    protected Result onSaveOrUpdateBefore(AiBot entity, boolean isSave) {
+    protected Result<?> onSaveOrUpdateBefore(AiBot entity, boolean isSave) {
 
         String alias = entity.getAlias();
 

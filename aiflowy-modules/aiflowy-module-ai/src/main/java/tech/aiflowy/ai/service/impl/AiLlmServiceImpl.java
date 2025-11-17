@@ -54,12 +54,12 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
 
 
     @Override
-    public Result addAiLlm(AiLlm entity) {
+    public boolean addAiLlm(AiLlm entity) {
         int insert = aiLlmMapper.insert(entity);
         if (insert <= 0) {
-            return Result.fail();
+            return false;
         }
-        return Result.success();
+        return true;
     }
 
     private static final Logger log = LoggerFactory.getLogger(AiLlmServiceImpl.class);

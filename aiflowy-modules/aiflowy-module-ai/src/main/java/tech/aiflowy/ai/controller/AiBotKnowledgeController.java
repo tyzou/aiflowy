@@ -28,10 +28,10 @@ public class AiBotKnowledgeController extends BaseCurdController<AiBotKnowledgeS
 
     @GetMapping("list")
     @Override
-    public Result list(AiBotKnowledge entity, Boolean asTree, String sortKey, String sortType) {
+    public Result<List<AiBotKnowledge>> list(AiBotKnowledge entity, Boolean asTree, String sortKey, String sortType) {
         QueryWrapper queryWrapper = QueryWrapper.create(entity, buildOperators(entity));
         queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
         List<AiBotKnowledge> aiBotKnowledges = service.getMapper().selectListWithRelationsByQuery(queryWrapper);
-        return Result.success(aiBotKnowledges);
+        return Result.ok(aiBotKnowledges);
     }
 }

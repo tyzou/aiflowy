@@ -8,6 +8,7 @@ import tech.aiflowy.ai.mapper.AiPluginCategoryRelationMapper;
 import tech.aiflowy.ai.service.AiPluginCategoriesService;
 import org.springframework.stereotype.Service;
 import tech.aiflowy.common.domain.Result;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import javax.annotation.Resource;
 
@@ -27,21 +28,21 @@ public class AiPluginCategoriesServiceImpl extends ServiceImpl<AiPluginCategorie
     private AiPluginCategoriesMapper aiPluginCategoriesMapper;
 
     @Override
-    public Result doRemoveCategory(Integer id) {
+    public boolean doRemoveCategory(Integer id) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_id")
                 .where("category_id = ? ", id);
         long relationCount = relationMapper.selectCountByQuery(queryWrapper);
         if (relationCount > 0){
             int deletePluginRelation = relationMapper.deleteByQuery(queryWrapper);
             if (deletePluginRelation <= 0){
-                return Result.fail(1, "删除失败");
+                throw new BusinessException("删除失败");
             }
         }
 
         int deleteCategory = aiPluginCategoriesMapper.deleteById(id);
         if (deleteCategory <= 0){
-            return Result.fail(2, "删除失败");
+            throw new BusinessException("删除失败");
         }
-        return Result.success();
+        return true;
     }
 }

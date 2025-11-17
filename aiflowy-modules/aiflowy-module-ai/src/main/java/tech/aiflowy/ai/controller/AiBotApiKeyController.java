@@ -35,28 +35,29 @@ public class AiBotApiKeyController extends BaseCurdController<AiBotApiKeyService
 
     @PostMapping("addKey")
     @SaCheckPermission("/api/v1/aiBot/save")
-    public Result addKey(@JsonBody(value = "botId",required = true)BigInteger botId){
+    public Result<?> addKey(@JsonBody(value = "botId",required = true)BigInteger botId){
 
         if (botId == null) {
             throw new BusinessException("botId不能为空");
         }
 
         String apiKey = service.generateApiKeyByBotId(botId);
-        return Result.success(apiKey);
+        return Result.ok(apiKey);
     }
 
     @SaIgnore
     @Override
-    public Result list(AiBotApiKey entity, Boolean asTree, String sortKey, String sortType) {
+    public Result<List<AiBotApiKey>> list(AiBotApiKey entity, Boolean asTree, String sortKey, String sortType) {
 
-        Result result = super.list(entity, asTree, sortKey, sortType);
-        List<AiBotApiKey> data = result.get("data");
+        Result<?> result = super.list(entity, asTree, sortKey, sortType);
+        @SuppressWarnings("unchecked")
+        List<AiBotApiKey> data = (List<AiBotApiKey>) result.getData();
         if (data != null && !data.isEmpty()) {
             data.forEach(item -> {
                 item.setSalt(null);
             });
         }
 
-        return result;
+        return Result.ok(data);
     }
 }

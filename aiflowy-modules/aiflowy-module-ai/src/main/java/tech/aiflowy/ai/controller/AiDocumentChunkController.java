@@ -53,7 +53,7 @@ public class AiDocumentChunkController extends BaseCurdController<AiDocumentChun
 
     @PostMapping("update")
     @SaCheckPermission("/api/v1/aiKnowledge/save")
-    public Result update(@JsonBody AiDocumentChunk aiDocumentChunk) {
+    public Result<?> update(@JsonBody AiDocumentChunk aiDocumentChunk) {
         boolean success = service.updateById(aiDocumentChunk);
         if (success){
             AiDocumentChunk aiDocumentChunk1 = aiDocumentChunkService.getById(aiDocumentChunk.getId());
@@ -80,14 +80,14 @@ public class AiDocumentChunkController extends BaseCurdController<AiDocumentChun
             metadata.put("questions", aiDocumentChunk.getMetadataQuestions());
             document.setMetadataMap(metadata);
             StoreResult result = documentStore.update(document, options); // 更新已有记录
-            return Result.success(result);
+            return Result.ok(result);
         }
-        return Result.create(false);
+        return Result.ok(false);
     }
 
     @PostMapping("removeChunk")
     @SaCheckPermission("/api/v1/aiKnowledge/remove")
-    public Result remove(@JsonBody(value = "id", required = true) BigInteger chunkId) {
+    public Result<?> remove(@JsonBody(value = "id", required = true) BigInteger chunkId) {
         AiDocumentChunk docChunk =  aiDocumentChunkService.getById(chunkId);
         if (docChunk == null) {
             return Result.fail(1, "记录不存在");
