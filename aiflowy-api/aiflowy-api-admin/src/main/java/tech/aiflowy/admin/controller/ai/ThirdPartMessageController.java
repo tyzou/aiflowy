@@ -89,7 +89,7 @@ public class ThirdPartMessageController {
      * 微信签名验证接口（GET请求）
      */
     @GetMapping("/wechat")
-    public Result<Void> verifyWeChatSignature(
+    public Result<?> verifyWeChatSignature(
             @RequestParam("signature") String signature,
             @RequestParam("timestamp") String timestamp,
             @RequestParam("nonce") String nonce,
@@ -99,21 +99,21 @@ public class ThirdPartMessageController {
 
         if (!StringUtils.hasLength(apiKey)) {
             log.error("微信服务未配置");
-            return Result.ok("");
+            return Result.fail("微信服务未配置");
         }
 
         // 解析 apiKey
         BigInteger botId = aiBotApiKeyService.decryptApiKey(apiKey);
         if (botId == null){
             log.error("apiKey 解析失败");
-            return Result.ok("");
+            return Result.fail("apiKey 解析失败");
         }
 
         // 查询 bot信息
         AiBot aiBot = aiBotService.getById(botId);
         if (aiBot == null || aiBot.getOptions() == null){
             log.error("bot 不存在或未配置微信公众号信息");
-            return Result.ok("");
+            return Result.fail("bot 不存在或未配置微信公众号信息");
         }
 
         Map<String, Object> options = aiBot.getOptions();
@@ -152,11 +152,11 @@ public class ThirdPartMessageController {
                 return Result.ok(echostr);
             } else {
                 log.error("微信签名验证失败");
-                return Result.ok();
+                return Result.fail("微信签名验证失败");
             }
         } catch (Exception e) {
             log.error("微信签名验证异常", e);
-            return Result.ok();
+            return Result.fail("微信签名验证异常");
         }
     }
 
