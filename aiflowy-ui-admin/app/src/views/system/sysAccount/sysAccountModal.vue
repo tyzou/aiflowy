@@ -13,6 +13,7 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import { $t } from '#/locales';
 
 const emit = defineEmits(['reload']);
 // vue
@@ -72,7 +73,7 @@ function closeDialog() {
   <ElDialog
     v-model="dialogVisible"
     draggable
-    :title="isAdd ? '新增' : '编辑'"
+    :title="isAdd ? $t('button.add') : $t('button.edit')"
     :before-close="closeDialog"
     :close-on-click-modal="false"
   >
@@ -88,14 +89,16 @@ function closeDialog() {
       </ElFormItem>
     </ElForm>
     <template #footer>
-      <ElButton @click="closeDialog">取消</ElButton>
+      <ElButton @click="closeDialog">
+        {{ $t('button.cancel') }}
+      </ElButton>
       <ElButton
         type="primary"
         @click="save"
         :loading="btnLoading"
         :disabled="btnLoading"
       >
-        保存
+        {{ $t('button.save') }}
       </ElButton>
     </template>
   </ElDialog>

@@ -43,7 +43,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   placeholder: '请选择',
   clearable: true,
-  filterable: false,
+  filterable: true,
   disabled: false,
   multiple: false,
   collapseTags: false,

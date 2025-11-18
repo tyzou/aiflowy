@@ -1,6 +1,11 @@
 {
-  "search": {
-    "submit": "Search",
-    "reset": "Reset"
-  }
+    "query": "Query",
+    "reset": "Reset",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "export": "Export",
+    "import": "Import",
+    "save": "Save",
+    "cancel": "Cancel"
 }

@@ -1,8 +1,8 @@
 {
-  "manage": {
-    "title": "System"
-  },
-  "account": {
-    "page": "Account"
+  "title": "System",
+  "menu": {
+    "account": "Account",
+    "role": "Role",
+    "menu": "Menus"
   }
 }

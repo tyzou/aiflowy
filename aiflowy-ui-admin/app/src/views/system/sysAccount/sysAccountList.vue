@@ -17,6 +17,7 @@ import {
 import { api } from '#/api/request';
 import DictSelect from '#/components/dict/DictSelect.vue';
 import PageData from '#/components/page/PageData.vue';
+import { $t } from '#/locales';
 
 import SysAccountModal from './sysAccountModal.vue';
 
@@ -85,11 +86,17 @@ function remove(row: any) {
         <ElInput v-model="formInline.loginName" placeholder="请输入账号" />
       </ElFormItem>
       <ElFormItem>
-        <ElButton @click="search(formRef)" type="primary">查询</ElButton>
-        <ElButton @click="reset(formRef)">重置</ElButton>
+        <ElButton @click="search(formRef)" type="primary">
+          {{ $t('button.query') }}
+        </ElButton>
+        <ElButton @click="reset(formRef)">
+          {{ $t('button.reset') }}
+        </ElButton>
       </ElFormItem>
     </ElForm>
-    <ElButton @click="showDialog({})" type="primary"> 新增 </ElButton>
+    <ElButton @click="showDialog({})" type="primary">
+      {{ $t('button.add') }}
+    </ElButton>
     <PageData
       ref="pageDataRef"
       page-url="/api/v1/sysAccount/page"
@@ -103,8 +110,12 @@ function remove(row: any) {
           <ElTableColumn prop="avatar" label="头像" />
           <ElTableColumn>
             <template #default="{ row }">
-              <ElButton @click="showDialog(row)" type="primary">编辑</ElButton>
-              <ElButton @click="remove(row)" type="danger">删除</ElButton>
+              <ElButton @click="showDialog(row)" type="primary">
+                {{ $t('button.edit') }}
+              </ElButton>
+              <ElButton @click="remove(row)" type="danger">
+                {{ $t('button.delete') }}
+              </ElButton>
             </template>
           </ElTableColumn>
         </ElTable>
