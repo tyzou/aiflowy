@@ -3,19 +3,15 @@ import type { FormInstance } from 'element-plus';
 
 import { ref } from 'vue';
 
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElForm,
   ElFormItem,
   ElInput,
-  ElMessage,
-  ElMessageBox,
   ElTable,
   ElTableColumn,
 } from 'element-plus';
 
-import { api } from '#/api/request';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
@@ -25,7 +21,7 @@ const formRef = ref<FormInstance>();
 const pageDataRef = ref();
 const saveDialog = ref();
 const formInline = ref({
-  id: '',
+  actionName: '',
 });
 function search(formEl: FormInstance | undefined) {
   formEl?.validate((valid) => {
@@ -38,44 +34,17 @@ function reset(formEl: FormInstance | undefined) {
   formEl?.resetFields();
   pageDataRef.value.setQuery({});
 }
-function showDialog(row: any) {
-  saveDialog.value.openDialog({ ...row });
-}
-function remove(row: any) {
-  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
-    confirmButtonText: $t('message.ok'),
-    cancelButtonText: $t('message.cancel'),
-    type: 'warning',
-    beforeClose: (action, instance, done) => {
-      if (action === 'confirm') {
-        instance.confirmButtonLoading = true;
-        api
-          .post('/api/v1/sysLog/remove', { id: row.id })
-          .then((res) => {
-            instance.confirmButtonLoading = false;
-            if (res.errorCode === 0) {
-              ElMessage.success(res.message);
-              reset(formRef.value);
-              done();
-            }
-          })
-          .catch(() => {
-            instance.confirmButtonLoading = false;
-          });
-      } else {
-        done();
-      }
-    },
-  }).catch(() => {});
-}
 </script>
 
 <template>
   <div class="page-container">
     <SysLogModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysLog.id')" prop="id">
-        <ElInput v-model="formInline.id" :placeholder="$t('sysLog.id')" />
+      <ElFormItem :label="$t('sysLog.actionName')" prop="actionName">
+        <ElInput
+          v-model="formInline.actionName"
+          :placeholder="$t('sysLog.actionName')"
+        />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -86,14 +55,7 @@ function remove(row: any) {
         </ElButton>
       </ElFormItem>
     </ElForm>
-    <div class="handle-div">
-      <ElButton @click="showDialog({})" type="primary">
-        <ElIcon class="mr-1">
-          <Plus />
-        </ElIcon>
-        {{ $t('button.add') }}
-      </ElButton>
-    </div>
+    <div class="handle-div"></div>
     <PageData ref="pageDataRef" page-url="/api/v1/sysLog/page" :page-size="10">
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
@@ -150,22 +112,6 @@ function remove(row: any) {
           <ElTableColumn prop="created" :label="$t('sysLog.created')">
             <template #default="{ row }">
               {{ row.created }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn :label="$t('common.handle')" width="150">
-            <template #default="{ row }">
-              <ElButton @click="showDialog(row)" link type="primary">
-                <ElIcon class="mr-1">
-                  <Edit />
-                </ElIcon>
-                {{ $t('button.edit') }}
-              </ElButton>
-              <ElButton @click="remove(row)" link type="danger">
-                <ElIcon class="mr-1">
-                  <Delete />
-                </ElIcon>
-                {{ $t('button.delete') }}
-              </ElButton>
             </template>
           </ElTableColumn>
         </ElTable>

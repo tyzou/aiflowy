@@ -84,7 +84,11 @@ function getTree() {
   <div class="page-container">
     <SysMenuModal ref="saveDialog" @reload="reset" />
     <div class="handle-div">
-      <ElButton @click="showDialog({})" type="primary">
+      <ElButton
+        v-access:code="'/api/v1/sysMenu/save'"
+        @click="showDialog({})"
+        type="primary"
+      >
         <ElIcon class="mr-1">
           <Plus />
         </ElIcon>
@@ -140,18 +144,30 @@ function getTree() {
       </ElTableColumn>
       <ElTableColumn :label="$t('common.handle')" width="150">
         <template #default="{ row }">
-          <ElButton @click="showDialog(row)" link type="primary">
-            <ElIcon class="mr-1">
-              <Edit />
-            </ElIcon>
-            {{ $t('button.edit') }}
-          </ElButton>
-          <ElButton @click="remove(row)" link type="danger">
-            <ElIcon class="mr-1">
-              <Delete />
-            </ElIcon>
-            {{ $t('button.delete') }}
-          </ElButton>
+          <div>
+            <ElButton
+              v-access:code="'/api/v1/sysMenu/save'"
+              @click="showDialog(row)"
+              link
+              type="primary"
+            >
+              <ElIcon class="mr-1">
+                <Edit />
+              </ElIcon>
+              {{ $t('button.edit') }}
+            </ElButton>
+            <ElButton
+              v-access:code="'/api/v1/sysMenu/remove'"
+              @click="remove(row)"
+              link
+              type="danger"
+            >
+              <ElIcon class="mr-1">
+                <Delete />
+              </ElIcon>
+              {{ $t('button.delete') }}
+            </ElButton>
+          </div>
         </template>
       </ElTableColumn>
     </ElTable>

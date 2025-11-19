@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Delete, Edit, Plus } from '@element-plus/icons-vue';
 import {
@@ -18,15 +18,26 @@ import {
 import { api } from '#/api/request';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
+import { useDictStore } from '#/store';
 
 import SysRoleModal from './SysRoleModal.vue';
 
+onMounted(() => {
+  initDict();
+});
 const formRef = ref<FormInstance>();
 const pageDataRef = ref();
 const saveDialog = ref();
 const formInline = ref({
-  id: '',
+  roleName: '',
 });
+const dictStore = useDictStore();
+function initDict() {
+  dictStore.fetchDictionary('dataStatus');
+}
+function isAdminRole(data: any) {
+  return data?.roleKey === 'super_admin';
+}
 function search(formEl: FormInstance | undefined) {
   formEl?.validate((valid) => {
     if (valid) {
@@ -74,8 +85,11 @@ function remove(row: any) {
   <div class="page-container">
     <SysRoleModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysRole.id')" prop="id">
-        <ElInput v-model="formInline.id" :placeholder="$t('sysRole.id')" />
+      <ElFormItem :label="$t('sysRole.roleName')" prop="roleName">
+        <ElInput
+          v-model="formInline.roleName"
+          :placeholder="$t('sysRole.roleName')"
+        />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -87,7 +101,11 @@ function remove(row: any) {
       </ElFormItem>
     </ElForm>
     <div class="handle-div">
-      <ElButton @click="showDialog({})" type="primary">
+      <ElButton
+        v-access:code="'/api/v1/sysRole/save'"
+        @click="showDialog({})"
+        type="primary"
+      >
         <ElIcon class="mr-1">
           <Plus />
         </ElIcon>
@@ -109,7 +127,7 @@ function remove(row: any) {
           </ElTableColumn>
           <ElTableColumn prop="status" :label="$t('sysRole.status')">
             <template #default="{ row }">
-              {{ row.status }}
+              {{ dictStore.getDictLabel('dataStatus', row.status) }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="created" :label="$t('sysRole.created')">
@@ -124,18 +142,30 @@ function remove(row: any) {
           </ElTableColumn>
           <ElTableColumn :label="$t('common.handle')" width="150">
             <template #default="{ row }">
-              <ElButton @click="showDialog(row)" link type="primary">
-                <ElIcon class="mr-1">
-                  <Edit />
-                </ElIcon>
-                {{ $t('button.edit') }}
-              </ElButton>
-              <ElButton @click="remove(row)" link type="danger">
-                <ElIcon class="mr-1">
-                  <Delete />
-                </ElIcon>
-                {{ $t('button.delete') }}
-              </ElButton>
+              <div v-if="!isAdminRole(row)">
+                <ElButton
+                  v-access:code="'/api/v1/sysRole/save'"
+                  @click="showDialog(row)"
+                  link
+                  type="primary"
+                >
+                  <ElIcon class="mr-1">
+                    <Edit />
+                  </ElIcon>
+                  {{ $t('button.edit') }}
+                </ElButton>
+                <ElButton
+                  v-access:code="'/api/v1/sysRole/remove'"
+                  @click="remove(row)"
+                  link
+                  type="danger"
+                >
+                  <ElIcon class="mr-1">
+                    <Delete />
+                  </ElIcon>
+                  {{ $t('button.delete') }}
+                </ElButton>
+              </div>
             </template>
           </ElTableColumn>
         </ElTable>

@@ -13,6 +13,7 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import DictSelect from '#/components/dict/DictSelect.vue';
 import { $t } from '#/locales';
 
 const emit = defineEmits(['reload']);
@@ -104,7 +105,7 @@ function closeDialog() {
         <ElInput v-model.trim="entity.roleKey" />
       </ElFormItem>
       <ElFormItem prop="status" :label="$t('sysRole.status')">
-        <ElInput v-model.trim="entity.status" />
+        <DictSelect v-model="entity.status" dict-code="dataStatus" />
       </ElFormItem>
       <ElFormItem prop="remark" :label="$t('sysRole.remark')">
         <ElInput v-model.trim="entity.remark" />
