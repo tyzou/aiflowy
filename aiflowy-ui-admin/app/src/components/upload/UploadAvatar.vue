@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UploadProps } from 'element-plus';
 
-import { ref } from 'vue';
+import { defineEmits, ref } from 'vue';
 
 import { useAppConfig } from '@aiflowy/hooks';
 import { useAccessStore } from '@aiflowy/stores';
@@ -24,6 +24,7 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['success']);
 const accessStore = useAccessStore();
 const headers = ref({
   'aiflowy-token': accessStore.accessToken,
@@ -38,6 +39,7 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
   uploadFile,
 ) => {
   imageUrl.value = URL.createObjectURL(uploadFile.raw!);
+  emit('success', _response.data.path);
 };
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {

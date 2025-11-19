@@ -58,7 +58,7 @@ const handleExceed: UploadProps['onExceed'] = (files, uploadFiles) => {
 };
 
 const handleSuccess: UploadProps['onSuccess'] = (response) => {
-  emit('success', response);
+  emit('success', response.data.path);
 };
 
 const beforeRemove: UploadProps['beforeRemove'] = (uploadFile) => {
