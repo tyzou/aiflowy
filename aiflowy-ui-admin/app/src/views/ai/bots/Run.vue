@@ -17,6 +17,7 @@ import {
 } from 'element-plus';
 
 import { getBotDetails } from '#/api';
+import { $t } from '#/locales';
 
 const route = useRoute();
 const bot = ref<BotInfo>();
@@ -40,12 +41,17 @@ onBeforeMount(async () => {
 
 <template>
   <ElContainer class="h-screen" v-if="bot">
-    <ElAside width="200px" class="flex flex-col items-center">
+    <ElAside width="200px" class="flex flex-col items-center bg-[#f5f5f580]">
       <ElSpace class="px-6 py-7">
         <ElAvatar :src="bot.icon" :size="32" />
         <ElText class="font-bold" size="large">{{ bot.title }}</ElText>
       </ElSpace>
-      <ElButton :icon="ChatDotRound" size="large">新建会话</ElButton>
+      <ElButton :icon="ChatDotRound" size="large">
+        {{ $t('button.newConversation') }}
+      </ElButton>
+      <span class="self-start p-6 pb-2 text-sm text-[#969799]">{{
+        $t('common.history')
+      }}</span>
     </ElAside>
     <ElMain>Main</ElMain>
   </ElContainer>

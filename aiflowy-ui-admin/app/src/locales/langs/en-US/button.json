@@ -1,14 +1,15 @@
 {
-    "query": "Query",
-    "reset": "Reset",
-    "add": "Add",
-    "edit": "Edit",
-    "delete": "Delete",
-    "export": "Export",
-    "import": "Import",
-    "save": "Save",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "addLlm": "New large model added",
-    "oneClickAdd": "One-click add"
+  "query": "Query",
+  "reset": "Reset",
+  "add": "Add",
+  "edit": "Edit",
+  "delete": "Delete",
+  "export": "Export",
+  "import": "Import",
+  "save": "Save",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "addLlm": "New large model added",
+  "oneClickAdd": "One-click add",
+  "newConversation": "New Conversation"
 }
