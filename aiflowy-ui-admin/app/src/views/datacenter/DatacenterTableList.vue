@@ -2,8 +2,8 @@
 import type { FormInstance } from 'element-plus';
 
 import { onMounted, ref } from 'vue';
-
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
+import { router } from '#/router';
+import { Delete, Edit, Plus, View } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElForm,
@@ -77,6 +77,14 @@ function remove(row: any) {
     },
   }).catch(() => {});
 }
+function toDetailPage(row: any) {
+  router.push({
+    name: 'TableDetail',
+    query: {
+      tableId: row.id,
+    },
+  });
+}
 </script>
 
 <template>
@@ -138,9 +146,20 @@ function remove(row: any) {
               {{ row.created }}
             </template>
           </ElTableColumn>
-          <ElTableColumn :label="$t('common.handle')" width="150">
+          <ElTableColumn :label="$t('common.handle')" width="220">
             <template #default="{ row }">
               <div>
+                <ElButton
+                  v-access:code="'/api/v1/datacenterTable/query'"
+                  @click="toDetailPage(row)"
+                  link
+                  type="primary"
+                >
+                  <ElIcon class="mr-1">
+                    <View />
+                  </ElIcon>
+                  {{ $t('button.view') }}
+                </ElButton>
                 <ElButton
                   v-access:code="'/api/v1/datacenterTable/save'"
                   @click="showDialog(row)"

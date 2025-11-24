@@ -1,4 +1,5 @@
 {
+    "title": "数据中枢",
     "id": "主键",
     "deptId": "部门ID",
     "tenantId": "租户ID",
