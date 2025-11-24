@@ -32,7 +32,9 @@ const handleSearch = () => {
       <ElInput v-model="keyword" placeholder="请输入内容" />
       <ElButton type="primary" @click="handleSearch">搜索</ElButton>
     </div>
-    <PreviewSearchKnowledge :data="searchDataList" />
+    <div class="search-result">
+      <PreviewSearchKnowledge :data="searchDataList" />
+    </div>
   </div>
 </template>
 
@@ -41,11 +43,17 @@ const handleSearch = () => {
   width: 100%;
   height: 100%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 .search-input {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+.search-result {
+  padding-top: 20px;
+  flex: 1;
 }
 </style>
