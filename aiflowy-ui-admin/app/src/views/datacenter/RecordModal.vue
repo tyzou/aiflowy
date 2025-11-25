@@ -55,13 +55,7 @@ function save() {
       data.tableId = props.tableId;
       data.id = entity.value.id;
       api
-        .post(
-          '/api/v1/datacenterTable/saveValue',
-          {},
-          {
-            params: data,
-          },
-        )
+        .postForm('/api/v1/datacenterTable/saveValue', data)
         .then((res) => {
           btnLoading.value = false;
           if (res.errorCode === 0) {
