@@ -39,6 +39,7 @@
     "@vueuse/core": "catalog:",
     "dayjs": "catalog:",
     "element-plus": "catalog:",
+    "fetch-event-stream": "^0.1.6",
     "pinia": "catalog:",
     "vue": "catalog:",
     "vue-cropper": "^1.1.4",

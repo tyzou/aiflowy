@@ -1,3 +1,5 @@
+import type { ServerSentEventMessage } from 'fetch-event-stream';
+
 /**
  * 该文件可自行根据业务逻辑进行调整
  */
@@ -14,6 +16,7 @@ import {
 import { useAccessStore } from '@aiflowy/stores';
 
 import { ElMessage } from 'element-plus';
+import { events } from 'fetch-event-stream';
 
 import { useAuthStore } from '#/store';
 
@@ -118,3 +121,47 @@ export const api = createRequestClient(apiURL, {
 });
 
 export const baseRequestClient = new RequestClient({ baseURL: apiURL });
+
+export interface SseOptions {
+  onMessage?: (message: ServerSentEventMessage) => void;
+  onError?: (err: any) => void;
+  onFinished?: () => void;
+}
+
+export const sse = () => {
+  const ctrl = new AbortController();
+  const accessStore = useAccessStore();
+  const sseHeaders = {
+    Accept: 'text/event-stream',
+    'aiflowy-token': accessStore.accessToken || '',
+  };
+  return {
+    stop() {
+      ctrl.abort();
+    },
+    postSse: async (url: string, data?: any, options?: SseOptions) => {
+      const res = await fetch(apiURL + url, {
+        method: 'post',
+        signal: ctrl.signal,
+        headers: sseHeaders,
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        options?.onError?.(res.status);
+        return;
+      }
+      try {
+        const msgEvents = events(res, ctrl.signal);
+        for await (const event of msgEvents) {
+          options?.onMessage?.(event);
+        }
+      } catch (error) {
+        console.error('error', error);
+        options?.onError?.(error);
+      } finally {
+        options?.onFinished?.();
+      }
+    },
+  };
+};
