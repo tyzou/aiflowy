@@ -12,6 +12,7 @@ import { api } from '#/api/request';
 import { $t } from '#/locales';
 import { router } from '#/router';
 import WorkflowForm from '#/views/ai/workflow/components/WorkflowForm.vue';
+import WorkflowSteps from '#/views/ai/workflow/components/WorkflowSteps.vue';
 
 import { getCustomNode } from './customNode/index';
 
@@ -66,7 +67,6 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 const drawerVisible = ref(false);
-const submitLoading = ref(false);
 watch(
   [() => tinyFlowData.value, () => llmList.value, () => knowledgeList.value],
   ([tinyFlowData, llmList, knowledgeList]) => {
@@ -123,18 +123,23 @@ function getRunningParams() {
       drawerVisible.value = true;
     });
 }
+const executeMessage = ref<any>(null);
+function onExecuting(msg: any) {
+  executeMessage.value = msg;
+}
 </script>
 
 <template>
   <div class="head-div h-full w-full">
-    <ElDrawer
-      v-model="drawerVisible"
-      title="I am the title"
-      size="600px"
-    >
+    <ElDrawer v-model="drawerVisible" :title="$t('button.run')" size="600px">
       <WorkflowForm
-        :submit-loading="submitLoading"
+        :workflow-id="workflowId"
         :workflow-params="runParams"
+        :on-executing="onExecuting"
+      />
+      <WorkflowSteps
+        :workflow-id="workflowId"
+        :execute-message="executeMessage"
       />
     </ElDrawer>
     <div class="flex items-center justify-between border-b p-2.5">

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus';
+
 import { computed, ref } from 'vue';
-import {Position} from '@element-plus/icons-vue'
-import type {FormInstance} from 'element-plus'
+
+import { Position } from '@element-plus/icons-vue';
 import {
   ElAlert,
   ElButton,
@@ -13,23 +15,26 @@ import {
   ElSelect,
 } from 'element-plus';
 
+import { sse } from '#/api/request';
 import { $t } from '#/locales';
 
 export type WorkflowFormProps = {
-  onExecute?: (values: any) => void;
-  submitLoading: boolean;
+  onExecuting?: (values: any) => void;
+  workflowId: any;
   workflowParams: any;
 };
 const props = withDefaults(defineProps<WorkflowFormProps>(), {
-  onExecute: () => {
+  onExecuting: () => {
     console.warn('no execute method');
   },
 });
 const runForm = ref<FormInstance>();
 const runParams = ref<any>({});
+const submitLoading = ref(false);
 const parameters = computed(() => {
   return props.workflowParams.parameters;
 });
+const { postSse } = sse();
 function getContentType(item: any) {
   return item.contentType || 'text';
 }
@@ -50,7 +55,22 @@ function getCheckboxOptions(item: any) {
 function submit() {
   runForm.value?.validate((valid) => {
     if (valid) {
-      props.onExecute(runParams.value);
+      const data = {
+        id: props.workflowId,
+        variables: {
+          ...runParams.value,
+        },
+      };
+
+      submitLoading.value = true;
+      postSse('/api/v1/aiWorkflow/tryRunningStream', data, {
+        onMessage: (message) => {
+          props.onExecuting?.(message);
+        },
+        onFinished: () => {
+          submitLoading.value = false;
+        },
+      });
     }
   });
 }
@@ -109,7 +129,7 @@ function submit() {
       <template v-if="isResource(getContentType(item))">
         选择资源组件
       </template>
-      <ElAlert v-if="item.formDescription" type="info" style="margin-top: 5px;">
+      <ElAlert v-if="item.formDescription" type="info" style="margin-top: 5px">
         {{ item.formDescription }}
       </ElAlert>
     </ElFormItem>
@@ -117,7 +137,7 @@ function submit() {
       <ElButton
         type="primary"
         @click="submit"
-        :loading="props.submitLoading"
+        :loading="submitLoading"
         :icon="Position"
       >
         {{ $t('button.run') }}
