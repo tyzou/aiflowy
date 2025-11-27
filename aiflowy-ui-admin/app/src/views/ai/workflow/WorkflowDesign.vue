@@ -12,6 +12,7 @@ import { api } from '#/api/request';
 import { $t } from '#/locales';
 import { router } from '#/router';
 import WorkflowForm from '#/views/ai/workflow/components/WorkflowForm.vue';
+import WorkflowSteps from '#/views/ai/workflow/components/WorkflowSteps.vue';
 
 import { getCustomNode } from './customNode/index';
 
@@ -122,8 +123,9 @@ function getRunningParams() {
       drawerVisible.value = true;
     });
 }
+const executeMessage = ref<any>(null);
 function onExecuting(msg: any) {
-  console.log(msg);
+  executeMessage.value = msg;
 }
 </script>
 
@@ -134,6 +136,10 @@ function onExecuting(msg: any) {
         :workflow-id="workflowId"
         :workflow-params="runParams"
         :on-executing="onExecuting"
+      />
+      <WorkflowSteps
+        :workflow-id="workflowId"
+        :execute-message="executeMessage"
       />
     </ElDrawer>
     <div class="flex items-center justify-between border-b p-2.5">
