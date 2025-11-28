@@ -38,6 +38,7 @@ const pluginToolInfo = ref<any>({
 });
 const pluginInfo = ref<any>({});
 const pluginInputData = ref<any[]>([]);
+const pluginOutputData = ref<any[]>([]);
 
 function getPluginToolInfo() {
   api
@@ -48,11 +49,13 @@ function getPluginToolInfo() {
       if (res.errorCode === 0) {
         pluginToolInfo.value = res.data.data;
         pluginInfo.value = res.data.aiPlugin;
-        pluginInputData.value = JSON.parse(res.data.data.inputData);
+        pluginInputData.value = JSON.parse(res.data.data.inputData || '[]');
+        pluginOutputData.value = JSON.parse(res.data.data.outputData || '[]');
       }
     });
 }
 const pluginInputParamsEditable = ref(false);
+const pluginOutputParamsEditable = ref(false);
 
 const pluginBasicCollapse = ref({
   title: $t('aiPluginTool.pluginToolEdit.basicInfo'),
@@ -61,12 +64,12 @@ const pluginBasicCollapse = ref({
 });
 const pluginBasicCollapseInputParams = ref({
   title: $t('aiPluginTool.pluginToolEdit.configureInputParameters'),
-  isOpen: true,
+  isOpen: false,
   isEdit: false,
 });
-const configureOutputParameters = ref({
+const pluginBasicCollapseOutputParams = ref({
   title: $t('aiPluginTool.pluginToolEdit.configureOutputParameters'),
-  isOpen: true,
+  isOpen: false,
   isEdit: false,
 });
 
@@ -83,8 +86,8 @@ const handleClickHeader = (index: number) => {
       break;
     }
     case 3: {
-      configureOutputParameters.value.isOpen =
-        !configureOutputParameters.value.isOpen;
+      pluginBasicCollapseOutputParams.value.isOpen =
+        !pluginBasicCollapseOutputParams.value.isOpen;
 
       break;
     }
@@ -133,14 +136,28 @@ const updatePluginTool = (index: number) => {
           basePath: pluginToolInfo.value.basePath,
           requestMethod: pluginToolInfo.value.requestMethod,
           inputData: JSON.stringify(pluginInputData.value),
+          outputData: JSON.stringify(pluginOutputData.value),
         })
         .then((res) => {
           if (res.errorCode === 0) {
             ElMessage.success($t('message.updateOkMessage'));
-            if (index === 1) {
-              pluginBasicCollapse.value.isEdit = false;
-            } else if (index === 2) {
-              pluginBasicCollapseInputParams.value.isEdit = false;
+            switch (index) {
+              case 1: {
+                pluginBasicCollapse.value.isEdit = false;
+
+                break;
+              }
+              case 2: {
+                pluginBasicCollapseInputParams.value.isEdit = false;
+
+                break;
+              }
+              case 3: {
+                pluginBasicCollapseOutputParams.value.isEdit = false;
+
+                break;
+              }
+              // No default
             }
           }
         });
@@ -155,11 +172,14 @@ const handleEdit = (index: number) => {
     }
     case 2: {
       pluginBasicCollapseInputParams.value.isEdit = true;
+      pluginBasicCollapseInputParams.value.isOpen = true;
       pluginInputParamsEditable.value = true;
       break;
     }
     case 3: {
-      configureOutputParameters.value.isEdit = true;
+      pluginBasicCollapseOutputParams.value.isEdit = true;
+      pluginBasicCollapseOutputParams.value.isOpen = true;
+      pluginOutputParamsEditable.value = true;
       break;
     }
     // No default
@@ -183,8 +203,8 @@ const handleCancel = (index: number) => {
       break;
     }
     case 3: {
-      configureOutputParameters.value.isEdit = false;
-
+      pluginBasicCollapseOutputParams.value.isEdit = false;
+      pluginOutputParamsEditable.value = false;
       break;
     }
     // No default
@@ -428,6 +448,69 @@ const requestMethodOptions = [
               v-model="pluginInputData"
               :editable="pluginInputParamsEditable"
               :is-edit-output="false"
+            />
+          </div>
+        </div>
+      </div>
+      <!--      输出参数-->
+      <div
+        class="accordion-item"
+        :class="{
+          'accordion-item--active': pluginBasicCollapseOutputParams.isOpen,
+        }"
+      >
+        <!-- 面板头部 -->
+        <div class="accordion-header" @click="handleClickHeader(3)">
+          <div class="column-header-container">
+            <div
+              class="accordion-icon"
+              :class="{
+                'accordion-icon--rotated':
+                  pluginBasicCollapseOutputParams.isOpen,
+              }"
+            >
+              ▼
+            </div>
+            <h3 class="accordion-title">
+              {{ pluginBasicCollapseOutputParams.title }}
+            </h3>
+          </div>
+          <div>
+            <ElButton
+              @click.stop="handleEdit(3)"
+              type="primary"
+              v-if="!pluginBasicCollapseOutputParams.isEdit"
+            >
+              {{ $t('button.edit') }}
+            </ElButton>
+            <ElButton
+              @click.stop="handleCancel(3)"
+              v-if="pluginBasicCollapseOutputParams.isEdit"
+            >
+              {{ $t('button.cancel') }}
+            </ElButton>
+            <ElButton
+              @click.stop="handleSave(3)"
+              type="primary"
+              v-if="pluginBasicCollapseOutputParams.isEdit"
+            >
+              {{ $t('button.save') }}
+            </ElButton>
+          </div>
+        </div>
+
+        <!--编辑基本信息-->
+        <div
+          class="accordion-content"
+          :class="{
+            'accordion-content--open': pluginBasicCollapseOutputParams.isOpen,
+          }"
+        >
+          <div class="accordion-content-inner">
+            <PluginInputAndOutParams
+              v-model="pluginOutputData"
+              :editable="pluginOutputParamsEditable"
+              :is-edit-output="true"
             />
           </div>
         </div>
