@@ -12,6 +12,7 @@ import { api } from '#/api/request';
 import { $t } from '#/locales';
 import { router } from '#/router';
 import ExecResult from '#/views/ai/workflow/components/ExecResult.vue';
+import SingleRun from '#/views/ai/workflow/components/SingleRun.vue';
 import WorkflowForm from '#/views/ai/workflow/components/WorkflowForm.vue';
 import WorkflowSteps from '#/views/ai/workflow/components/WorkflowSteps.vue';
 
@@ -67,6 +68,8 @@ const handleKeydown = (event: KeyboardEvent) => {
 const drawerVisible = ref(false);
 const executeMessage = ref<any>(null);
 const initState = ref(false);
+const singleNode = ref<any>();
+const singleRunVisible = ref(false);
 // functions
 async function loadCustomNode() {
   customNode.value = await getCustomNode({
@@ -136,12 +139,22 @@ async function runIndependently(node: any) {
     ElMessage.warning($t('message.notSupported'));
     return;
   }
-  console.warn('node:', node);
+  await handleSave();
+  singleNode.value = node;
+  singleRunVisible.value = true;
 }
 </script>
 
 <template>
   <div class="head-div h-full w-full">
+    <ElDrawer
+      v-model="singleRunVisible"
+      :title="singleNode?.data?.title"
+      destroy-on-close
+      size="600px"
+    >
+      <SingleRun :node="singleNode" :workflow-id="workflowId" />
+    </ElDrawer>
     <ElDrawer v-model="drawerVisible" :title="$t('button.run')" size="600px">
       <div class="mb-2.5 font-semibold">{{ $t('aiWorkflow.params') }}：</div>
       <WorkflowForm

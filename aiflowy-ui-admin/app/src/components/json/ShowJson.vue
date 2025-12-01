@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 
 import { preferences } from '@aiflowy/preferences';
 
+import { ElEmpty } from 'element-plus';
 import { JsonViewer } from 'vue3-json-viewer';
 
 import 'vue3-json-viewer/dist/vue3-json-viewer.css';
@@ -23,7 +24,16 @@ watch(
 </script>
 
 <template>
-  <JsonViewer :value="value || ''" copyable :theme="themeMode" />
+  <div class="res-container">
+    <JsonViewer v-if="value" :value="value" copyable :theme="themeMode" />
+    <ElEmpty v-else />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.res-container {
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--el-border-radius-base);
+  padding: 10px;
+}
+</style>
