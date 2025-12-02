@@ -185,14 +185,29 @@ const handleDownload = (url: string) => {
 
 .custom-radio-option.selected::after {
   content: '';
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAoCAYAAACIC2hQAAAAAXNSR0IArs4c6QAAAnpJREFUWEfN2FuITHEcwPHvb5Jcsm/IJSVJ8YDkkrQKMSUraZUHRZzZ8aDWA7UPSimKWvGiWVrywJPQrry6PIyQywMPitrUUopYW5Nmz09nZsoxjTn//7k55/l3+cz/nN//f+YIttcR7aBCHtgOLEKYC8wBptiWsoh/KcbBji4jxym0BpxsnBdPoAG0qLNwOQPsB3Lx9LWuEgB1dAXCXWCBdel4E9pAHe1CuAlMi7dnqGr/gBZ1DS4PEx4QG3ELaFHn4fKsMck2xZKMbQEt6HBj60mysW3tJqijGxEe2FZJIb4JWtAnwNoUGtu28EF7dCnKG9sKKcX7oI72IZxOqbFtm79WtIyyzrZClPiTO+DQBjh+C248bVvJBy3od6AjSmOb3PN7oHdzPePOK9h1yQS6T6czlZ82jaLE+pFjFdjUD89HTKA9uhjlXZTmprnNyG0XoPwhMLtx64u6EpcXgeERA0Iiva7pQSMg04NGRKYDjQFpB719GJbMhoPXjR7+2tMcE9IcOnMGfD4HOQFvOzGZ1BiR5lAv8uxuOLa1PvZB2JiRdlDTW5kA0h4ahE0IGQ7aCpu/CN2r/pzdQY9GiHMj/IbvX72qC5Ma//gTQHq/61H9S0nII9SPNRmyECtZT1GuRYJ6Nfq74egW+FGBvNkLhr1XORAZ6nVdPh8+foOv4/YGo4wcC2OBGjULH1RmQNZnH+rSyRV5nHXoEAPS5d2MLENHqbKaQRnNMrSC0sll8b6B1a4srug4wl5KMuSfv6xBRxB2UpLXzZtEVqAT3ulDlT6uypdWO9n/hv4ChhFOUJK37bbaNKEV4BOKN8XvgXtMcJ9BGTM5C34DIlpE2qbZk5wAAAAASUVORK5CYII=);
-  background-size: cover;
-  width: 16px;
-  height: 16px;
   position: absolute;
   right: 0;
   bottom: 0;
+  width: 16px;
+  height: 16px;
+  background-color: var(--el-color-primary);
+  border-radius: 6px 2px;
+  box-sizing: border-box;
 }
+
+.custom-radio-option.selected::before {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 7px;
+  width: 9px;
+  height: 5px;
+  border-left: 1px solid white;
+  border-bottom: 1px solid white;
+  transform: rotate(-45deg);
+  z-index: 1;
+}
+
 .download-icon-btn {
   font-size: 18px;
   cursor: pointer;
