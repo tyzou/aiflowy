@@ -62,16 +62,27 @@ watch(
           isChainError.value = true;
         }
         if (msg.nodeId && msg.status) {
-          nodeStatusMap.value[msg.nodeId] = {
+          const mapData = {
             status: msg.status,
             content: msg.res || msg.errorMsg,
             suspendForParameters: msg.suspendForParameters || [],
             chainId: msg.chainId,
           };
+          if (msg.status === 'end' || msg.status === 'start') {
+            // 确认节点会执行两遍 start 和 end，这里处理一下保证确认内容不会被重新渲染。
+            const confirmNode = displayNodes.value.find(
+              (node) =>
+                node.key === msg.nodeId && node.original.type === 'confirmNode',
+            );
+            if (confirmNode) {
+              mapData.suspendForParameters = confirmNode.suspendForParameters;
+            }
+          }
           if (msg.status === 'confirm') {
-            ElMessage.warning('有待确认的内容，请先确认！');
+            ElMessage.warning($t('aiWorkflow.confirm'));
             activeName.value = msg.nodeId;
           }
+          nodeStatusMap.value[msg.nodeId] = mapData;
         }
       } catch (error) {
         console.error('parse sse message error:', error);
@@ -245,7 +256,7 @@ function handleConfirm(node: any) {
   border-radius: 1px;
   height: 16px;
   margin-right: 16px;
-  background-color: #0066ff;
+  background-color: var(--el-color-primary);
 }
 
 .description-container {
