@@ -1,13 +1,12 @@
 package tech.aiflowy.ai.utils;
 
-import dev.tinyflow.core.Tinyflow;
+import dev.tinyflow.core.TinyflowConfig;
 import dev.tinyflow.core.filestoreage.FileStorageManager;
 import dev.tinyflow.core.filestoreage.FileStorageProvider;
 import dev.tinyflow.core.knowledge.KnowledgeManager;
 import dev.tinyflow.core.knowledge.KnowledgeProvider;
 import dev.tinyflow.core.llm.LlmManager;
 import dev.tinyflow.core.llm.LlmProvider;
-import dev.tinyflow.core.parser.ChainParser;
 import dev.tinyflow.core.searchengine.SearchEngine;
 import dev.tinyflow.core.searchengine.SearchEngineManager;
 import dev.tinyflow.core.searchengine.SearchEngineProvider;
@@ -30,8 +29,8 @@ public class TinyFlowConfigService {
     @Resource
     private KnowledgeProvider knowledgeProvider;
 
-    public void initProvidersAndNodeParsers(Tinyflow tinyflow) {
-        setExtraNodeParser(tinyflow);
+    public void initProvidersAndNodeParsers() {
+        setExtraNodeParser();
         setLlmProvider();
         setFileStorage();
         setKnowledgeProvider();
@@ -42,7 +41,7 @@ public class TinyFlowConfigService {
         FileStorageManager.getInstance().registerProvider(fileStorageProvider);
     }
 
-    public void setExtraNodeParser(Tinyflow tinyflow) {
+    public void setExtraNodeParser() {
 
         // 文档解析
         DocNodeParser docNodeParser = new DocNodeParser();
@@ -61,15 +60,14 @@ public class TinyFlowConfigService {
         // 工作流节点
         WorkflowNodeParser workflowNodeParser = new WorkflowNodeParser();
 
-        ChainParser chainParser = tinyflow.getChainParser();
-        chainParser.addNodeParser(docNodeParser.getNodeName(), docNodeParser);
-        chainParser.addNodeParser(makeFileNodeParser.getNodeName(), makeFileNodeParser);
-        chainParser.addNodeParser(pluginToolNodeParser.getNodeName(), pluginToolNodeParser);
-        chainParser.addNodeParser(sqlNodeParser.getNodeName(), sqlNodeParser);
-        chainParser.addNodeParser(downloadNodeParser.getNodeName(), downloadNodeParser);
-        chainParser.addNodeParser(saveDaveParser.getNodeName(), saveDaveParser);
-        chainParser.addNodeParser(searchDatacenterNodeParser.getNodeName(), searchDatacenterNodeParser);
-        chainParser.addNodeParser(workflowNodeParser.getNodeName(), workflowNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(docNodeParser.getNodeName(), docNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(makeFileNodeParser.getNodeName(), makeFileNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(pluginToolNodeParser.getNodeName(), pluginToolNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(sqlNodeParser.getNodeName(), sqlNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(downloadNodeParser.getNodeName(), downloadNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(saveDaveParser.getNodeName(), saveDaveParser);
+        TinyflowConfig.registerDefaultNodeParser(searchDatacenterNodeParser.getNodeName(), searchDatacenterNodeParser);
+        TinyflowConfig.registerDefaultNodeParser(workflowNodeParser.getNodeName(), workflowNodeParser);
     }
 
     public void setSearchEngineProvider() {
