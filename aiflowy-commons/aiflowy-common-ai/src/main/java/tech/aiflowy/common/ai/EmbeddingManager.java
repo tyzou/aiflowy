@@ -1,18 +1,17 @@
 //package tech.aiflowy.common.ai;
 //
+//import com.agentsflex.core.model.chat.ChatModel;
+//import com.agentsflex.core.model.chat.StreamResponseListener;
 //import tech.aiflowy.common.ai.util.LLMUtil;
 //import tech.aiflowy.common.options.SysOptions;
 //import tech.aiflowy.common.util.StringUtil;
 //import com.agentsflex.core.llm.ChatContext;
 //import com.agentsflex.core.llm.Llm;
-//import com.agentsflex.core.llm.StreamResponseListener;
 //import com.agentsflex.core.llm.response.AiMessageResponse;
 //import com.agentsflex.core.prompt.TextPrompt;
 //import com.agentsflex.core.store.DocumentStore;
 //import com.agentsflex.store.aliyun.AliyunVectorStore;
 //import com.agentsflex.store.aliyun.AliyunVectorStoreConfig;
-//import com.agentsflex.store.milvus.MilvusVectorStore;
-//import com.agentsflex.store.milvus.MilvusVectorStoreConfig;
 //import com.agentsflex.store.qcloud.QCloudVectorStore;
 //import com.agentsflex.store.qcloud.QCloudVectorStoreConfig;
 //import org.slf4j.Logger;
@@ -34,7 +33,7 @@
 //
 //    private ExecutorService sseExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 //
-//    public Llm getEmbeddingModel() {
+//    public ChatModel getEmbeddingModel() {
 //        String modelOfEmbedding = SysOptions.get("model_of_embedding");
 //        return LLMUtil.getLlmByType(modelOfEmbedding);
 //    }
@@ -65,17 +64,8 @@
 //            storeConfig.setDatabase(SysOptions.get("qcloud_vdb_database"));
 //            store = new QCloudVectorStore(storeConfig);
 //        }
-//        //Milvus 数据库
-//        else if ("milvus".equalsIgnoreCase(vectorStoreType)) {
-//            MilvusVectorStoreConfig storeConfig = new MilvusVectorStoreConfig();
-//            storeConfig.setDatabaseName(SysOptions.get("milvus_database"));
-//            storeConfig.setDefaultCollectionName(SysOptions.get("vectorstore_default_collection"));
-//            storeConfig.setUri(SysOptions.get("milvus_endpoint"));
-//            storeConfig.setToken(SysOptions.get("milvus_apikey"));
-//            store = new MilvusVectorStore(storeConfig);
-//        }
 //
-//        Llm embeddingModel = getEmbeddingModel();
+//        ChatModel embeddingModel = getEmbeddingModel();
 //        if (store != null && embeddingModel != null) {
 //            store.setEmbeddingModel(embeddingModel);
 //        }
@@ -91,7 +81,7 @@
 //    public SseEmitter sseEmitter(TextPrompt prompt) {
 //        SseEmitter emitter = new SseEmitter((long) (1000 * 60 * 2));
 //        sseExecutor.execute(() -> {
-//            Llm llm = getEmbeddingModel();
+//            ChatModel llm = getEmbeddingModel();
 //            if (llm == null) {
 //                try {
 //                    emitter.send(SseEmitter.event().data("AI 大模型未配置正确"));

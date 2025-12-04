@@ -3,16 +3,17 @@
 //import cn.idev.excel.EasyExcel;
 //import cn.idev.excel.read.listener.PageReadListener;
 //import com.agentsflex.core.document.Document;
-//import com.agentsflex.core.document.DocumentParser;
+//import com.agentsflex.core.file2text.extractor.FileExtractor;
+//import com.agentsflex.core.file2text.source.DocumentSource;
 //import com.alibaba.fastjson.JSON;
 //
+//import java.io.IOException;
 //import java.io.InputStream;
 //import java.util.ArrayList;
 //import java.util.List;
 //import java.util.Map;
 //
-//public class ExcelDocumentParser implements DocumentParser {
-//    @Override
+//public class ExcelDocumentParser implements FileExtractor {
 //    public Document parse(InputStream inputStream) {
 //        List<List<String>> tableData = new ArrayList<>();
 //        List<String> headerRow = new ArrayList<>();
@@ -45,5 +46,13 @@
 //    }
 //
 //
+//    @Override
+//    public boolean supports(DocumentSource source) {
+//        return false;
+//    }
 //
+//    @Override
+//    public String extractText(DocumentSource source) throws IOException {
+//        return "";
+//    }
 //}

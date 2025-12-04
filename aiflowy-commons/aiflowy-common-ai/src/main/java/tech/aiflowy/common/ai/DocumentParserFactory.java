@@ -1,36 +1,37 @@
-//package tech.aiflowy.common.ai;
-//
-//import com.agentsflex.core.document.DocumentParser;
-//import com.agentsflex.core.document.parser.DefaultTextDocumentParser;
-//import com.agentsflex.document.parser.PdfBoxDocumentParser;
-//import com.agentsflex.document.parser.PoiDocumentParser;
-//
-//public class DocumentParserFactory {
-//
-//    public static DocumentParser getDocumentParser(String typeOrFileName) {
-//        if (typeOrFileName == null) {
-//            throw new NullPointerException("typeOrFileName can not be null");
-//        } else {
-//            typeOrFileName = typeOrFileName.trim().toLowerCase();
-//        }
-//        if (typeOrFileName.endsWith(".pdf")) {
-//            return new PdfBoxDocumentParser();
-//        }
-//        if (typeOrFileName.endsWith(".docx")) {
-//            return new PoiDocumentParser();
-//        }
-//        if (typeOrFileName.endsWith(".txt")) {
-//            return new DefaultTextDocumentParser();
-//        }
-//        if (typeOrFileName.endsWith(".md")) {
-//            return new MarkdownDocumentParser();
-//        }
-//        if (typeOrFileName.endsWith(".xlsx")) {
-//            return new ExcelDocumentParser();
-//        }
-//        if (typeOrFileName.endsWith(".ppt") || typeOrFileName.endsWith(".pptx")) {
-//            return new PowerPointDocumentParser();
-//        }
-//        return null;
-//    }
-//}
+package tech.aiflowy.common.ai;
+
+import com.agentsflex.core.file2text.extractor.FileExtractor;
+import com.agentsflex.core.file2text.extractor.impl.*;
+
+public class DocumentParserFactory {
+
+    public static FileExtractor getDocumentParser(String typeOrFileName) {
+        if (typeOrFileName == null) {
+            throw new NullPointerException("typeOrFileName can not be null");
+        } else {
+            typeOrFileName = typeOrFileName.trim().toLowerCase();
+        }
+        if (typeOrFileName.endsWith(".pdf")) {
+            return new PdfTextExtractor();
+        }
+        if (typeOrFileName.endsWith(".docx")) {
+            return new DocxExtractor();
+        }
+        if (typeOrFileName.endsWith(".doc")) {
+            return new DocExtractor();
+        }
+        if (typeOrFileName.endsWith(".html") || typeOrFileName.endsWith(".htm")) {
+            return new HtmlExtractor();
+        }
+        if (typeOrFileName.endsWith(".md") || typeOrFileName.endsWith(".txt") ||
+                typeOrFileName.endsWith(".csv") || typeOrFileName.endsWith(".xml")
+                || typeOrFileName.endsWith(".json") || typeOrFileName.endsWith(".log")
+        ) {
+            return new PlainTextExtractor();
+        }
+        if (typeOrFileName.endsWith(".ppt") || typeOrFileName.endsWith(".pptx")) {
+            return new PptxExtractor();
+        }
+        return null;
+    }
+}

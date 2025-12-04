@@ -2,6 +2,7 @@
 package tech.aiflowy.ai.entity;
 
 import com.agentsflex.core.model.chat.ChatModel;
+import com.agentsflex.core.model.embedding.EmbeddingModel;
 import com.agentsflex.llm.ollama.OllamaChatConfig;
 import com.agentsflex.llm.ollama.OllamaChatModel;
 import com.agentsflex.llm.openai.OpenAIChatConfig;
@@ -91,6 +92,7 @@ public class AiLlm extends AiLlmBase {
                 return openaiLLm();
         }
     }
+
     private ChatModel ollamaLlm() {
         OllamaChatConfig ollamaChatConfig = new OllamaChatConfig();
         ollamaChatConfig.setEndpoint(getLlmEndpoint());

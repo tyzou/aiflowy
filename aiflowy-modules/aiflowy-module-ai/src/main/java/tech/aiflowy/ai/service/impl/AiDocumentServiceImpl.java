@@ -1,12 +1,25 @@
 package tech.aiflowy.ai.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.agentsflex.core.document.Document;
 import com.agentsflex.core.document.DocumentSplitter;
 import com.agentsflex.core.document.splitter.RegexDocumentSplitter;
 import com.agentsflex.core.document.splitter.SimpleDocumentSplitter;
 import com.agentsflex.core.document.splitter.SimpleTokenizeSplitter;
+import com.agentsflex.core.file2text.extractor.FileExtractor;
+import com.agentsflex.core.file2text.source.ByteArrayDocumentSource;
+import com.agentsflex.core.file2text.source.FileDocumentSource;
+import com.agentsflex.core.file2text.source.TemporaryFileStreamDocumentSource;
+import com.agentsflex.core.model.embedding.EmbeddingModel;
+import com.agentsflex.core.model.embedding.EmbeddingOptions;
+import com.agentsflex.core.store.DocumentStore;
+import com.agentsflex.core.store.StoreOptions;
+import com.agentsflex.search.engine.service.DocumentSearcher;
+import com.mybatisflex.core.keygen.impl.FlexIDKeyGenerator;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import dev.tinyflow.core.llm.Llm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,20 +28,27 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.aiflowy.ai.config.SearcherFactory;
 import tech.aiflowy.ai.entity.AiDocument;
 import tech.aiflowy.ai.entity.AiDocumentChunk;
+import tech.aiflowy.ai.entity.AiKnowledge;
+import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.ai.mapper.AiDocumentChunkMapper;
 import tech.aiflowy.ai.mapper.AiDocumentMapper;
 import tech.aiflowy.ai.service.AiDocumentChunkService;
 import tech.aiflowy.ai.service.AiDocumentService;
 import tech.aiflowy.ai.service.AiKnowledgeService;
 import tech.aiflowy.ai.service.AiLlmService;
+import tech.aiflowy.common.ai.DocumentParserFactory;
 import tech.aiflowy.common.ai.ExcelDocumentSplitter;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.filestorage.FileStorageService;
 import tech.aiflowy.common.util.StringUtil;
+import tech.aiflowy.common.web.exceptions.BusinessException;
+import tech.aiflowy.core.utils.JudgeFileTypeUtil;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -91,50 +111,50 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     @Override
     public boolean removeDoc(String id) {
 //        // 查询该文档对应哪些分割的字段，先删除
-//        QueryWrapper where = QueryWrapper.create().where("document_id = ? ", id);
-//        QueryWrapper aiDocumentWapper = QueryWrapper.create().where("id = ? ", id);
-//        AiDocument oneByQuery = aiDocumentMapper.selectOneByQuery(aiDocumentWapper);
-//        AiKnowledge knowledge = knowledgeService.getById(oneByQuery.getKnowledgeId());
-//        if (knowledge == null) {
-//            return false;
-//        }
-//
-//        // 存储到知识库
-//        DocumentStore documentStore = knowledge.toDocumentStore();
-//        if (documentStore == null) {
-//            return false;
-//        }
-//
-//        AiLlm aiLlm = aiLlmService.getById(knowledge.getVectorEmbedLlmId());
-//        if (aiLlm == null) {
-//            return false;
-//        }
-//        // 设置向量模型
-//        Llm embeddingModel = aiLlm.toLlm();
+        QueryWrapper where = QueryWrapper.create().where("document_id = ? ", id);
+        QueryWrapper aiDocumentWapper = QueryWrapper.create().where("id = ? ", id);
+        AiDocument oneByQuery = aiDocumentMapper.selectOneByQuery(aiDocumentWapper);
+        AiKnowledge knowledge = knowledgeService.getById(oneByQuery.getKnowledgeId());
+        if (knowledge == null) {
+            return false;
+        }
+
+        // 存储到知识库
+        DocumentStore documentStore = knowledge.toDocumentStore();
+        if (documentStore == null) {
+            return false;
+        }
+
+        AiLlm aiLlm = aiLlmService.getById(knowledge.getVectorEmbedLlmId());
+        if (aiLlm == null) {
+            return false;
+        }
+        // 设置向量模型
+//        EmbeddingModel embeddingModel = aiLlm.toEmbeddingModel();
 //        documentStore.setEmbeddingModel(embeddingModel);
-//        StoreOptions options = StoreOptions.ofCollectionName(knowledge.getVectorStoreCollection());
-//        EmbeddingOptions embeddingOptions = new EmbeddingOptions();
-//        embeddingOptions.setModel(aiLlm.getLlmModel());
-//        options.setEmbeddingOptions(embeddingOptions);
-//        options.setCollectionName(knowledge.getVectorStoreCollection());
-//        // 查询文本分割表tb_ai_document_chunk中对应的有哪些数据，找出来删除
-//        QueryWrapper queryWrapper = QueryWrapper.create()
-//                .select("id").from("tb_ai_document_chunk").where("document_id = ?", id);
-//        List<BigInteger> chunkIds = aiDocumentChunkMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
-//        documentStore.delete(chunkIds, options);
-//        // 删除搜索引擎中的数据
-//        if (searcherFactory.getSearcher() != null) {
-//            DocumentSearcher searcher = searcherFactory.getSearcher();
-//            chunkIds.forEach(searcher::deleteDocument);
-//        }
-//        int ck = aiDocumentChunkMapper.deleteByQuery(where);
-//        if (ck < 0) {
-//            return false;
-//        }
-//        // 再删除指定路径下的文件
-//        QueryWrapper wrapper = QueryWrapper.create().where("id = ?", id);
-//        AiDocument aiDocument = aiDocumentMapper.selectOneByQuery(wrapper);
-//        storageService.delete(aiDocument.getDocumentPath());
+        StoreOptions options = StoreOptions.ofCollectionName(knowledge.getVectorStoreCollection());
+        EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+        embeddingOptions.setModel(aiLlm.getLlmModel());
+        options.setEmbeddingOptions(embeddingOptions);
+        options.setCollectionName(knowledge.getVectorStoreCollection());
+        // 查询文本分割表tb_ai_document_chunk中对应的有哪些数据，找出来删除
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select("id").from("tb_ai_document_chunk").where("document_id = ?", id);
+        List<BigInteger> chunkIds = aiDocumentChunkMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
+        documentStore.delete(chunkIds, options);
+        // 删除搜索引擎中的数据
+        if (searcherFactory.getSearcher() != null) {
+            DocumentSearcher searcher = searcherFactory.getSearcher();
+            chunkIds.forEach(searcher::deleteDocument);
+        }
+        int ck = aiDocumentChunkMapper.deleteByQuery(where);
+        if (ck < 0) {
+            return false;
+        }
+        // 再删除指定路径下的文件
+        QueryWrapper wrapper = QueryWrapper.create().where("id = ?", id);
+        AiDocument aiDocument = aiDocumentMapper.selectOneByQuery(wrapper);
+        storageService.delete(aiDocument.getDocumentPath());
         return true;
     }
 
@@ -142,74 +162,76 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     @Override
     @Transactional
     public Result<?> textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
-//        try {
-//            InputStream inputStream = storageService.readStream(filePath);
-//            if (getFileExtension(filePath) == null){
-//                Log.error("获取文件后缀失败");
-//                throw new BusinessException("获取文件后缀失败");
-//            }
-//            DocumentParser documentParser = DocumentParserFactory.getDocumentParser(filePath);
-//            AiDocument aiDocument = new AiDocument();
-//            List<AiDocumentChunk> previewList = new ArrayList<>();
-//            DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
-//            Document document = null;
-//            if (documentParser != null) {
-//                document = documentParser.parse(inputStream);
-//            }
-//            inputStream.close();
-//            List<Document> documents = documentSplitter.split(document);
-//            FlexIDKeyGenerator flexIDKeyGenerator = new FlexIDKeyGenerator();
-//            int sort = 1;
-//            for (Document value : documents) {
-//                AiDocumentChunk chunk = new AiDocumentChunk();
-//                chunk.setId(new BigInteger(String.valueOf(flexIDKeyGenerator.generate(chunk, null))));
-//                chunk.setContent(value.getContent());
-//                chunk.setSorting(sort);
-//                sort++;
-//                previewList.add(chunk);
-//            }
-//            String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(filePath);
-//            aiDocument.setDocumentType(fileTypeByExtension);
-//            aiDocument.setKnowledgeId(knowledgeId);
-//            aiDocument.setDocumentPath(filePath);
-//            aiDocument.setCreated(new Date());
-//            aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
-//            aiDocument.setModified(new Date());
-//            if (document != null) {
-//                aiDocument.setContent(document.getContent());
-//            }
-//            aiDocument.setChunkSize(chunkSize);
-//            aiDocument.setOverlapSize(overlapSize);
-//            aiDocument.setTitle(originalFilename);
-//            Map<String, Object> res = new HashMap<>();
-//
-//            List<AiDocumentChunk> aiDocumentChunks = null;
-//            // 如果是预览拆分，则返回指定页的数据
-//            if ("textSplit".equals(operation)){
-//                int startIndex = (pageNumber - 1) * pageSize;
-//                int endIndex = Math.min(startIndex + pageSize, previewList.size());
-//
-//                if (startIndex >= previewList.size()) {
-//                    aiDocumentChunks = new ArrayList<>();
-//                } else {
-//                    aiDocumentChunks = new ArrayList<>(previewList.subList(startIndex, endIndex));
-//                }
-//
-//                res.put("total", previewList.size());
-//                // 保存文件到知识库
-//            } else if ("saveText".equals(operation)){
-//                aiDocumentChunks = previewList;
-//                return this.saveTextResult(aiDocumentChunks, aiDocument);
-//            }
-//
-//            res.put("previewData", aiDocumentChunks);
-//            res.put("aiDocumentData", aiDocument);
-//            // 返回分割效果给用户
-//            return Result.ok(res);
-//        } catch (IOException e) {
-//            Log.error(e.toString(), e);
-//        }
-//
+        try {
+            InputStream inputStream = storageService.readStream(filePath);
+            if (getFileExtension(filePath) == null){
+                Log.error("获取文件后缀失败");
+                throw new BusinessException("获取文件后缀失败");
+            }
+            FileExtractor documentParser = DocumentParserFactory.getDocumentParser(filePath);
+            AiDocument aiDocument = new AiDocument();
+            List<AiDocumentChunk> previewList = new ArrayList<>();
+            DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
+            Document document = null;
+            if (documentParser != null) {
+                TemporaryFileStreamDocumentSource fileDocumentSource = new TemporaryFileStreamDocumentSource(inputStream, originalFilename, null);
+                String  content = documentParser.extractText(fileDocumentSource);
+                document = new Document(content);
+            }
+            inputStream.close();
+            List<Document> documents = documentSplitter.split(document);
+            FlexIDKeyGenerator flexIDKeyGenerator = new FlexIDKeyGenerator();
+            int sort = 1;
+            for (Document value : documents) {
+                AiDocumentChunk chunk = new AiDocumentChunk();
+                chunk.setId(new BigInteger(String.valueOf(flexIDKeyGenerator.generate(chunk, null))));
+                chunk.setContent(value.getContent());
+                chunk.setSorting(sort);
+                sort++;
+                previewList.add(chunk);
+            }
+            String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(filePath);
+            aiDocument.setDocumentType(fileTypeByExtension);
+            aiDocument.setKnowledgeId(knowledgeId);
+            aiDocument.setDocumentPath(filePath);
+            aiDocument.setCreated(new Date());
+            aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
+            aiDocument.setModified(new Date());
+            if (document != null) {
+                aiDocument.setContent(document.getContent());
+            }
+            aiDocument.setChunkSize(chunkSize);
+            aiDocument.setOverlapSize(overlapSize);
+            aiDocument.setTitle(originalFilename);
+            Map<String, Object> res = new HashMap<>();
+
+            List<AiDocumentChunk> aiDocumentChunks = null;
+            // 如果是预览拆分，则返回指定页的数据
+            if ("textSplit".equals(operation)){
+                int startIndex = (pageNumber - 1) * pageSize;
+                int endIndex = Math.min(startIndex + pageSize, previewList.size());
+
+                if (startIndex >= previewList.size()) {
+                    aiDocumentChunks = new ArrayList<>();
+                } else {
+                    aiDocumentChunks = new ArrayList<>(previewList.subList(startIndex, endIndex));
+                }
+
+                res.put("total", previewList.size());
+                // 保存文件到知识库
+            } else if ("saveText".equals(operation)){
+                aiDocumentChunks = previewList;
+                return this.saveTextResult(aiDocumentChunks, aiDocument);
+            }
+
+            res.put("previewData", aiDocumentChunks);
+            res.put("aiDocumentData", aiDocument);
+            // 返回分割效果给用户
+            return Result.ok(res);
+        } catch (IOException e) {
+            Log.error(e.toString(), e);
+        }
+
         return Result.fail("操作失败");
     }
 
