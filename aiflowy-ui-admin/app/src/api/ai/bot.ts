@@ -21,6 +21,25 @@ export const getSessionList = (params: GetSessionListParams) => {
   );
 };
 
+export interface SaveBotParams {
+  icon: string;
+  title: string;
+  alias: string;
+  description: string;
+}
+/** 创建Bot */
+export const saveBot = (params: SaveBotParams) => {
+  return api.post<RequestResult>('/api/v1/aiBot/save', { ...params });
+};
+
+export interface UpdateBotParams extends SaveBotParams {
+  id: string;
+}
+/** 修改Bot */
+export const updateBotApi = (params: UpdateBotParams) => {
+  return api.post<RequestResult>('/api/v1/aiBot/update', { ...params });
+};
+
 export interface GetMessageListParams {
   sessionId: string;
   botId: string;

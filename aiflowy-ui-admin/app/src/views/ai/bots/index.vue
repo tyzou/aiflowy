@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { BotInfo } from '@aiflowy/types';
 
+import type { ActionButton } from '#/components/page/CardList.vue';
+
 import { markRaw, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -15,78 +17,73 @@ import {
 } from '@element-plus/icons-vue';
 
 import defaultAvatar from '#/assets/ai/bot/defaultBotAvatar.png';
-import CardPage from '#/components/cardPage/CardPage.vue';
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
+import CardList from '#/components/page/CardList.vue';
 import PageData from '#/components/page/PageData.vue';
+
+import Modal from './modal.vue';
 
 const router = useRouter();
 const pageDataRef = ref();
+const modalRef = ref<InstanceType<typeof Modal>>();
 
+// 操作按钮配置
 const headerButtons = [
   {
-    key: 'add',
-    text: $t('aiBots.createBot'),
+    key: 'create',
+    text: $t('button.create'),
     icon: markRaw(Plus),
     type: 'primary',
-    data: { action: 'add' },
+    data: { action: 'create' },
     permission: '/api/v1/aiKnowledge/save',
   },
 ];
-// 操作按钮配置
-const actions = [
+const actions: ActionButton[] = [
   {
-    name: 'edit',
-    label: $t('button.edit'),
-    type: 'default',
-    icon: markRaw(Edit),
+    icon: Edit,
+    text: $t('button.edit'),
+    className: '',
+    permission: '',
+    onClick(row: BotInfo) {
+      modalRef.value?.open('edit', row);
+    },
   },
   {
-    name: 'setting',
-    label: $t('button.setting'),
-    type: 'default',
-    icon: markRaw(Setting),
+    icon: Setting,
+    text: $t('button.setting'),
+    className: '',
+    permission: '',
+    onClick(row: BotInfo) {
+      router.push({ path: `/ai/bots/setting/${row.id}` });
+    },
   },
   {
-    name: 'run',
-    label: $t('button.run'),
-    type: 'default',
-    icon: markRaw(VideoPlay),
+    icon: VideoPlay,
+    text: $t('button.run'),
+    className: '',
+    permission: '',
+    onClick(row: BotInfo) {
+      router.push({ path: `/ai/bots/run/${row.id}` });
+      // 打开新窗口
+      // window.open(`/ai/bots/run/${item.id}`, '_blank');
+    },
   },
   {
-    name: 'delete',
-    label: $t('button.delete'),
-    type: 'danger',
-    icon: markRaw(Delete),
+    icon: Delete,
+    text: $t('button.delete'),
+    className: '',
     permission: '/api/v1/aiBot/remove',
+    onClick(row: BotInfo) {
+      console.log(row);
+    },
   },
 ];
 
-const handleButtonClick = (event: any) => {
-  switch (event.key) {
-    case 'add': {
-      // aiKnowledgeModalRef.value.openDialog({});
-      console.warn(event);
-      break;
-    }
-  }
-};
 const handleSearch = (params: string) => {
   pageDataRef.value.setQuery({ title: params, isQueryOr: true });
 };
-const handleAction = ({
-  action,
-  item,
-}: {
-  action: (typeof actions)[number];
-  item: BotInfo;
-}) => {
-  if (action.name === 'run') {
-    router.push({ path: `/ai/bots/run/${item.id}` });
-    // 打开新窗口
-    // window.open(`/ai/bots/run/${item.id}`, '_blank');
-  } else if (action.name === 'setting') {
-    router.push({ path: `/ai/bots/setting/${item.id}` });
-  }
+const handleButtonClick = () => {
+  modalRef.value?.open('create');
 };
 </script>
 
@@ -103,16 +100,14 @@ const handleAction = ({
       :init-query-params="{ status: 1 }"
     >
       <template #default="{ pageList }">
-        <CardPage
-          title-key="title"
-          avatar-key="icon"
-          description-key="description"
-          :default-avatar="defaultAvatar"
+        <CardList
+          :default-icon="defaultAvatar"
           :data="pageList"
           :actions="actions"
-          @action-click="handleAction"
         />
       </template>
     </PageData>
+
+    <Modal ref="modalRef" @success="pageDataRef.setQuery({})" />
   </div>
 </template>
