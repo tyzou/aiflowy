@@ -10,10 +10,14 @@ import { AIFlowyButton } from '@aiflowy-core/shadcn-ui';
 
 interface Props {
   formSchema?: AIFlowyFormSchema[];
+  buttonText?: string;
+  buttonLoading?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   formSchema: () => [],
+  buttonText: '更新密码',
+  buttonLoading: false,
 });
 
 const emit = defineEmits<{
@@ -49,8 +53,13 @@ defineExpose({
 <template>
   <div>
     <Form />
-    <AIFlowyButton type="submit" class="mt-4" @click="handleSubmit">
-      更新密码
+    <AIFlowyButton
+      :loading="buttonLoading"
+      type="submit"
+      class="mt-4"
+      @click="handleSubmit"
+    >
+      {{ buttonText }}
     </AIFlowyButton>
   </div>
 </template>

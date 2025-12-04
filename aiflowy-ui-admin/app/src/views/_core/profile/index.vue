@@ -4,6 +4,8 @@ import { ref } from 'vue';
 import { Profile } from '@aiflowy/common-ui';
 import { useUserStore } from '@aiflowy/stores';
 
+import { $t } from '#/locales';
+
 import ProfileBase from './base-setting.vue';
 import ProfileNotificationSetting from './notification-setting.vue';
 import ProfilePasswordSetting from './password-setting.vue';
@@ -15,20 +17,12 @@ const tabsValue = ref<string>('basic');
 
 const tabs = ref([
   {
-    label: '基本设置',
+    label: $t('settingsConfig.basic'),
     value: 'basic',
   },
   {
-    label: '安全设置',
-    value: 'security',
-  },
-  {
-    label: '修改密码',
+    label: $t('settingsConfig.updatePwd'),
     value: 'password',
-  },
-  {
-    label: '新消息提醒',
-    value: 'notice',
   },
 ]);
 </script>
