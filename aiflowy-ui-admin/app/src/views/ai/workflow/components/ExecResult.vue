@@ -14,6 +14,7 @@ export interface ExecResultProps {
   executeMessage: null | ServerSentEventMessage;
   nodeJson: any;
   initSignal?: boolean;
+  pollingData?: any;
 }
 const props = defineProps<ExecResultProps>();
 

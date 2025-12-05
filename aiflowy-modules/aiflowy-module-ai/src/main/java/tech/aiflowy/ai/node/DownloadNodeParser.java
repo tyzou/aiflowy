@@ -1,7 +1,6 @@
 package tech.aiflowy.ai.node;
 
 import com.alibaba.fastjson.JSONObject;
-import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.node.BaseNode;
 import dev.tinyflow.core.parser.BaseNodeParser;
 import tech.aiflowy.common.constant.enums.EnumResourceType;
@@ -10,7 +9,7 @@ import tech.aiflowy.common.filestorage.FileStorageService;
 public class DownloadNodeParser extends BaseNodeParser {
 
     @Override
-    protected BaseNode doParse(JSONObject root, JSONObject data, Tinyflow tinyflow) {
+    protected BaseNode doParse(JSONObject root, JSONObject data, JSONObject tinyflow) {
         Integer resourceType = data.getInteger("resourceType");
         if (resourceType == null) {
             resourceType = EnumResourceType.OTHER.getCode();

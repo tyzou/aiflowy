@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
 
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 
 import { Position } from '@element-plus/icons-vue';
 import {
@@ -16,12 +16,12 @@ import {
   ElSelect,
 } from 'element-plus';
 
-import { sse } from '#/api/request';
+import { api } from '#/api/request';
 import { $t } from '#/locales';
 import ChooseResource from '#/views/ai/resource/ChooseResource.vue';
 
 export type WorkflowFormProps = {
-  onExecuting?: (values: any) => void;
+  onAsyncExecute?: (values: any) => void;
   onSubmit?: (values: any) => void;
   workflowId: any;
   workflowParams: any;
@@ -33,6 +33,9 @@ const props = withDefaults(defineProps<WorkflowFormProps>(), {
   onSubmit: () => {
     console.warn('no submit method');
   },
+  onAsyncExecute: () => {
+    console.warn('no async execute method');
+  },
 });
 defineExpose({
   resume,
@@ -43,7 +46,6 @@ const submitLoading = ref(false);
 const parameters = computed(() => {
   return props.workflowParams.parameters;
 });
-const { postSse } = sse();
 function getContentType(item: any) {
   return item.contentType || 'text';
 }
@@ -61,7 +63,13 @@ function getCheckboxOptions(item: any) {
   }
   return [];
 }
-function submit() {
+function choose(data: any, propName: string) {
+  runParams.value[propName] = data.resourceUrl;
+}
+function resume(data: any) {
+  submitLoading.value = true;
+}
+function submitV2() {
   runForm.value?.validate((valid) => {
     if (valid) {
       const data = {
@@ -72,45 +80,45 @@ function submit() {
       };
       props.onSubmit?.(runParams.value);
       submitLoading.value = true;
-      postSse('/api/v1/aiWorkflow/tryRunningStream', data, {
-        onMessage: (message) => {
-          if (message.data) {
-            const msg = JSON.parse(message.data).content;
-            if (msg.status === 'execOnce') {
-              ElMessage.warning($t('aiWorkflow.completed'));
-            } else {
-              props.onExecuting?.(message);
-            }
-          }
-        },
-        onFinished: () => {
-          submitLoading.value = false;
-        },
+      api.post('/api/v1/aiWorkflow/runAsync', data).then((res) => {
+        if (res.errorCode === 0 && res.data) {
+          // executeId
+          startPolling(res.data);
+        }
       });
     }
   });
 }
-function choose(data: any, propName: string) {
-  runParams.value[propName] = data.resourceUrl;
+const timer = ref();
+// 轮询执行结果
+function startPolling(executeId: any) {
+  if (timer.value) return;
+  timer.value = setInterval(() => executePolling(executeId), 1000);
 }
-function resume(data: any) {
-  submitLoading.value = true;
-  postSse('/api/v1/aiWorkflow/resumeChain', data, {
-    onMessage: (message) => {
-      if (message.data) {
-        const msg = JSON.parse(message.data).content;
-        if (msg.status === 'execOnce') {
-          ElMessage.warning($t('aiWorkflow.completed'));
-        } else {
-          props.onExecuting?.(message);
-        }
+function executePolling(executeId: any) {
+  api
+    .get('/api/v1/aiWorkflow/getChainStatus', {
+      params: {
+        executeId,
+      },
+    })
+    .then((res) => {
+      if (res.data.status !== 1) {
+        stopPolling();
       }
-    },
-    onFinished: () => {
-      submitLoading.value = false;
-    },
-  });
+      props.onAsyncExecute?.(res.data);
+    });
 }
+function stopPolling() {
+  submitLoading.value = false;
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+}
+onUnmounted(() => {
+  stopPolling();
+});
 </script>
 
 <template>
@@ -182,7 +190,7 @@ function resume(data: any) {
       <ElFormItem>
         <ElButton
           type="primary"
-          @click="submit"
+          @click="submitV2"
           :loading="submitLoading"
           :icon="Position"
         >

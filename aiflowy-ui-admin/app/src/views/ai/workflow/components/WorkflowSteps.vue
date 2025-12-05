@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
-import type { ServerSentEventMessage } from 'fetch-event-stream';
 
 import { computed, ref, watch } from 'vue';
 
@@ -16,7 +15,6 @@ import {
   ElForm,
   ElFormItem,
   ElIcon,
-  ElMessage,
 } from 'element-plus';
 
 import ShowJson from '#/components/json/ShowJson.vue';
@@ -26,15 +24,25 @@ import ConfirmItemMulti from '#/views/ai/workflow/components/ConfirmItemMulti.vu
 
 export interface WorkflowStepsProps {
   workflowId: any;
-  executeMessage: null | ServerSentEventMessage;
   nodeJson: any;
   initSignal?: boolean;
+  pollingData?: any;
 }
 const props = defineProps<WorkflowStepsProps>();
 const emit = defineEmits(['resume']);
 const nodes = ref<any[]>([]);
 const nodeStatusMap = ref<Record<string, any>>({});
 const isChainError = ref(false);
+watch(
+  () => props.pollingData,
+  (newVal) => {
+    const nodes = newVal.nodes;
+    for (const nodeId in nodes) {
+      nodeStatusMap.value[nodeId] = nodes[nodeId];
+    }
+  },
+  { deep: true },
+);
 watch(
   () => props.initSignal,
   () => {
@@ -51,48 +59,6 @@ watch(
     }
   },
   { immediate: true },
-);
-watch(
-  () => props.executeMessage,
-  (newMsg) => {
-    if (newMsg && newMsg.data) {
-      try {
-        const msg = JSON.parse(newMsg.data).content;
-        if (msg.status === 'error') {
-          isChainError.value = true;
-        }
-        if (msg.nodeId && msg.status) {
-          const mapData = {
-            status: msg.status,
-            content: msg.res || msg.errorMsg,
-            suspendForParameters: msg.suspendForParameters || [],
-            chainId: msg.chainId,
-          };
-          if (msg.status === 'end' || msg.status === 'start') {
-            // 确认节点会执行两遍 start 和 end，这里处理一下保证确认内容不会被重新渲染。
-            const confirmNode = displayNodes.value.find(
-              (node) =>
-                node.key === msg.nodeId && node.original.type === 'confirmNode',
-            );
-            if (confirmNode) {
-              mapData.suspendForParameters = confirmNode.suspendForParameters;
-            }
-          }
-          if (msg.status === 'confirm') {
-            ElMessage.warning({
-              message: $t('aiWorkflow.confirm'),
-              plain: true,
-            });
-            activeName.value = msg.nodeId;
-          }
-          nodeStatusMap.value[msg.nodeId] = mapData;
-        }
-      } catch (error) {
-        console.error('parse sse message error:', error);
-      }
-    }
-  },
-  { deep: true },
 );
 const displayNodes = computed(() => {
   return nodes.value.map((node) => ({
@@ -155,11 +121,11 @@ function handleConfirm(node: any) {
               {{ node.label }}
             </div>
             <div class="flex items-center">
-              <ElIcon v-if="node.status === 'end'" color="green" size="20">
+              <ElIcon v-if="node.status === 20" color="green" size="20">
                 <SuccessFilled />
               </ElIcon>
-              <div v-if="node.status === 'start'" class="spinner"></div>
-              <ElIcon v-if="node.status === 'nodeError'" color="red" size="20">
+              <div v-if="node.status === 1" class="spinner"></div>
+              <ElIcon v-if="node.status === 10" color="red" size="20">
                 <CircleCloseFilled />
               </ElIcon>
               <ElIcon v-if="isChainError" color="orange" size="20">

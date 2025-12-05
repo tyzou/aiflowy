@@ -4,8 +4,6 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.mybatisflex.core.tenant.TenantManager;
-import dev.tinyflow.core.Tinyflow;
-import dev.tinyflow.core.chain.Chain;
 import dev.tinyflow.core.chain.ChainDefinition;
 import org.quartz.JobKey;
 import org.quartz.TriggerKey;
@@ -84,9 +82,6 @@ public class JobUtil {
 
             AiWorkflow workflow = service.getById(workflowId);
             if (workflow != null) {
-                Tinyflow tinyflow = workflow.toTinyflow();
-                ChainDefinition chain = tinyflow.toChain();
-
 //                if (accountId != null) {
 //                    // 设置的归属者
 //                    SysAccount account = accountService.getById(accountId.toString());

@@ -4,25 +4,15 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alicp.jetcache.Cache;
 import com.mybatisflex.core.query.QueryWrapper;
-import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.chain.*;
-import dev.tinyflow.core.chain.event.ChainStatusChangeEvent;
-import dev.tinyflow.core.chain.event.NodeEndEvent;
-import dev.tinyflow.core.chain.event.NodeStartEvent;
-import dev.tinyflow.core.chain.listener.ChainEventListener;
-import dev.tinyflow.core.chain.listener.NodeErrorListener;
 import dev.tinyflow.core.chain.runtime.ChainExecutor;
-import dev.tinyflow.core.node.ConfirmNode;
-import dev.tinyflow.core.parser.NodeParser;
+import dev.tinyflow.core.parser.ChainParser;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +22,11 @@ import tech.aiflowy.ai.entity.AiWorkflow;
 import tech.aiflowy.ai.service.AiBotWorkflowService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
+import tech.aiflowy.ai.tinyflow.entity.ChainInfo;
 import tech.aiflowy.common.ai.MySseEmitter;
 import tech.aiflowy.common.annotation.NeedApiKeyAccess;
+import tech.aiflowy.common.constant.CacheKey;
 import tech.aiflowy.common.constant.Constants;
-import tech.aiflowy.common.constant.RedisKey;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
@@ -52,7 +43,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 控制层。
@@ -74,6 +64,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     private Cache<String, Object> defaultCache;
     @Resource
     private ChainExecutor chainExecutor;
+    @Resource
+    private ChainParser chainParser;
 
     public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
@@ -82,14 +74,42 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @GetMapping("/test")
     @SaIgnore
-    public Result<Map<String, Object>> test() {
+    public Result<String> test() {
         String id = "351890611582607360";
         Map<String, Object> variables = new HashMap<>();
         variables.put("single", "a");
         variables.put("resource", "b");
         variables.put("vvv", "c");
-        Map<String, Object> execute = chainExecutor.execute(id, variables);
-        return Result.ok(execute);
+//        Map<String, Object> execute = chainExecutor.execute(id, variables);
+        String executeId = chainExecutor.executeAsync(id, variables);
+        return Result.ok(executeId);
+    }
+
+    /**
+     * 运行工作流 - v2
+     */
+    @PostMapping("/runAsync")
+    @SaCheckPermission("/api/v1/aiWorkflow/save")
+    public Result<String> runAsync( @JsonBody(value = "id", required = true) BigInteger id,
+                                    @JsonBody("variables") Map<String, Object> variables) {
+        AiWorkflow workflow = service.getById(id);
+        if (workflow == null) {
+            throw new RuntimeException("工作流不存在");
+        }
+        if (StpUtil.isLogin()) {
+            variables.put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
+        }
+        String executeId = chainExecutor.executeAsync(id.toString(), variables);
+        return Result.ok(executeId);
+    }
+
+    /**
+     * 获取工作流运行状态 - v2
+     */
+    @GetMapping("/getChainStatus")
+    public Result<ChainInfo> getChainStatus(String executeId) {
+        ChainInfo res = (ChainInfo) defaultCache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
+        return Result.ok(res);
     }
 
     @PostMapping("/importWorkFlow")
@@ -121,12 +141,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             return Result.fail(1, "can not find the workflow by id: " + id);
         }
 
-        Tinyflow tinyflow = workflow.toTinyflow();
-        if (tinyflow == null) {
-            return Result.fail(2, "workflow content is empty! ");
-        }
-
-        ChainDefinition definition = tinyflow.toChain();
+        ChainDefinition definition = chainParser.parse(workflow.getContent());
         if (definition == null) {
             return Result.fail(2, "节点配置错误，请检查! ");
         }
@@ -147,9 +162,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         if (workflow == null) {
             return Result.fail(1, "工作流不存在");
         }
-
-        Tinyflow tinyflow = workflow.toTinyflow();
-        ChainDefinition definition = tinyflow.toChain();
+        ChainDefinition definition = chainParser.parse(workflow.getContent());
 
         if (StpUtil.isLogin()) {
             variables.put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
@@ -176,9 +189,6 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         if (workflow == null) {
             throw new RuntimeException("工作流不存在");
         }
-
-//        Tinyflow tinyflow = workflow.toTinyflow();
-//        ChainDefinition definition = tinyflow.toChain();
 
         if (StpUtil.isLogin()) {
             variables.put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());

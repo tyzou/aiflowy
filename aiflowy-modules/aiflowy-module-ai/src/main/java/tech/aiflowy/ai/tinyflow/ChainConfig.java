@@ -1,12 +1,12 @@
 package tech.aiflowy.ai.tinyflow;
 
 import com.alicp.jetcache.Cache;
-import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.chain.ChainDefinition;
 import dev.tinyflow.core.chain.ChainState;
 import dev.tinyflow.core.chain.NodeState;
 import dev.tinyflow.core.chain.repository.*;
 import dev.tinyflow.core.chain.runtime.ChainExecutor;
+import dev.tinyflow.core.parser.ChainParser;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +35,17 @@ public class ChainConfig {
     @Resource
     private TinyFlowConfigService tinyFlowConfigService;
 
+    @Bean
+    public ChainParser chainParser() {
+        ChainParser chainParser = ChainParser.builder()
+                .withDefaultParsers(true)
+                .build();
+        tinyFlowConfigService.initProvidersAndNodeParsers(chainParser);
+        return chainParser;
+    }
+
     @Bean(name = "chainExecutor")
-    public ChainExecutor chainExecutor() {
+    public ChainExecutor chainExecutor(ChainParser chainParser) {
 
         ChainExecutor chainExecutor = new ChainExecutor(new ChainDefinitionRepository() {
 
@@ -44,8 +53,7 @@ public class ChainConfig {
             public ChainDefinition getChainDefinitionById(String id) {
                 AiWorkflow workflow = aiWorkflowService.getById(id);
                 String json = workflow.getContent();
-                Tinyflow tinyflow = new Tinyflow(json);
-                ChainDefinition chainDefinition = tinyflow.toChain();
+                ChainDefinition chainDefinition = chainParser.parse(json);
                 chainDefinition.setId(workflow.getId().toString());
                 chainDefinition.setName(workflow.getEnglishName());
                 chainDefinition.setDescription(workflow.getDescription());
@@ -106,16 +114,15 @@ public class ChainConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void initTinyFlow() {
         System.out.println("初始化 tinyflow 参数");
-        tinyFlowConfigService.initProvidersAndNodeParsers();
     }
 
     /**
      * 执行状态监听器
      */
     private void addStateListeners(ChainExecutor chainExecutor) {
-        chainExecutor.addEventListener(new ChainEventListenerForFront());
-        chainExecutor.addErrorListener(new ChainErrorListenerForFront());
-        chainExecutor.addNodeErrorListener(new NodeErrorListenerForFront());
+        chainExecutor.addEventListener(new ChainEventListenerForFront(cache));
+        chainExecutor.addErrorListener(new ChainErrorListenerForFront(cache));
+        chainExecutor.addNodeErrorListener(new NodeErrorListenerForFront(cache));
     }
 
     /**

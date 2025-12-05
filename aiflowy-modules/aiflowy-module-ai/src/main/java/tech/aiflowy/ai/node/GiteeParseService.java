@@ -13,8 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tech.aiflowy.ai.utils.DocUtil;
-import tech.aiflowy.common.constant.RedisKey;
-import tech.aiflowy.common.util.SpringContextUtil;
+import tech.aiflowy.common.constant.CacheKey;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -40,7 +39,7 @@ public class GiteeParseService implements ReadDocService {
 
     private String getDocContent(String fileName, InputStream is) {
 
-        Object cache = defaultCache.get(RedisKey.DOC_NODE_CONTENT_KEY + fileName);
+        Object cache = defaultCache.get(CacheKey.DOC_NODE_CONTENT_KEY + fileName);
 
         if (cache != null) {
             return cache.toString();
@@ -69,7 +68,7 @@ public class GiteeParseService implements ReadDocService {
             }
             content = res.toString();
 
-            defaultCache.put(RedisKey.DOC_NODE_CONTENT_KEY + fileName, content);
+            defaultCache.put(CacheKey.DOC_NODE_CONTENT_KEY + fileName, content);
         } catch (Exception e) {
             log.error("读取文档内容失败：", e);
             throw new RuntimeException("读取文档内容失败：", e);

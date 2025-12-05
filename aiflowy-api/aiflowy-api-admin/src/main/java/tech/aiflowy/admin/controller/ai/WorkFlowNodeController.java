@@ -4,12 +4,12 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.chain.ChainDefinition;
 import dev.tinyflow.core.chain.Node;
 import dev.tinyflow.core.node.ConfirmNode;
 import dev.tinyflow.core.node.EndNode;
 import dev.tinyflow.core.node.StartNode;
+import dev.tinyflow.core.parser.ChainParser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +27,8 @@ public class WorkFlowNodeController {
 
     @Resource
     private AiWorkflowService aiWorkflowService;
+    @Resource
+    private ChainParser chainParser;
 
     @GetMapping("/getChainParams")
     public Result<?> getChainParams(String currentId, String workflowId) {
@@ -40,8 +42,8 @@ public class WorkFlowNodeController {
         }
         nodeData.put("workflowId", workflow.getId());
         nodeData.put("workflowName", workflow.getTitle());
-        Tinyflow tinyflow = workflow.toTinyflow();
-        ChainDefinition definition = tinyflow.toChain();
+
+        ChainDefinition definition = chainParser.parse(workflow.getContent());
         List<Node> nodes = definition.getNodes();
         JSONArray inputs = new JSONArray();
         JSONArray outputs = new JSONArray();
