@@ -93,7 +93,7 @@ const timer = ref();
 // 轮询执行结果
 function startPolling(executeId: any) {
   if (timer.value) return;
-  timer.value = setInterval(() => executePolling(executeId), 1000);
+  timer.value = setInterval(() => executePolling(executeId), 500);
 }
 function executePolling(executeId: any) {
   api

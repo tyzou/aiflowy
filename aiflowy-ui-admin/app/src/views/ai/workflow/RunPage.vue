@@ -22,7 +22,6 @@ const route = useRoute();
 const workflowId = ref(route.query.id);
 const workflowInfo = ref<any>({});
 const runParams = ref<any>(null);
-const executeMessage = ref<any>(null);
 const initState = ref(false);
 const tinyFlowData = ref<any>(null);
 const workflowForm = ref();
@@ -41,14 +40,15 @@ async function getRunningParams() {
       runParams.value = res.data;
     });
 }
-function onExecuting(msg: any) {
-  executeMessage.value = msg;
-}
 function onSubmit() {
   initState.value = !initState.value;
 }
 function resumeChain(data: any) {
   workflowForm.value?.resume(data);
+}
+const chainInfo = ref<any>(null);
+function onAsyncExecute(info: any) {
+  chainInfo.value = info;
 }
 </script>
 
@@ -69,8 +69,8 @@ function resumeChain(data: any) {
             ref="workflowForm"
             :workflow-id="workflowId"
             :workflow-params="runParams"
-            :on-executing="onExecuting"
             :on-submit="onSubmit"
+            :on-async-execute="onAsyncExecute"
           />
         </ElCard>
         <ElCard shadow="never" body-style="height: 300px;overflow-y: auto">
@@ -78,9 +78,9 @@ function resumeChain(data: any) {
           <WorkflowSteps
             v-if="tinyFlowData"
             :workflow-id="workflowId"
-            :execute-message="executeMessage"
             :node-json="sortNodes(tinyFlowData)"
             :init-signal="initState"
+            :polling-data="chainInfo"
             @resume="resumeChain"
           />
         </ElCard>
@@ -93,9 +93,9 @@ function resumeChain(data: any) {
           <ExecResult
             v-if="tinyFlowData"
             :workflow-id="workflowId"
-            :execute-message="executeMessage"
             :node-json="sortNodes(tinyFlowData)"
             :init-signal="initState"
+            :polling-data="chainInfo"
           />
         </ElCard>
       </ElCol>
