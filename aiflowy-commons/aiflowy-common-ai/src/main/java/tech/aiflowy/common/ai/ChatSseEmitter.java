@@ -9,7 +9,7 @@ import java.io.IOException;
 public class ChatSseEmitter extends SseEmitter {
 
     // 默认超时时间：30分钟
-    public static final long DEFAULT_TIMEOUT = 30 * 60 * 1000L;
+    public static final long DEFAULT_TIMEOUT = 5 * 60 * 1000L;
 
     public ChatSseEmitter() {
         super(DEFAULT_TIMEOUT);

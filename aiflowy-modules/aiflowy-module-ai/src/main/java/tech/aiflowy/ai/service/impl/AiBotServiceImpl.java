@@ -2,7 +2,6 @@ package tech.aiflowy.ai.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.agentsflex.core.message.AiMessage;
-import com.agentsflex.core.message.ToolCall;
 import com.agentsflex.core.message.ToolMessage;
 import com.agentsflex.core.model.chat.ChatModel;
 import com.agentsflex.core.model.chat.ChatOptions;
@@ -15,6 +14,7 @@ import com.agentsflex.core.util.CollectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -32,6 +32,7 @@ import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.ai.utils.RegexUtils;
 import com.mybatisflex.core.query.QueryWrapper;
 
+import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +51,9 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
     private static final Logger log = LoggerFactory.getLogger(AiBotServiceImpl.class);
 
     private static final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+
+    @Resource(name = "sseThreadPool")
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     // 30秒发一次心跳
     private static final long HEARTBEAT_INTERVAL = 30 * 1000L;
@@ -86,74 +90,96 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
         GlobalToolInterceptors.addInterceptor(new ToolLoggingInterceptor());
 
         SseEmitter emitter = ChatSseEmitter.create();
+        emitter.onCompletion(() -> {
+            // 完成时移除emitter
+            String userId = StpUtil.getLoginIdAsString();
+            emitters.remove(userId);
+            log.debug("SSE连接完成，移除用户[{}]的Emitter", userId);
+        });
+        emitter.onTimeout(() -> {
+            // 超时移除emitter
+            String userId = StpUtil.getLoginIdAsString();
+            emitters.remove(userId);
+            emitter.complete();
+            log.warn("SSE连接超时，移除用户[{}]的Emitter", userId);
+        });
+        emitter.onError((e) -> {
+            // 异常移除emitter
+            String userId = StpUtil.getLoginIdAsString();
+            emitters.remove(userId);
+            emitter.completeWithError(e);
+            log.error("SSE连接异常，移除用户[{}]的Emitter", userId, e);
+        });
         System.out.println("emitters大小" + emitters.size()) ;
         String currentUserId = StpUtil.getLoginIdAsString();
         emitters.put(currentUserId, emitter);
-        ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        final boolean[] hasFinished = {true};
-        chatModel.chatStream(memoryPrompt, new StreamResponseListener() {
-            @Override
-            public void onMessage(StreamContext streamContext, AiMessageResponse aiMessageResponse) {
-                try {
-                    RequestContextHolder.setRequestAttributes(sra, true);
-                    if (currentUserId != null) {
-                        SseEmitter emitter = emitters.get(currentUserId);
-                        if (emitter != null) {
-                            String fullText = aiMessageResponse.getMessage().getFullContent();
-                            String delta = aiMessageResponse.getMessage().getContent();
-                            if (StringUtil.hasText(delta)) {
-                                emitter.send(delta);
+        log.debug("新增SSE连接，用户[{}]，当前活跃连接数：{}", currentUserId, emitters.size());
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        threadPoolTaskExecutor.execute(() -> {
+            final boolean[] hasFinished = {false};
+            ServletRequestAttributes sra = (ServletRequestAttributes) requestAttributes;
+            RequestContextHolder.setRequestAttributes(requestAttributes, true);
+            chatModel.chatStream(memoryPrompt, new StreamResponseListener() {
+                @Override
+                public void onMessage(StreamContext streamContext, AiMessageResponse aiMessageResponse) {
+                    try {
+                        if (currentUserId != null) {
+                            SseEmitter emitter = emitters.get(currentUserId);
+                            if (emitter != null) {
+                                String fullText = aiMessageResponse.getMessage().getFullContent();
+                                String delta = aiMessageResponse.getMessage().getContent();
+                                if (StringUtil.hasText(delta)) {
+                                    emitter.send(delta);
+                                }
                             }
                         }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+
+
                 }
 
-
-            }
-
-            @Override
-            public void onStart(StreamContext context) {
-                StreamResponseListener.super.onStart(context);
-            }
-
-            @Override
-            public void onStop(StreamContext context) {
-                RequestContextHolder.setRequestAttributes(sra, true);
-                AiMessage aiMessage = context.getAiMessage();
-                String finishReason = aiMessage.getFinishReason();
-                if (!StringUtil.hasText(finishReason)){
-                    return;
+                @Override
+                public void onStart(StreamContext context) {
+                    StreamResponseListener.super.onStart(context);
                 }
-                // 检查是否有工具调用请求
-                if (aiMessage.getFinished() && "stop".equals(aiMessage.getFinishReason()) && CollectionUtil.hasItems(aiMessage.getToolCalls())) {
-                    hasFinished[0] = false;
-                    AiMessageResponse aiMessageResponse = new AiMessageResponse(context.getChatContext(), prompt, aiMessage);
-                    List<ToolMessage> toolMessages = aiMessageResponse.executeToolCallsAndGetToolMessages();
-                    String newPrompt = "请根据以下内容回答用户，内容是:\n" + toolMessages + "\n 用户的问题是：" + prompt;
 
-                    chatFunctionCallStream(newPrompt, chatModel, emitter, chatOptions);
+                @Override
+                public void onStop(StreamContext context) {
+                    RequestContextHolder.setRequestAttributes(sra, true);
+                    if (hasFinished[0]){
+                        return;
+                    }
+                    AiMessage aiMessage = context.getAiMessage();
+                    String finishReason = aiMessage.getFinishReason();
+                    if (!StringUtil.hasText(finishReason)){
+                        return;
+                    }
+                    // 检查是否有工具调用请求
+                    if (aiMessage.getFinished() && "stop".equals(aiMessage.getFinishReason()) && CollectionUtil.hasItems(aiMessage.getToolCalls())) {
+                        hasFinished[0] = true;
+                        AiMessageResponse aiMessageResponse = new AiMessageResponse(context.getChatContext(), prompt, aiMessage);
+                        List<ToolMessage> toolMessages = aiMessageResponse.executeToolCallsAndGetToolMessages();
+                        String newPrompt = "请根据以下内容回答用户，内容是:\n" + toolMessages + "\n 用户的问题是：" + prompt;
+
+                        chatFunctionCallStream(newPrompt, chatModel, emitter, chatOptions);
+                    }
+                    if ("stop".equals(finishReason) && !CollectionUtil.hasItems(aiMessage.getToolCalls())){
+                        hasFinished[0] = true;
+                        emitter.complete();
+                        emitters.remove(currentUserId);
+                    }
+
                 }
-//                else {
-//                        if (hasFinished[0]) {
-//                            return;
-//                        }
-//                        SseEmitter emitter = emitters.get(currentUserId);
-//                        if (emitter != null && "stop".equals(aiMessage.getFinishReason()) && !CollectionUtil.hasItems(aiMessage.getToolCalls()) ) {
-//                            emitter.complete();
-//                            emitters.remove(currentUserId);
-//                        }
-//
-//                }
 
-            }
-
-            @Override
-            public void onFailure(StreamContext context, Throwable throwable) {
-                StreamResponseListener.super.onFailure(context, throwable);
-            }
+                @Override
+                public void onFailure(StreamContext context, Throwable throwable) {
+                    StreamResponseListener.super.onFailure(context, throwable);
+                }
+            });
         });
+
         return emitter;
     }
 
@@ -180,34 +206,34 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
 
     }
 
-    // 定时任务：发送心跳 + 清理无效连接
-//    @Scheduled(fixedRate = HEARTBEAT_INTERVAL)
-//    public void heartbeatTask() {
-//        if (emitters.isEmpty()) {
-//            log.debug("无活跃SSE连接，跳过心跳检测");
-//            return;
-//        }
-//
-//        log.debug("开始心跳检测，当前活跃连接数：{}", emitters.size());
-//        // 遍历所有emitter，发送心跳
-//        Iterator<Map.Entry<String, SseEmitter>> iterator = emitters.entrySet().iterator();
-//        while (iterator.hasNext()) {
-//            Map.Entry<String, SseEmitter> entry = iterator.next();
-//            String userId = entry.getKey();
-//            SseEmitter emitter = entry.getValue();
-//
-//            try {
-//                // 发送心跳消息（SSE的comment类型，前端不会触发message事件，仅用于保活）
-//                emitter.send(SseEmitter.event().comment(HEARTBEAT_MESSAGE));
-//                log.debug("向用户[{}]发送心跳成功", userId);
-//            } catch (Exception e) {
-//                // 其他异常（如emitter已超时）
-//                log.error("处理用户[{}]心跳时异常", userId, e);
-//                iterator.remove();
-//            }
-//        }
-//        log.debug("心跳检测完成，剩余活跃连接数：{}", emitters.size());
-//    }
+    // 定时任务：30s发送心跳 + 清理无效连接
+    @Scheduled(fixedRate = HEARTBEAT_INTERVAL)
+    public void heartbeatTask() {
+        threadPoolTaskExecutor.execute(() -> {
+            if (emitters.isEmpty()) return;
+
+            Iterator<Map.Entry<String, SseEmitter>> iterator = emitters.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, SseEmitter> entry = iterator.next();
+                String userId = entry.getKey();
+                SseEmitter emitter = entry.getValue();
+
+                try {
+                    // 发送comment类型心跳（前端不触发message事件，仅保活）
+                    emitter.send(SseEmitter.event().comment(HEARTBEAT_MESSAGE));
+                } catch (Exception e) {
+                    // 发送失败=连接失效，立即清理
+                    log.error("心跳发送失败，清理用户{}的SSE连接", userId, e);
+                    iterator.remove();
+                    try {
+                        emitter.complete();
+                    } catch (Exception ex) {
+                        log.warn("关闭失效Emitter失败", ex);
+                    }
+                }
+            }
+        });
+    }
 
 
     @Override
