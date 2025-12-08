@@ -11,7 +11,6 @@ import {
   ElForm,
   ElFormItem,
   ElInput,
-  ElMessage,
   ElRadioGroup,
   ElSelect,
 } from 'element-plus';
@@ -46,6 +45,7 @@ const submitLoading = ref(false);
 const parameters = computed(() => {
   return props.workflowParams.parameters;
 });
+const executeId = ref('');
 function getContentType(item: any) {
   return item.contentType || 'text';
 }
@@ -67,7 +67,13 @@ function choose(data: any, propName: string) {
   runParams.value[propName] = data.resourceUrl;
 }
 function resume(data: any) {
+  data.executeId = executeId.value;
   submitLoading.value = true;
+  api.post('/api/v1/aiWorkflow/resume', data).then((res) => {
+    if (res.errorCode === 0) {
+      startPolling(executeId.value);
+    }
+  });
 }
 function submitV2() {
   runForm.value?.validate((valid) => {
@@ -83,6 +89,7 @@ function submitV2() {
       api.post('/api/v1/aiWorkflow/runAsync', data).then((res) => {
         if (res.errorCode === 0 && res.data) {
           // executeId
+          executeId.value = res.data;
           startPolling(res.data);
         }
       });

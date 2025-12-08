@@ -46,6 +46,7 @@ public class ChainEventListenerForFront implements ChainEventListener {
     }
 
     private void handleChainStartEvent(ChainStartEvent event, Chain chain) {
+        log.info("ChainStartEvent: {}", event);
         String executeId = chain.getStateInstanceId();
         Object status = cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
         if (status == null) {
@@ -54,9 +55,9 @@ public class ChainEventListenerForFront implements ChainEventListener {
             ((ChainInfo) status).setStatus(chain.getState().getStatus().getValue());
             setChainInfoCache(executeId, (ChainInfo) status);
         }
-        log.info("ChainStartEvent: {}", event);
     }
     private void handleChainEndEvent(ChainEndEvent event, Chain chain) {
+        log.info("ChainEndEvent: {}", event);
         String executeId = chain.getStateInstanceId();
         ChainInfo status = (ChainInfo) cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
         if (status == null) {
@@ -67,10 +68,10 @@ public class ChainEventListenerForFront implements ChainEventListener {
             status.setResult(result);
             status.setMessage(chain.getState().getMessage());
             setChainInfoCache(executeId, status);
-            log.info("ChainEndEvent: {}", event);
         }
     }
     private void handleNodeStartEvent(NodeStartEvent event, Chain chain) {
+        log.info("NodeStartEvent: {}", event);
         String executeId = chain.getStateInstanceId();
         ChainInfo status = (ChainInfo) cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
         if (status == null) {
@@ -88,20 +89,20 @@ public class ChainEventListenerForFront implements ChainEventListener {
             nodes.put(node.getId(), nodeInfo);
             status.setNodes(nodes);
             setChainInfoCache(executeId, status);
-            log.info("NodeStartEvent: {}", event);
         }
     }
     private void handleNodeEndEvent(NodeEndEvent event, Chain chain) {
+        log.info("NodeEndEvent: {}", event);
         String executeId = chain.getStateInstanceId();
-        ChainInfo status = (ChainInfo) cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
-        if (status == null) {
+        ChainInfo chainInfo = (ChainInfo) cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
+        if (chainInfo == null) {
             log.error("NodeEndEvent: chain not found");
         } else {
             Node node = event.getNode();
             NodeState nodeState = chain.getNodeState(node.getId());
             NodeStatus nodeStatus = nodeState.getStatus();
             ExceptionSummary error = nodeState.getError();
-            Map<String, NodeInfo> nodes = status.getNodes();
+            Map<String, NodeInfo> nodes = chainInfo.getNodes();
             NodeInfo nodeInfo = nodes.get(node.getId());
             nodeInfo.setNodeId(node.getId());
             nodeInfo.setStatus(nodeStatus.getValue());
@@ -111,18 +112,25 @@ public class ChainEventListenerForFront implements ChainEventListener {
                 nodeInfo.setSuspendForParameters(chain.getState().getSuspendForParameters());
             }
             nodes.put(node.getId(), nodeInfo);
-            status.setNodes(nodes);
-            setChainInfoCache(executeId, status);
-            log.info("NodeEndEvent: {}", event);
+            chainInfo.setNodes(nodes);
+            setChainInfoCache(executeId, chainInfo);
+            System.out.println("node end status -> " + nodeStatus);
         }
     }
     private void handleChainStatusChangeEvent(ChainStatusChangeEvent event, Chain chain) {
-
+        log.info("ChainStatusChangeEvent: {}", event);
+        String executeId = chain.getStateInstanceId();
+        ChainInfo chainInfo = (ChainInfo) cache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
+        ChainStatus status = event.getStatus();
+        if (ChainStatus.SUSPEND.equals(status)) {
+            chainInfo.setStatus(ChainStatus.SUSPEND.getValue());
+            setChainInfoCache(executeId, chainInfo);
+        }
     }
 
     private void handleChainResumeEvent(ChainResumeEvent event, Chain chain) {
-        String executeId = chain.getStateInstanceId();
         log.info("ChainResumeEvent: {}", event);
+        String executeId = chain.getStateInstanceId();
     }
 
     private void setChainInfoCache(String executeId, ChainInfo info) {

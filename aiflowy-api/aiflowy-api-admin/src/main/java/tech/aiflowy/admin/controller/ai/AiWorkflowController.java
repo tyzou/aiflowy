@@ -112,6 +112,20 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         return Result.ok(res);
     }
 
+    /**
+     * 恢复工作流运行 - v2
+     */
+    @PostMapping("/resume")
+    @SaCheckPermission("/api/v1/aiWorkflow/save")
+    public Result<Void> resume(@JsonBody(value = "executeId", required = true) String executeId,
+                               @JsonBody("confirmParams") Map<String, Object> confirmParams) {
+        ChainInfo res = (ChainInfo) defaultCache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
+        res.setStatus(ChainStatus.RUNNING.getValue());
+        defaultCache.put(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId, res);
+        chainExecutor.resumeAsync(executeId, confirmParams);
+        return Result.ok();
+    }
+
     @PostMapping("/importWorkFlow")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
     public Result<Void> importWorkFlow(AiWorkflow workflow, MultipartFile jsonFile) throws Exception {
