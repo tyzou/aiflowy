@@ -85,10 +85,7 @@ function executePolling(executeId: any) {
   api
     .post('/api/v1/aiWorkflow/getChainStatus', {
       executeId,
-      nodes: props.tinyFlowData.nodes.map((node: any) => ({
-        nodeId: node.id,
-        nodeName: nodes.value,
-      })),
+      nodes,
     })
     .then((res) => {
       // 5 是挂起状态
