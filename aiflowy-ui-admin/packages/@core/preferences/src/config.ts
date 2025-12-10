@@ -65,7 +65,8 @@ const defaultPreferences: Preferences = {
   logo: {
     enable: true,
     fit: 'contain',
-    source: '/logo.webp',
+    source: '/logo.png',
+    sourceDark: '/logoDark.png',
   },
   navigation: {
     accordion: true,

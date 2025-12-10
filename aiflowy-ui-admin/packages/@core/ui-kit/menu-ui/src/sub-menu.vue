@@ -3,7 +3,7 @@ import type { MenuRecordRaw } from '@aiflowy-core/typings';
 
 import { computed } from 'vue';
 
-import { MenuBadge, MenuItem, SubMenu as SubMenuComp } from './components';
+import { MenuItem } from './components';
 // eslint-disable-next-line import/no-self-import
 import SubMenu from './sub-menu.vue';
 
@@ -46,7 +46,15 @@ const hasChildren = computed(() => {
       <span>{{ menu.name }}</span>
     </template>
   </MenuItem>
-  <SubMenuComp
+  <div v-else class="mb-6 flex flex-col gap-3">
+    <span class="mx-2 text-sm text-[#C7C7C7]">{{ menu.name }}</span>
+    <div>
+      <template v-for="childItem in menu.children || []" :key="childItem.path">
+        <SubMenu :menu="childItem" />
+      </template>
+    </div>
+  </div>
+  <!-- <SubMenuComp
     v-else
     :key="`${menu.path}_sub`"
     :active-icon="menu.activeIcon"
@@ -67,5 +75,5 @@ const hasChildren = computed(() => {
     <template v-for="childItem in menu.children || []" :key="childItem.path">
       <SubMenu :menu="childItem" />
     </template>
-  </SubMenuComp>
+  </SubMenuComp> -->
 </template>
