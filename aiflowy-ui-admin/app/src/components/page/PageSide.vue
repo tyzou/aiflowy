@@ -173,7 +173,9 @@ const formRules = computed(() => {
     :style="{ width: `${panelWidth}px` }"
   >
     <div class="flex flex-1 flex-col gap-5">
-      <h3 class="text-base font-medium">{{ title }}</h3>
+      <h3 class="text-base font-medium" v-show="title.length > 0">
+        {{ title }}
+      </h3>
 
       <div class="flex-1 overflow-scroll">
         <div
