@@ -3,9 +3,12 @@ import { onMounted, ref } from 'vue';
 
 import { createIconifyIcon } from '@aiflowy/icons';
 
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
+import { Delete, Edit, More, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
   ElIcon,
   ElMessage,
   ElMessageBox,
@@ -81,9 +84,9 @@ function getTree() {
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="flex h-full flex-col gap-6 p-6">
     <SysMenuModal ref="saveDialog" @reload="reset" />
-    <div class="handle-div">
+    <div>
       <ElButton
         v-access:code="'/api/v1/sysMenu/save'"
         @click="showDialog({})"
@@ -95,82 +98,89 @@ function getTree() {
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <ElTable :data="treeData" border row-key="id" v-loading="loading">
-      <ElTableColumn width="50" />
-      <ElTableColumn prop="menuType" :label="$t('sysMenu.menuType')">
-        <template #default="{ row }">
-          {{ dictStore.getDictLabel('menuType', row.menuType) }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="menuTitle" :label="$t('sysMenu.menuTitle')">
-        <template #default="{ row }">
-          {{ $t(row.menuTitle) }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="menuUrl" :label="$t('sysMenu.menuUrl')">
-        <template #default="{ row }">
-          {{ row.menuUrl }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="component" :label="$t('sysMenu.component')">
-        <template #default="{ row }">
-          {{ row.component }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="menuIcon" :label="$t('sysMenu.menuIcon')">
-        <template #default="{ row }">
-          <component class="size-5" :is="createIconifyIcon(row.menuIcon)" />
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="isShow" :label="$t('sysMenu.isShow')">
-        <template #default="{ row }">
-          {{ dictStore.getDictLabel('yesOrNo', row.isShow) }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="permissionTag" :label="$t('sysMenu.permissionTag')">
-        <template #default="{ row }">
-          {{ row.permissionTag }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="sortNo" :label="$t('sysMenu.sortNo')">
-        <template #default="{ row }">
-          {{ row.sortNo }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn prop="created" :label="$t('sysMenu.created')">
-        <template #default="{ row }">
-          {{ row.created }}
-        </template>
-      </ElTableColumn>
-      <ElTableColumn :label="$t('common.handle')" width="150">
-        <template #default="{ row }">
-          <div>
-            <ElButton
-              v-access:code="'/api/v1/sysMenu/save'"
-              @click="showDialog(row)"
-              link
-              type="primary"
-            >
-              <ElIcon class="mr-1">
-                <Edit />
-              </ElIcon>
-              {{ $t('button.edit') }}
-            </ElButton>
-            <ElButton
-              v-access:code="'/api/v1/sysMenu/remove'"
-              @click="remove(row)"
-              link
-              type="danger"
-            >
-              <ElIcon class="mr-1">
-                <Delete />
-              </ElIcon>
-              {{ $t('button.delete') }}
-            </ElButton>
-          </div>
-        </template>
-      </ElTableColumn>
-    </ElTable>
+
+    <div class="bg-background flex-1 rounded-lg p-5">
+      <ElTable :data="treeData" row-key="id" v-loading="loading">
+        <ElTableColumn prop="menuType" :label="$t('sysMenu.menuType')">
+          <template #default="{ row }">
+            {{ dictStore.getDictLabel('menuType', row.menuType) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="menuTitle" :label="$t('sysMenu.menuTitle')">
+          <template #default="{ row }">
+            {{ $t(row.menuTitle) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="menuUrl" :label="$t('sysMenu.menuUrl')">
+          <template #default="{ row }">
+            {{ row.menuUrl }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="component" :label="$t('sysMenu.component')">
+          <template #default="{ row }">
+            {{ row.component }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="menuIcon" :label="$t('sysMenu.menuIcon')">
+          <template #default="{ row }">
+            <component class="size-5" :is="createIconifyIcon(row.menuIcon)" />
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="isShow" :label="$t('sysMenu.isShow')">
+          <template #default="{ row }">
+            {{ dictStore.getDictLabel('yesOrNo', row.isShow) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn
+          prop="permissionTag"
+          :label="$t('sysMenu.permissionTag')"
+        >
+          <template #default="{ row }">
+            {{ row.permissionTag }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="sortNo" :label="$t('sysMenu.sortNo')">
+          <template #default="{ row }">
+            {{ row.sortNo }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="created" :label="$t('sysMenu.created')">
+          <template #default="{ row }">
+            {{ row.created }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn :label="$t('common.handle')" width="80">
+          <template #default="{ row }">
+            <ElDropdown>
+              <ElButton link>
+                <ElIcon>
+                  <More />
+                </ElIcon>
+              </ElButton>
+
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <div v-access:code="'/api/v1/sysMenu/save'">
+                    <ElDropdownItem @click="showDialog(row)">
+                      <ElButton :icon="Edit" link>
+                        {{ $t('button.edit') }}
+                      </ElButton>
+                    </ElDropdownItem>
+                  </div>
+                  <div v-access:code="'/api/v1/sysMenu/remove'">
+                    <ElDropdownItem @click="remove(row)">
+                      <ElButton type="danger" :icon="Delete" link>
+                        {{ $t('button.delete') }}
+                      </ElButton>
+                    </ElDropdownItem>
+                  </div>
+                </ElDropdownMenu>
+              </template>
+            </ElDropdown>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+    </div>
   </div>
 </template>
 

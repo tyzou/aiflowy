@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
       hideInBreadcrumb: true,
     },
     name: 'WorkflowDesign',
-    path: '/workflow/design',
+    path: '/ai/workflow/design',
     component: () => import('#/views/ai/workflow/WorkflowDesign.vue'),
   },
   {
@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
       hideInMenu: true,
     },
     name: 'RunPage',
-    path: '/workflow/run',
+    path: '/ai/workflow/run',
     component: () => import('#/views/ai/workflow/RunPage.vue'),
   },
 ];

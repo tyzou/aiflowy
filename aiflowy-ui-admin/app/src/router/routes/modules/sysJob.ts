@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
       hideInBreadcrumb: true,
     },
     name: 'SysJobLog',
-    path: '/sysJobLog',
+    path: '/sys/sysJob/sysJobLog',
     component: () => import('#/views/system/sysJob/SysJobLogList.vue'),
   },
 ];

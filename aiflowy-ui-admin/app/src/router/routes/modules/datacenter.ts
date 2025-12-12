@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
       hideInBreadcrumb: true,
     },
     name: 'TableDetail',
-    path: '/tableDetail',
+    path: '/datacenter/table/tableDetail',
     component: () => import('#/views/datacenter/DatacenterTableDetail.vue'),
   },
 ];

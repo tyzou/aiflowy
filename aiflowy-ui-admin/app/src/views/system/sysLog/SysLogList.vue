@@ -3,58 +3,29 @@ import type { FormInstance } from 'element-plus';
 
 import { ref } from 'vue';
 
-import {
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElTable,
-  ElTableColumn,
-} from 'element-plus';
+import { ElTable, ElTableColumn } from 'element-plus';
 
+import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
 import SysLogModal from './SysLogModal.vue';
 
-const formRef = ref<FormInstance>();
 const pageDataRef = ref();
 const saveDialog = ref();
-const formInline = ref({
-  actionName: '',
-});
-function search(formEl: FormInstance | undefined) {
-  formEl?.validate((valid) => {
-    if (valid) {
-      pageDataRef.value.setQuery(formInline.value);
-    }
-  });
-}
-function reset(formEl: FormInstance | undefined) {
+const handleSearch = (params: string) => {
+  pageDataRef.value.setQuery({ actionName: params, isQueryOr: true });
+};
+function reset(formEl?: FormInstance) {
   formEl?.resetFields();
   pageDataRef.value.setQuery({});
 }
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-1.5 p-6">
+  <div class="flex h-full flex-col gap-6 p-6">
     <SysLogModal ref="saveDialog" @reload="reset" />
-    <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysLog.actionName')" prop="actionName">
-        <ElInput
-          v-model="formInline.actionName"
-          :placeholder="$t('sysLog.actionName')"
-        />
-      </ElFormItem>
-      <ElFormItem>
-        <ElButton @click="search(formRef)" type="primary">
-          {{ $t('button.query') }}
-        </ElButton>
-        <ElButton @click="reset(formRef)">
-          {{ $t('button.reset') }}
-        </ElButton>
-      </ElFormItem>
-    </ElForm>
+    <HeaderSearch @search="handleSearch" />
 
     <div class="bg-background flex-1 rounded-lg p-5">
       <PageData
@@ -66,7 +37,7 @@ function reset(formEl: FormInstance | undefined) {
           <ElTable :data="pageList" border>
             <ElTableColumn prop="accountId" :label="$t('sysLog.accountId')">
               <template #default="{ row }">
-                {{ row.accountId }}
+                {{ row.account.nickname }}
               </template>
             </ElTableColumn>
             <ElTableColumn prop="actionName" :label="$t('sysLog.actionName')">
@@ -92,32 +63,9 @@ function reset(formEl: FormInstance | undefined) {
                 {{ row.actionMethod }}
               </template>
             </ElTableColumn>
-            <ElTableColumn prop="actionUrl" :label="$t('sysLog.actionUrl')">
-              <template #default="{ row }">
-                {{ row.actionUrl }}
-              </template>
-            </ElTableColumn>
             <ElTableColumn prop="actionIp" :label="$t('sysLog.actionIp')">
               <template #default="{ row }">
                 {{ row.actionIp }}
-              </template>
-            </ElTableColumn>
-            <ElTableColumn
-              prop="actionParams"
-              :label="$t('sysLog.actionParams')"
-            >
-              <template #default="{ row }">
-                {{ row.actionParams }}
-              </template>
-            </ElTableColumn>
-            <ElTableColumn prop="actionBody" :label="$t('sysLog.actionBody')">
-              <template #default="{ row }">
-                {{ row.actionBody }}
-              </template>
-            </ElTableColumn>
-            <ElTableColumn prop="status" :label="$t('sysLog.status')">
-              <template #default="{ row }">
-                {{ row.status }}
               </template>
             </ElTableColumn>
             <ElTableColumn prop="created" :label="$t('sysLog.created')">
