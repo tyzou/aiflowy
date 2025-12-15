@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 
 import { createIconifyIcon } from '@aiflowy/icons';
 
-import { Delete, Edit, More, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, More, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
@@ -169,7 +169,7 @@ function getTree() {
                   </div>
                   <div v-access:code="'/api/v1/sysMenu/remove'">
                     <ElDropdownItem @click="remove(row)">
-                      <ElButton type="danger" :icon="Delete" link>
+                      <ElButton type="danger" :icon="DeleteFilled" link>
                         {{ $t('button.delete') }}
                       </ElButton>
                     </ElDropdownItem>

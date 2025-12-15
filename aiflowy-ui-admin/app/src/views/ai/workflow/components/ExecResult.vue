@@ -84,7 +84,7 @@ function getResult(res: any) {
       <ShowJson :value="result" />
     </div>
     <div>
-      <ElEmpty v-if="!result" />
+      <ElEmpty image="/empty.png" v-if="!result" />
     </div>
   </div>
 </template>

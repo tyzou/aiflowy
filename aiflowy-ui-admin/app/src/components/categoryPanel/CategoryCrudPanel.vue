@@ -3,7 +3,7 @@ import { computed, onMounted, ref, toRefs } from 'vue';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit, MoreFilled, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
@@ -224,7 +224,7 @@ const handleDeleteClick = (event: any, item: any) => {
                       </ElButton>
                     </ElDropdownItem>
                     <ElDropdownItem @click="handleDeleteClick($event, item)">
-                      <ElButton type="danger" :icon="Delete" link>
+                      <ElButton type="danger" :icon="DeleteFilled" link>
                         {{ $t('button.delete') }}
                       </ElButton>
                     </ElDropdownItem>
@@ -243,7 +243,7 @@ const handleDeleteClick = (event: any, item: any) => {
 
     <!-- 无数据提示 -->
     <div v-if="categoryData.length === 0 && !loading" class="no-data">
-      <ElEmpty :description="$t('common.noDataAvailable')" />
+      <ElEmpty image="/empty.png" :description="$t('common.noDataAvailable')" />
     </div>
 
     <!-- 新增/编辑弹窗 -->

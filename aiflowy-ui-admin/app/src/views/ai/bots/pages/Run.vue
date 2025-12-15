@@ -131,7 +131,7 @@ const updateActive = (_sessionId?: number | string) => {
           show-built-in-menu-type="hover"
           @update:active="updateActive"
         />
-        <ElEmpty v-show="sessionList.length === 0" />
+        <ElEmpty image="/empty.png" v-show="sessionList.length === 0" />
       </div>
     </ElAside>
     <ElMain>

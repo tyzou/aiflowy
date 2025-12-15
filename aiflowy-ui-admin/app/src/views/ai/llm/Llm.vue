@@ -3,7 +3,7 @@ import { markRaw, nextTick, onMounted, ref } from 'vue';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit, More, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, More, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
@@ -211,7 +211,7 @@ const handleSuccess = () => {
                           </ElButton>
                         </ElDropdownItem>
                         <ElDropdownItem @click="handleDelete(scope.row)">
-                          <ElButton type="danger" :icon="Delete" link>
+                          <ElButton type="danger" :icon="DeleteFilled" link>
                             {{ $t('button.delete') }}
                           </ElButton>
                         </ElDropdownItem>

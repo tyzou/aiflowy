@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
@@ -63,7 +63,7 @@ const actions = ref([
     },
   },
   {
-    icon: Delete,
+    icon: DeleteFilled,
     text: $t('button.delete'),
     className: '',
     permission: '/api/v1/aiPlugin/remove',
@@ -84,7 +84,7 @@ const controlBtns = [
   },
   {
     type: 'danger',
-    icon: Delete,
+    icon: DeleteFilled,
     label: $t('button.delete'),
     onClick(row) {
       handleDeleteCategory(row);

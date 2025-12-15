@@ -77,3 +77,12 @@ html .el-loading-mask {
 .el-table__border-left-patch {
   --el-table-border-color: transparent;
 }
+
+.el-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.el-button {
+  --el-color-primary: hsl(var(--primary))
+}

@@ -8,7 +8,7 @@ import { $t } from '@aiflowy/locales';
 import { useBotStore } from '@aiflowy/stores';
 import { tryit } from '@aiflowy/utils';
 
-import { Delete, Plus, Setting } from '@element-plus/icons-vue';
+import { DeleteFilled, Plus, Setting } from '@element-plus/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import {
   ElButton,
@@ -24,7 +24,12 @@ import {
   ElSlider,
 } from 'element-plus';
 
-import {getAiLlmList, getPerQuestions, updateLlmId, updateLlmOptions} from '#/api';
+import {
+  getAiLlmList,
+  getPerQuestions,
+  updateLlmId,
+  updateLlmOptions,
+} from '#/api';
 import { api } from '#/api/request';
 import ProblemPresupposition from '#/components/chat/ProblemPresupposition.vue';
 import PublishWxOfficalAccount from '#/components/chat/PublishWxOfficalAccount.vue';
@@ -643,7 +648,7 @@ const handleUpdatePublishWx = () => {
                     @click="handleDeletePresetQuestion(item.key)"
                     class="el-list-item-delete-container"
                   >
-                    <Delete />
+                    <DeleteFilled />
                   </ElIcon>
                 </div>
               </div>
@@ -694,7 +699,7 @@ const handleUpdatePublishWx = () => {
                   >
                     <ElButton link type="danger">
                       <ElIcon class="mr-1">
-                        <Delete />
+                        <DeleteFilled />
                       </ElIcon>
                       {{ $t('button.delete') }}
                     </ElButton>

@@ -119,6 +119,6 @@ onMounted(() => {
         />
       </div>
     </template>
-    <ElEmpty v-else />
+    <ElEmpty image="/empty.png" v-else />
   </div>
 </template>

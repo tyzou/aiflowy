@@ -26,7 +26,7 @@ watch(
 <template>
   <div class="res-container">
     <JsonViewer v-if="value" :value="value" copyable :theme="themeMode" />
-    <ElEmpty v-else />
+    <ElEmpty image="/empty.png" v-else />
   </div>
 </template>
 

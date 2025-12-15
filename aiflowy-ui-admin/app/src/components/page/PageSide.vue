@@ -1,7 +1,10 @@
 <script setup lang="ts" generic="T extends { icon?: any; [key: string]: any }">
+import type { ElEmpty } from 'element-plus';
+
 import { ref } from 'vue';
 
 import { IconifyIcon } from '@aiflowy/icons';
+import { cn } from '@aiflowy/utils';
 
 import { MoreFilled } from '@element-plus/icons-vue';
 import {
@@ -37,10 +40,20 @@ const emits = defineEmits<{
 }>();
 const panelWidth = ref(225);
 const selected = ref<string>(props.defaultSelected ?? '');
+const hoverId = ref<string>();
 
 const handleChange = (item: T) => {
   selected.value = item[props.valueKey];
   emits('change', item);
+};
+const handleMouseEvent = (id?: string) => {
+  if (id === undefined) {
+    setTimeout(() => {
+      hoverId.value = id;
+    }, 200);
+  } else {
+    hoverId.value = id;
+  }
 };
 </script>
 
@@ -58,7 +71,7 @@ const handleChange = (item: T) => {
         <div
           v-for="item in menus"
           :key="item[valueKey]"
-          class="list-item"
+          class="group list-item"
           :class="{
             selected: selected === item[valueKey],
           }"
@@ -79,24 +92,39 @@ const handleChange = (item: T) => {
             v-if="controlBtns && !['', '0'].includes(item[valueKey])"
             @click.stop
           >
-            <ElIcon>
-              <MoreFilled />
-            </ElIcon>
+            <div
+              :class="
+                cn(
+                  'group-hover:!inline-flex',
+                  (!hoverId || item.id !== hoverId) && '!hidden',
+                )
+              "
+            >
+              <ElIcon>
+                <MoreFilled />
+              </ElIcon>
+            </div>
             <template #dropdown>
-              <ElDropdownMenu>
-                <ElDropdownItem
-                  v-for="btn in controlBtns"
-                  :key="btn.label"
-                  @click="btn.onClick(item)"
-                >
-                  <ElButton :type="btn.type" :icon="btn.icon" link>
-                    {{ btn.label }}
-                  </ElButton>
-                </ElDropdownItem>
-              </ElDropdownMenu>
+              <div
+                @mouseenter="handleMouseEvent(item.id)"
+                @mouseleave="handleMouseEvent()"
+              >
+                <ElDropdownMenu>
+                  <ElDropdownItem
+                    v-for="btn in controlBtns"
+                    :key="btn.label"
+                    @click="btn.onClick(item)"
+                  >
+                    <ElButton :type="btn.type" :icon="btn.icon" link>
+                      {{ btn.label }}
+                    </ElButton>
+                  </ElDropdownItem>
+                </ElDropdownMenu>
+              </div>
             </template>
           </ElDropdown>
         </div>
+        <ElEmpty v-if="menus.length <= 0" image="/empty.png" />
       </div>
     </div>
 

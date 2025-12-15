@@ -4,11 +4,12 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Back, VideoPlay } from '@element-plus/icons-vue';
+import { ArrowDown, Back, VideoPlay } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElForm,
   ElFormItem,
+  ElIcon,
   ElInput,
   ElMessage,
   ElOption,
@@ -270,7 +271,9 @@ const handleOpenRunModal = () => {
               class="accordion-icon"
               :class="{ 'accordion-icon--rotated': pluginBasicCollapse.isOpen }"
             >
-              ▼
+              <ElIcon size="16">
+                <ArrowDown />
+              </ElIcon>
             </div>
             <h3 class="accordion-title">{{ pluginBasicCollapse.title }}</h3>
           </div>
@@ -418,7 +421,9 @@ const handleOpenRunModal = () => {
                   pluginBasicCollapseInputParams.isOpen,
               }"
             >
-              ▼
+              <ElIcon size="16">
+                <ArrowDown />
+              </ElIcon>
             </div>
             <h3 class="accordion-title">
               {{ pluginBasicCollapseInputParams.title }}
@@ -481,7 +486,9 @@ const handleOpenRunModal = () => {
                   pluginBasicCollapseOutputParams.isOpen,
               }"
             >
-              ▼
+              <ElIcon size="16">
+                <ArrowDown />
+              </ElIcon>
             </div>
             <h3 class="accordion-title">
               {{ pluginBasicCollapseOutputParams.title }}
@@ -701,9 +708,9 @@ const handleOpenRunModal = () => {
 }
 
 .view-item-title {
-  width: 100px;
-  text-align: right;
-  margin-right: 12px;
+  width: 70px;
+  /* text-align: right; */
+  /* margin-right: 12px; */
 }
 
 /* 响应式设计 */

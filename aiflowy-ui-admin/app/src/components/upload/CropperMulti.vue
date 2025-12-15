@@ -7,7 +7,7 @@ import 'vue-cropper/dist/index.css';
 
 import { useAccessStore } from '@aiflowy/stores';
 
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
@@ -390,7 +390,7 @@ watch(showCropDialog, (newVal) => {
               {{ file.uploading ? '上传中...' : '重新上传' }}
             </ElButton>
             <ElButton type="danger" text @click="handleRemove(index)">
-              <ElIcon><Delete /></ElIcon>
+              <ElIcon><DeleteFilled /></ElIcon>
               删除
             </ElButton>
           </div>

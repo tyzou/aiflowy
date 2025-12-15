@@ -3,7 +3,7 @@ import type { FormInstance } from 'element-plus';
 
 import { ref } from 'vue';
 
-import { Delete, Edit, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElForm,
@@ -130,7 +130,7 @@ function remove(row: any) {
               </ElButton>
               <ElButton @click="remove(row)" link type="danger">
                 <ElIcon class="mr-1">
-                  <Delete />
+                  <DeleteFilled />
                 </ElIcon>
                 {{ $t('button.delete') }}
               </ElButton>

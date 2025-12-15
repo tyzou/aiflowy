@@ -4,7 +4,13 @@ import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit, Notebook, Plus, Search } from '@element-plus/icons-vue';
+import {
+  DeleteFilled,
+  Edit,
+  Notebook,
+  Plus,
+  Search,
+} from '@element-plus/icons-vue';
 import { ElDialog, ElMessage, ElMessageBox } from 'element-plus';
 
 import { api } from '#/api/request';
@@ -54,7 +60,7 @@ const actions = ref([
   },
   {
     text: $t('button.delete'),
-    icon: Delete,
+    icon: DeleteFilled,
     className: '',
     permission: '/api/v1/aiKnowledge/remove',
     onClick(row) {

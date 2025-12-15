@@ -4,9 +4,12 @@ import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit } from '@element-plus/icons-vue';
+import { DeleteFilled, Edit, More } from '@element-plus/icons-vue';
 import {
   ElButton,
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
   ElIcon,
   ElMessage,
   ElMessageBox,
@@ -80,34 +83,39 @@ const pluginToolReload = () => {
   >
     <template #default="{ pageList }">
       <ElTable :data="pageList" style="width: 100%" size="large">
-        <ElTableColumn
-          prop="name"
-          :label="$t('aiPluginTool.name')"
-          width="180"
-        />
+        <ElTableColumn prop="name" :label="$t('aiPluginTool.name')" />
         <ElTableColumn
           prop="description"
           :label="$t('aiPluginTool.description')"
         />
+        <ElTableColumn prop="created" :label="$t('aiPluginTool.created')" />
         <ElTableColumn
-          prop="created"
-          :label="$t('aiPluginTool.created')"
-          width="200"
-        />
-        <ElTableColumn fixed="right" :label="$t('common.handle')" width="200">
+          fixed="right"
+          :label="$t('common.handle')"
+          width="80"
+          align="center"
+        >
           <template #default="scope">
-            <ElButton link type="primary" @click="handleEdit(scope.row)">
-              <ElIcon class="mr-1">
-                <Edit />
+            <ElDropdown>
+              <ElIcon>
+                <More />
               </ElIcon>
-              {{ $t('button.edit') }}
-            </ElButton>
-            <ElButton link type="danger" @click="handleDelete(scope.row)">
-              <ElIcon class="mr-1">
-                <Delete />
-              </ElIcon>
-              {{ $t('button.delete') }}
-            </ElButton>
+
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <ElDropdownItem @click="handleEdit(scope.row)">
+                    <ElButton :icon="Edit" link>
+                      {{ $t('button.edit') }}
+                    </ElButton>
+                  </ElDropdownItem>
+                  <ElDropdownItem @click="handleDelete(scope.row)">
+                    <ElButton type="danger" :icon="DeleteFilled" link>
+                      {{ $t('button.delete') }}
+                    </ElButton>
+                  </ElDropdownItem>
+                </ElDropdownMenu>
+              </template>
+            </ElDropdown>
           </template>
         </ElTableColumn>
       </ElTable>

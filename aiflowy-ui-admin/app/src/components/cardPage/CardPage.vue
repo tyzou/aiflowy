@@ -135,7 +135,7 @@ const filteredActions = computed(() => {
     </div>
 
     <div v-if="data.length === 0" class="empty-state">
-      <ElEmpty />
+      <ElEmpty image="/empty.png" />
     </div>
   </div>
 </template>

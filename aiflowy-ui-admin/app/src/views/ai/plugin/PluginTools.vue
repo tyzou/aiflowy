@@ -48,40 +48,15 @@ const pluginToolRef = ref();
 </script>
 
 <template>
-  <div class="plugin-tools-container">
-    <div class="plugin-tools-header">
-      <HeaderSearch
-        :buttons="headerButtons"
-        @search="handleSearch"
-        @button-click="handleButtonClick"
-      />
-    </div>
-    <div class="plugin-tools-content">
+  <div class="flex h-full flex-col gap-6 p-6">
+    <HeaderSearch
+      :buttons="headerButtons"
+      @search="handleSearch"
+      @button-click="handleButtonClick"
+    />
+
+    <div class="bg-background flex-1 rounded-lg p-5">
       <PluginToolTable :plugin-id="pluginId" ref="pluginToolRef" />
     </div>
   </div>
 </template>
-
-<style scoped>
-.plugin-tools-container {
-  width: 100%;
-  display: flex;
-  height: 100%;
-}
-.plugin-tools-container {
-  padding: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.plugin-tools-header {
-  width: 100%;
-  margin: 0 auto;
-}
-.plugin-tools-content {
-  padding-top: 20px;
-  width: 100%;
-  margin: 0 auto;
-  flex: 1;
-}
-</style>

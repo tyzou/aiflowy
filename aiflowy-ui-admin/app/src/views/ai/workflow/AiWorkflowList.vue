@@ -11,7 +11,7 @@ import { tryit } from '@aiflowy/utils';
 
 import {
   CopyDocument,
-  Delete,
+  DeleteFilled,
   Download,
   Edit,
   Plus,
@@ -110,7 +110,7 @@ const actions: ActionButton[] = [
     },
   },
   {
-    icon: Delete,
+    icon: DeleteFilled,
     text: $t('button.delete'),
     className: 'item-danger',
     permission: '',
@@ -238,7 +238,7 @@ const controlBtns = [
   },
   {
     type: 'danger',
-    icon: Delete,
+    icon: DeleteFilled,
     label: $t('button.delete'),
     onClick(row: any) {
       removeCategory(row);

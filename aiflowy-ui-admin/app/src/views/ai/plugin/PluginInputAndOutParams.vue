@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-import { Delete, Plus } from '@element-plus/icons-vue';
+import { DeleteFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElInput,
@@ -502,7 +502,7 @@ defineExpose({
             <ElButton
               type="danger"
               link
-              :icon="Delete"
+              :icon="DeleteFilled"
               @click="deleteNode(row.key)"
             >
               删除

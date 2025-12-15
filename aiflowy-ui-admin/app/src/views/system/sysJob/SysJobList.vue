@@ -6,7 +6,7 @@ import { markRaw, onMounted, ref } from 'vue';
 import {
   CaretRight,
   CircleCloseFilled,
-  Delete,
+  DeleteFilled,
   Edit,
   More,
   Plus,
@@ -262,7 +262,7 @@ function toLogPage(row: any) {
                       </div>
                       <div v-access:code="'/api/v1/sysJob/remove'">
                         <ElDropdownItem @click="remove(row)">
-                          <ElButton type="danger" :icon="Delete" link>
+                          <ElButton type="danger" :icon="DeleteFilled" link>
                             {{ $t('button.delete') }}
                           </ElButton>
                         </ElDropdownItem>
