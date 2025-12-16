@@ -1,9 +1,10 @@
 <script setup lang="ts" generic="T extends { icon?: any; [key: string]: any }">
 import type { ElEmpty } from 'element-plus';
 
+import type { Component } from 'vue';
+
 import { ref } from 'vue';
 
-import { IconifyIcon } from '@aiflowy/icons';
 import { cn } from '@aiflowy/utils';
 
 import { MoreFilled } from '@element-plus/icons-vue';
@@ -55,6 +56,9 @@ const handleMouseEvent = (id?: string) => {
     hoverId.value = id;
   }
 };
+const isComponent = (icon: any) => {
+  return typeof icon !== 'string';
+};
 </script>
 
 <template>
@@ -82,7 +86,10 @@ const handleMouseEvent = (id?: string) => {
               v-if="item.icon"
               class="ml-[-3px] flex items-center justify-center"
             >
-              <IconifyIcon :icon="item.icon" />
+              <img v-if="!isComponent(item.icon)" :src="item.icon" />
+              <ElIcon v-else>
+                <component :is="item.icon as Component" v-bind="$attrs" />
+              </ElIcon>
             </div>
             <div>
               {{ item[labelKey] }}
