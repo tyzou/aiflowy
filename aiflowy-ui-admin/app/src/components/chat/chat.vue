@@ -18,11 +18,11 @@ import { ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
 import { getMessageList, getPerQuestions } from '#/api';
 import { api, sseClient } from '#/api/request';
 import MarkdownRenderer from '#/components/chat/MarkdownRenderer.vue';
+import SendEnableIcon from '#/components/icons/SendEnableIcon.vue';
 import SendIcon from '#/components/icons/SendIcon.vue';
 
 import BotAvatar from '../botAvatar/botAvatar.vue';
 import SendingIcon from '../icons/SendingIcon.vue';
-import SendEnableIcon from "#/components/icons/SendEnableIcon.vue";
 
 const props = defineProps<{
   bot?: BotInfo;
@@ -65,15 +65,17 @@ const getPresetQuestions = () => {
       },
     })
     .then((res) => {
-      presetQuestions.value = res.data.options.presetQuestions
-        .filter(
-          (item: presetQuestionsType) =>
-            item.description && item.description.trim() !== '',
-        )
-        .map((item: presetQuestionsType) => ({
-          key: item.key,
-          description: item.description,
-        }));
+      if (res.data.options?.presetQuestions) {
+        presetQuestions.value = res.data.options?.presetQuestions
+          .filter(
+            (item: presetQuestionsType) =>
+              item.description && item.description.trim() !== '',
+          )
+          .map((item: presetQuestionsType) => ({
+            key: item.key,
+            description: item.description,
+          }));
+      }
     });
 };
 const getMessagesHistory = () => {
@@ -389,7 +391,6 @@ const handleRefresh = () => {
                 <SendEnableIcon />
               </ElButton>
             </template>
-
           </ElSpace>
         </template>
       </Sender>

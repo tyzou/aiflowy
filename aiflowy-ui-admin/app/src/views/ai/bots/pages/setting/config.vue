@@ -125,7 +125,9 @@ const getBotDetail = async () => {
     .then((res) => {
       if (res.errorCode === 0) {
         botInfo.value = res.data;
-        botStore.setPresetQuestions(res.data.options.presetQuestions);
+        if (res.data.options?.presetQuestions) {
+          botStore.setPresetQuestions(res.data?.options?.presetQuestions);
+        }
       }
     });
 };
@@ -341,7 +343,7 @@ const handleProblemPresuppositionSuccess = (data: any) => {
     });
 };
 const handleDeletePresetQuestion = (item: any) => {
-  const tempData = botInfo.value?.options.presetQuestions.filter(
+  const tempData = botInfo.value?.options?.presetQuestions?.filter(
     (i: any) => i.key !== item,
   );
   api
@@ -637,7 +639,7 @@ const handleUpdatePublishWx = () => {
             </template>
             <div class="question-container">
               <div
-                v-for="item in getPerQuestions(botStore.presetQuestions)"
+                v-for="item in getPerQuestions(botStore?.presetQuestions)"
                 :key="item.key"
               >
                 <div class="presetQues-container" v-if="item.description">

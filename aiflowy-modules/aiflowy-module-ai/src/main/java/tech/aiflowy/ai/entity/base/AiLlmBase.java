@@ -55,65 +55,6 @@ public class AiLlmBase implements Serializable {
     @Column(comment = "描述")
     private String description;
 
-    /**
-     * 是否支持对话
-     */
-    @Column(comment = "是否支持对话")
-    private Boolean supportChat;
-
-    /**
-     * 是否支持方法调用
-     */
-    @Column(comment = "是否支持方法调用")
-    private Boolean supportFunctionCalling;
-
-    /**
-     * 是否支持向量化
-     */
-    @Column(comment = "是否支持向量化")
-    private Boolean supportEmbed;
-
-    /**
-     * 是否支持重排
-     */
-    @Column(comment = "是否支持重排")
-    private Boolean supportReranker;
-
-    /**
-     * 是否支持文字生成图片
-     */
-    @Column(comment = "是否支持文字生成图片")
-    private Boolean supportTextToImage;
-
-    /**
-     * 是否支持图片生成图片
-     */
-    @Column(comment = "是否支持图片生成图片")
-    private Boolean supportImageToImage;
-
-    /**
-     * 是否支持文字生成语音
-     */
-    @Column(comment = "是否支持文字生成语音")
-    private Boolean supportTextToAudio;
-
-    /**
-     * 是否支持语音生成语音
-     */
-    @Column(comment = "是否支持语音生成语音")
-    private Boolean supportAudioToAudio;
-
-    /**
-     * 是否支持文字生成视频
-     */
-    @Column(comment = "是否支持文字生成视频")
-    private Boolean supportTextToVideo;
-
-    /**
-     * 是否支持图片生成视频
-     */
-    @Column(comment = "是否支持图片生成视频")
-    private Boolean supportImageToVideo;
 
     /**
      * 大模型请求地址
@@ -163,11 +104,6 @@ public class AiLlmBase implements Serializable {
     @Column(comment = "modelType")
     private String modelType;
 
-    /**
-     * supportFeatures
-     */
-    @Column(typeHandler = FastjsonTypeHandler.class, comment = "模型能力")
-    private List<String> supportFeatures;
     /**
      * 其他配置内容
      */
@@ -272,86 +208,6 @@ public class AiLlmBase implements Serializable {
         this.description = description;
     }
 
-    public Boolean getSupportChat() {
-        return supportChat;
-    }
-
-    public void setSupportChat(Boolean supportChat) {
-        this.supportChat = supportChat;
-    }
-
-    public Boolean getSupportFunctionCalling() {
-        return supportFunctionCalling;
-    }
-
-    public void setSupportFunctionCalling(Boolean supportFunctionCalling) {
-        this.supportFunctionCalling = supportFunctionCalling;
-    }
-
-    public Boolean getSupportEmbed() {
-        return supportEmbed;
-    }
-
-    public void setSupportEmbed(Boolean supportEmbed) {
-        this.supportEmbed = supportEmbed;
-    }
-
-    public Boolean getSupportReranker() {
-        return supportReranker;
-    }
-
-    public void setSupportReranker(Boolean supportReranker) {
-        this.supportReranker = supportReranker;
-    }
-
-    public Boolean getSupportTextToImage() {
-        return supportTextToImage;
-    }
-
-    public void setSupportTextToImage(Boolean supportTextToImage) {
-        this.supportTextToImage = supportTextToImage;
-    }
-
-    public Boolean getSupportImageToImage() {
-        return supportImageToImage;
-    }
-
-    public void setSupportImageToImage(Boolean supportImageToImage) {
-        this.supportImageToImage = supportImageToImage;
-    }
-
-    public Boolean getSupportTextToAudio() {
-        return supportTextToAudio;
-    }
-
-    public void setSupportTextToAudio(Boolean supportTextToAudio) {
-        this.supportTextToAudio = supportTextToAudio;
-    }
-
-    public Boolean getSupportAudioToAudio() {
-        return supportAudioToAudio;
-    }
-
-    public void setSupportAudioToAudio(Boolean supportAudioToAudio) {
-        this.supportAudioToAudio = supportAudioToAudio;
-    }
-
-    public Boolean getSupportTextToVideo() {
-        return supportTextToVideo;
-    }
-
-    public void setSupportTextToVideo(Boolean supportTextToVideo) {
-        this.supportTextToVideo = supportTextToVideo;
-    }
-
-    public Boolean getSupportImageToVideo() {
-        return supportImageToVideo;
-    }
-
-    public void setSupportImageToVideo(Boolean supportImageToVideo) {
-        this.supportImageToVideo = supportImageToVideo;
-    }
-
     public String getLlmEndpoint() {
         return llmEndpoint;
     }
@@ -408,10 +264,6 @@ public class AiLlmBase implements Serializable {
 
     public void setProviderId(BigInteger providerId) {this.providerId = providerId;}
 
-    public List<String> getSupportFeatures() {return supportFeatures;}
-
-    public void setSupportFeatures(List<String> supportFeatures) {this.supportFeatures = supportFeatures;}
-
     public Boolean getAdded() {return added;}
 
     public void setAdded(Boolean added) {this.added = added;}
@@ -442,17 +294,30 @@ public class AiLlmBase implements Serializable {
 
     @Override
     public String toString() {
-        return "AiLlmBase{" + "id=" + id + ", deptId=" + deptId + ", tenantId=" + tenantId + ", title='" + title + '\''
-            + ", brand='" + brand + '\'' + ", icon='" + icon + '\'' + ", description='" + description + '\''
-            + ", supportChat=" + supportChat + ", supportFunctionCalling=" + supportFunctionCalling + ", supportEmbed="
-            + supportEmbed + ", supportReranker=" + supportReranker + ", supportTextToImage=" + supportTextToImage
-            + ", supportImageToImage=" + supportImageToImage + ", supportTextToAudio=" + supportTextToAudio
-            + ", supportAudioToAudio=" + supportAudioToAudio + ", supportTextToVideo=" + supportTextToVideo
-            + ", supportImageToVideo=" + supportImageToVideo + ", llmEndpoint='" + llmEndpoint + '\'' + ", llmModel='"
-            + llmModel + '\'' + ", llmApiKey='" + llmApiKey + '\'' + ", llmExtraConfig='" + llmExtraConfig + '\''
-            + ", options=" + options + '}';
+        return "AiLlmBase{" +
+                "id=" + id +
+                ", deptId=" + deptId +
+                ", tenantId=" + tenantId +
+                ", title='" + title + '\'' +
+                ", brand='" + brand + '\'' +
+                ", icon='" + icon + '\'' +
+                ", description='" + description + '\'' +
+                ", llmEndpoint='" + llmEndpoint + '\'' +
+                ", llmModel='" + llmModel + '\'' +
+                ", llmApiKey='" + llmApiKey + '\'' +
+                ", llmExtraConfig='" + llmExtraConfig + '\'' +
+                ", provider='" + provider + '\'' +
+                ", providerId=" + providerId +
+                ", groupName='" + groupName + '\'' +
+                ", modelType='" + modelType + '\'' +
+                ", options=" + options +
+                ", added=" + added +
+                ", canDelete=" + canDelete +
+                ", supportReasoning=" + supportReasoning +
+                ", supportTool=" + supportTool +
+                ", supportEmbedding=" + supportEmbedding +
+                ", supportRerank=" + supportRerank +
+                ", supportFree=" + supportFree +
+                '}';
     }
-
-    
-
 }

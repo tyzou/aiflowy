@@ -101,8 +101,8 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
 
         }
 
-        Boolean supportReranker = llm.getSupportReranker();
-        if (supportReranker != null && supportReranker) {
+        Boolean supportRerank = llm.getSupportRerank();
+        if (supportRerank != null && supportRerank) {
 
             // 走重排验证逻辑
             verifyRerankLlm(llm);
