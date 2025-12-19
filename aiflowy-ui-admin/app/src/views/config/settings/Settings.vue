@@ -81,7 +81,7 @@ function handleSave() {
 
 <template>
   <div class="settings-container">
-    <div class="settings-config-container">
+    <div class="settings-config-container border-border border">
       <div style="text-align: center;">
         系统 AI 功能设置
       </div>
