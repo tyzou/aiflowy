@@ -1,5 +1,49 @@
 # AIFlowy 更新记录
 
+## v2.0.1 2025-12-19
+- feat：用户中心对话编辑和删除。
+- feat：新增用户中心主页聊天、助手市场聊天、用户中心机器人聊天功能。
+- feat：新增保存聊天消息到数据库、设置提示词为会话标题的功能。
+- feat：为 Bot 添加深度思考开关。
+- feat：新增最近使用的 AI 助手列表管理功能。
+- feat：更新 AI 工作流和 Bot 模态框的状态显示逻辑。
+- feat：新增 Bot 分类及最近使用实体，并支持完整 CRUD 操作。
+- feat：新增 AI 工作流执行记录和步骤追踪页面。
+- feat：新增工作流执行记录与步骤。
+- feat：提取 TinyFlowService 中获取 chain 状态的方法。
+- feat：重构 LLM 模块。
+- feat：实现用户中心资源列表、工作流列表与执行页面。
+- feat：新增用户中心 AI 助手市场和聊天机器人管理功能。
+- feat：新增用户中心退出、个人资料信息更新功能。
+- feat：新增执行记录列表、详情页。
+- feat：初始化 AIFlowy webSDK 项目。
+- feat：为 PageSide 组件添加图片支持。
+- feat：为聊天助手添加默认头像。
+- feat：新增验证码 API。
+- feat：新增工作流任务（job）功能。
+- chore：调整 AI 设置面板布局、表格操作栏、内容容器边框、侧边栏最大高度等 UI 样式。
+- chore：更新菜单图标，优化主题相关 UI 和发送图标。
+- chore：清理无用导入和组件 props 默认值，移除非必要的 defineExpose、defineEmits 导入。
+- chore：更新 agents-flex、tinyflow-java 依赖版本。
+- chore：更新项目配置和版权信息。
+- chore：更新 LLM 选择选项和相关代码，更新 SQL 文件。
+- chore：添加并优化 PageSide 组件，调整侧边栏默认选中状态。
+- chore：展示字典标签。
+- fix：修复 getChatModel 方法中的 modelId 处理。
+- fix：修复聊天相关的小问题。
+- fix：修复 Bot 配置中的可选链问题。
+- fix：修复自定义节点。
+- fix：修复 pom.xml 中依赖排除问题。
+- fix：修复下载节点功能。
+- fix：修复新增字段的添加。
+- fix：修复用户中心中状态字段的过滤与重命名以正确显示。
+- fix：修复依赖问题。
+- docs：更新 UI 管理模块的安装说明。
+- docs：更新 AI 插件开发文档中的标点符号。
+- docs：更新 README 文件结构，增加中文 README。
+- docs：更新导航栏和侧边栏链接。
+- docs：将 README 横幅图片更新为英文版。
+
 ## v1.1.7 2025-11-05
 **开源版：**
 - feat: 插件支持 File 上传
