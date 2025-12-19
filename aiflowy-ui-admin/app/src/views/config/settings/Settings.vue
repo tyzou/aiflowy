@@ -82,9 +82,7 @@ function handleSave() {
 <template>
   <div class="settings-container">
     <div class="settings-config-container border-border border">
-      <div style="text-align: center;">
-        系统 AI 功能设置
-      </div>
+      <div style="text-align: center">系统 AI 功能设置 </div>
       <ElAlert
         class="!mb-5"
         title="注意：此项配置，仅用于系统的 AI 功能，而非【聊天助手】。"
