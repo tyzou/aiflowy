@@ -7,13 +7,11 @@ import { IconifyIcon } from '@aiflowy/icons';
 import { Minus, Plus, Search } from '@element-plus/icons-vue';
 import {
   ElButton,
-  ElCol,
   ElContainer,
   ElHeader,
   ElInput,
   ElMain,
   ElMessage,
-  ElRow,
   ElSpace,
 } from 'element-plus';
 
@@ -139,7 +137,7 @@ function removeBotFromRecentlyUsed(botId: any) {
         v-loading="pageLoading"
       >
         <Card
-          class="border-border bg-background h-[168px] w-full max-w-none flex-col justify-between rounded-xl border p-6 pb-5 pr-4 transition hover:-translate-y-2 hover:shadow-md"
+          class="border-border bg-background h-[168px] w-full max-w-none flex-col justify-between rounded-xl border p-6 pb-5 transition hover:-translate-y-2 hover:shadow-md"
           v-for="assistant in botList"
           :key="assistant.id"
         >
@@ -160,48 +158,54 @@ function removeBotFromRecentlyUsed(botId: any) {
               {{ assistant.description }}
             </CardDescription>
           </CardContent>
-          <ElRow class="w-full" :gutter="16">
+          <div class="flex w-full items-center">
+            <ElButton
+              v-if="!usedList.includes(assistant.id)"
+              :loading="btnLoading"
+              class="w-full"
+              type="primary"
+              style="--el-border: none"
+              :icon="Plus"
+              plain
+              @click="addBotToRecentlyUsed(assistant.id)"
+            >
+              添加到聊天助理
+            </ElButton>
+            <ElButton
+              v-else
+              :loading="btnLoading"
+              class="w-full"
+              type="primary"
+              style="--el-border: none"
+              :icon="Minus"
+              plain
+              @click="removeBotFromRecentlyUsed(assistant.id)"
+            >
+              从聊天助理中移除
+            </ElButton>
+
+            <ElButton
+              class="w-full"
+              type="primary"
+              style="--el-border: none"
+              plain
+              @click="router.push(`/assistantMarket/${assistant.id}`)"
+            >
+              <template #icon>
+                <IconifyIcon icon="mdi:play-outline" />
+              </template>
+              立即体验
+            </ElButton>
+          </div>
+
+          <!-- <ElRow class="w-full" :gutter="16">
             <ElCol :span="12">
-              <ElButton
-                v-if="!usedList.includes(assistant.id)"
-                :loading="btnLoading"
-                class="w-full"
-                type="primary"
-                style="--el-border: none"
-                :icon="Plus"
-                plain
-                @click="addBotToRecentlyUsed(assistant.id)"
-              >
-                添加到聊天助理
-              </ElButton>
-              <ElButton
-                v-else
-                :loading="btnLoading"
-                class="w-full"
-                type="primary"
-                style="--el-border: none"
-                :icon="Minus"
-                plain
-                @click="removeBotFromRecentlyUsed(assistant.id)"
-              >
-                从聊天助理中移除
-              </ElButton>
+
             </ElCol>
             <ElCol :span="12">
-              <ElButton
-                class="w-full"
-                type="primary"
-                style="--el-border: none"
-                plain
-                @click="router.push(`/assistantMarket/${assistant.id}`)"
-              >
-                <template #icon>
-                  <IconifyIcon icon="mdi:play-outline" />
-                </template>
-                立即体验
-              </ElButton>
+
             </ElCol>
-          </ElRow>
+          </ElRow> -->
         </Card>
       </div>
     </ElMain>
@@ -212,5 +216,10 @@ function removeBotFromRecentlyUsed(botId: any) {
 .el-input :deep(.el-input__wrapper) {
   --el-input-border-radius: 18px;
   --el-input-border-color: #e6e9ee;
+}
+
+:deep(.el-button) {
+  --el-font-size-base: 12px;
+  --el-button-font-weight: 400;
 }
 </style>
