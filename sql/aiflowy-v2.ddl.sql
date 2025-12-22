@@ -1067,22 +1067,6 @@ CREATE TABLE `tb_sys_role_menu`
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色-菜单表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for tb_sys_token
--- ----------------------------
-DROP TABLE IF EXISTS `tb_sys_token`;
-CREATE TABLE `tb_sys_token`
-(
-    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `token`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '生成的 token 值',
-    `user_id`     bigint                                                        NOT NULL COMMENT '关联用户ID',
-    `expire_time` datetime                                                      NOT NULL COMMENT '过期时间',
-    `created_at`  datetime                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Token 描述（可选）',
-    PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `uk_token`(`token`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'iframe 嵌入用 Token 表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
 -- Table structure for tb_workflow_exec_record
 -- ----------------------------
 CREATE TABLE `tb_workflow_exec_record`
