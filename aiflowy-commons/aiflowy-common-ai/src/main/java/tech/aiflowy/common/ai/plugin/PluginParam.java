@@ -1,4 +1,4 @@
-package tech.aiflowy.common.ai.util;
+package tech.aiflowy.common.ai.plugin;
 
 import java.util.List;
 

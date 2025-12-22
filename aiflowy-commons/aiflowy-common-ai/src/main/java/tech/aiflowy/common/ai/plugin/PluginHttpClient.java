@@ -1,13 +1,11 @@
-package tech.aiflowy.common.ai.util;
+package tech.aiflowy.common.ai.plugin;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.*;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import org.springframework.http.HttpEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 

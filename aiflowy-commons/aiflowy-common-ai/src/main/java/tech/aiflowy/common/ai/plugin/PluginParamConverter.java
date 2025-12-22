@@ -1,4 +1,4 @@
-package tech.aiflowy.common.ai.util;
+package tech.aiflowy.common.ai.plugin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

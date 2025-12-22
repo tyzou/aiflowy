@@ -1,4 +1,4 @@
-package tech.aiflowy.common.ai;
+package tech.aiflowy.common.ai.rag;
 
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.document.DocumentSplitter;
