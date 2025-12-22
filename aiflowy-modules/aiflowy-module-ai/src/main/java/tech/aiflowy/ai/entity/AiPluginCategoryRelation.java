@@ -10,6 +10,6 @@ import tech.aiflowy.ai.entity.base.AiPluginCategoryRelationBase;
  * @author Administrator
  * @since 2025-05-21
  */
-@Table("tb_plugin_category_relation")
+@Table("tb_plugin_category_mapping")
 public class AiPluginCategoryRelation extends AiPluginCategoryRelationBase {
 }

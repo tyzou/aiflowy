@@ -123,7 +123,7 @@ public class AiPluginServiceImpl extends ServiceImpl<AiPluginMapper, AiPlugin> i
     public Result<Page<AiPlugin>> pageByCategory(Long pageNumber, Long pageSize, int category) {
         // 通过分类查询插件
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_id")
-                .from("tb_plugin_category_relation")
+                .from("tb_plugin_category_mapping")
                 .where("category_id = ? ", category);
         // 分页查询该分类中的插件
         Page<BigInteger> pagePluginIds = aiPluginCategoryRelationMapper.paginateAs(new Page<>(pageNumber, pageSize), queryWrapper, BigInteger.class);

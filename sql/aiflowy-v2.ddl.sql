@@ -349,10 +349,10 @@ CREATE TABLE `tb_plugin_categories`
 ) ENGINE = InnoDB AUTO_INCREMENT = 41 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for tb_plugin_category_relation
+-- Table structure for tb_plugin_category_mapping
 -- ----------------------------
-DROP TABLE IF EXISTS `tb_plugin_category_relation`;
-CREATE TABLE `tb_plugin_category_relation`
+DROP TABLE IF EXISTS `tb_plugin_category_mapping`;
+CREATE TABLE `tb_plugin_category_mapping`
 (
     `category_id` int    NOT NULL,
     `plugin_id`   bigint NOT NULL
