@@ -804,10 +804,10 @@ CREATE TABLE `tb_sys_api_key`
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'apikey表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for tb_sys_api_key_resource_permission
+-- Table structure for tb_sys_api_key_resource
 -- ----------------------------
-DROP TABLE IF EXISTS `tb_sys_api_key_resource_permission`;
-CREATE TABLE `tb_sys_api_key_resource_permission`
+DROP TABLE IF EXISTS `tb_sys_api_key_resource`;
+CREATE TABLE `tb_sys_api_key_resource`
 (
     `id`                bigint UNSIGNED NOT NULL COMMENT 'id',
     `request_interface` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求接口',
@@ -816,10 +816,10 @@ CREATE TABLE `tb_sys_api_key_resource_permission`
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '请求接口表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for tb_sys_api_key_resource_permission_relationship
+-- Table structure for tb_sys_api_key_resource_relationship
 -- ----------------------------
-DROP TABLE IF EXISTS `tb_sys_api_key_resource_permission_relationship`;
-CREATE TABLE `tb_sys_api_key_resource_permission_relationship`
+DROP TABLE IF EXISTS `tb_sys_api_key_resource_relationship`;
+CREATE TABLE `tb_sys_api_key_resource_relationship`
 (
     `id`                  bigint UNSIGNED NOT NULL COMMENT 'id',
     `api_key_id`          bigint UNSIGNED NOT NULL COMMENT 'api_key_id',

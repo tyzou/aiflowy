@@ -21,7 +21,7 @@ public class SysApiKey extends SysApiKeyBase {
     @Column(ignore = true)
     List<BigInteger> permissionIds;
 
-    @RelationOneToMany(selfField = "id", targetField = "apiKeyId", targetTable = "tb_sys_api_key_resource_permission_relationship")
+    @RelationOneToMany(selfField = "id", targetField = "apiKeyId", targetTable = "tb_sys_api_key_resource_relationship")
     private List<SysApiKeyResourcePermissionRelationship> resourcePermissions;
 
     public List<SysApiKeyResourcePermissionRelationship> getResourcePermissions() {
