@@ -42,6 +42,7 @@ export default defineConfig({
             {text: '定价方案', link: 'https://aiflowy.tech/pricing', noIcon: true, target: '_self'},
             {text: '开发文档', link: '/zh/development/getting-started/getting-started'},
             {text: '产品手册', link: '/zh/product/info/what-is-aiflowy'},
+            {text: '公司动态', link: 'https://aiflowy.tech/articles', noIcon: true, target: '_self'},
             {text: '关于我们', link: 'https://aiflowy.tech/about', noIcon: true, target: '_self'},
         ],
 
