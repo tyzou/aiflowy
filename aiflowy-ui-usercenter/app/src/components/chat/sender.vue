@@ -9,7 +9,7 @@ import SendingIcon from '#/components/icons/SendingIcon.vue';
 // import PaperclipIcon from '#/components/icons/PaperclipIcon.vue';
 
 interface Props {
-  sessionId: string | undefined;
+  conversationId: string | undefined;
   bot: any;
   addMessage?: (message: any) => void;
 }
@@ -22,7 +22,7 @@ function sendMessage() {
     return;
   }
   const data = {
-    sessionId: props.sessionId,
+    conversationId: props.conversationId,
     prompt: senderValue.value,
     botId: props.bot.id,
   };
@@ -65,7 +65,7 @@ function sendMessage() {
   });
 }
 function getDisabled() {
-  return !senderValue.value || !props.sessionId;
+  return !senderValue.value || !props.conversationId;
 }
 const stopSse = () => {
   sseClient.abort();

@@ -83,13 +83,13 @@ function setMessageList(messages: any) {
     </ElAside>
     <ElMain class="p-6 !pl-0">
       <ChatContainer :bot="currentBot" :on-message-list="setMessageList">
-        <template #default="{ sessionId }">
+        <template #default="{ conversationId }">
           <div class="flex h-full flex-col justify-between">
             <ChatBubbleList :bot="currentBot" :messages="messageList" />
             <ChatSender
               :add-message="addMessage"
               :bot="currentBot"
-              :session-id="sessionId"
+              :conversation-id="conversationId"
             />
           </div>
         </template>

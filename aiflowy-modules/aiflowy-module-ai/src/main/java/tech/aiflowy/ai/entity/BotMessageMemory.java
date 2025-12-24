@@ -29,7 +29,7 @@ public class BotMessageMemory implements ChatMemory {
         List<BotMessage> sysAiMessages = messageService.list(QueryWrapper.create()
                 .eq(BotMessage::getBotId, botId, true)
                 .eq(BotMessage::getAccountId, accountId, true)
-                .eq(BotMessage::getId, conversationId, true)
+                .eq(BotMessage::getConversationId, conversationId, true)
                 .orderBy(BotMessage::getCreated, true)
                 .limit(count)
         );
@@ -54,7 +54,7 @@ public class BotMessageMemory implements ChatMemory {
         dbMessage.setCreated(new Date());
         dbMessage.setBotId(botId);
         dbMessage.setAccountId(accountId);
-        dbMessage.setId(conversationId);
+        dbMessage.setConversationId(conversationId);
         dbMessage.setContentAndRole(message);
         messageService.save(dbMessage);
     }

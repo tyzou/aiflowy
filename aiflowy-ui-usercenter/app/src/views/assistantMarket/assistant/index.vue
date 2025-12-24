@@ -29,7 +29,7 @@ const route = useRoute();
 const usedList = ref<any[]>([]);
 const botInfo = ref<any>({});
 const btnLoading = ref(false);
-const sessionId = ref('');
+const conversationId = ref('');
 function getUserUsed() {
   api.get('/userCenter/aiBotRecentlyUsed/list').then((res) => {
     usedList.value = res.data.map((item: any) => item.botId);
@@ -44,8 +44,10 @@ function getBotDetail() {
     })
     .then((res) => {
       botInfo.value = res.data;
-      sessionId.value = crypto.randomUUID();
     });
+  api.get('/userCenter/aiBot/generateConversationId').then((res) => {
+    conversationId.value = res.data;
+  });
 }
 function addBotToRecentlyUsed(botId: any) {
   btnLoading.value = true;
@@ -120,7 +122,7 @@ function addMessage(message: any) {
           class="absolute bottom-11 left-0 w-full"
           :add-message="addMessage"
           :bot="botInfo"
-          :session-id="sessionId"
+          :conversation-id="conversationId"
         />
       </div>
     </ElMain>

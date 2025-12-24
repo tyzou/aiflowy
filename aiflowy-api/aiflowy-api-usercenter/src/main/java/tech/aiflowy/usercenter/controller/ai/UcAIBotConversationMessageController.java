@@ -34,9 +34,9 @@ public class UcAIBotConversationMessageController extends BaseCurdController<Bot
      * 删除指定会话
      */
     @GetMapping("/deleteConversation")
-    public Result<Void> deleteConversation(String botId, String sessionId) {
+    public Result<Void> deleteConversation(String botId, String conversationId) {
         LoginAccount account = SaTokenUtil.getLoginAccount();
-        conversationMessageService.deleteConversation(botId, sessionId, account.getId());
+        conversationMessageService.deleteConversation(botId, conversationId, account.getId());
         return Result.ok();
     }
 
@@ -44,9 +44,9 @@ public class UcAIBotConversationMessageController extends BaseCurdController<Bot
      * 更新会话标题
      */
     @GetMapping("/updateConversation")
-    public Result<Void> updateConversation(String botId, String sessionId, String title) {
+    public Result<Void> updateConversation(String botId, String conversationId, String title) {
         LoginAccount account = SaTokenUtil.getLoginAccount();
-        conversationMessageService.updateConversation(botId, sessionId, title, account.getId());
+        conversationMessageService.updateConversation(botId, conversationId, title, account.getId());
         return Result.ok();
     }
 

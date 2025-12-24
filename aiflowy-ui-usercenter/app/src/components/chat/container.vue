@@ -71,12 +71,14 @@ function getSessionList(resetSession = false) {
 }
 provide('getSessionList', getSessionList);
 function addSession() {
-  const data = {
-    botId: props.bot.id,
-    title: '新对话',
-    sessionId: crypto.randomUUID(),
-  };
-  sessionList.value.push(data);
+  api.get('/userCenter/aiBot/generateConversationId').then((res) => {
+    const data = {
+      botId: props.bot.id,
+      title: '新对话',
+      id: res.data,
+    };
+    sessionList.value.push(data);
+  });
 }
 function clickSession(session: any) {
   currentSession.value = session;
@@ -87,7 +89,7 @@ function getMessageList() {
     .get('/userCenter/aiBotMessage/getMessages', {
       params: {
         botId: props.bot.id,
-        sessionId: currentSession.value.sessionId,
+        conversationId: currentSession.value.id,
       },
     })
     .then((res) => {
@@ -120,7 +122,7 @@ function updateTitle() {
     .get('/userCenter/conversation/updateConversation', {
       params: {
         botId: props.bot.id,
-        sessionId: currentSession.value.sessionId,
+        conversationId: currentSession.value.id,
         title: currentSession.value.title,
       },
     })
@@ -145,7 +147,7 @@ function remove(row: any) {
           .get('/userCenter/conversation/deleteConversation', {
             params: {
               botId: props.bot.id,
-              sessionId: row.sessionId,
+              conversationId: row.id,
             },
           })
           .then((res) => {
@@ -190,46 +192,45 @@ function remove(row: any) {
       </ElButton>
       <div class="mt-8">
         <div
-          v-for="session in sessionList"
-          :key="session.sessionId"
+          v-for="conversation in sessionList"
+          :key="conversation.id"
           :class="
             cn(
               'group flex h-10 cursor-pointer items-center justify-between gap-1 rounded-lg px-5 text-sm',
-              currentSession.sessionId === session.sessionId
+              currentSession.id === conversation.id
                 ? 'bg-[hsl(var(--primary)/15%)] dark:bg-[hsl(var(--accent))]'
                 : 'hover:bg-[hsl(var(--accent))]',
             )
           "
-          @click="clickSession(session)"
+          @click="clickSession(conversation)"
         >
-          <ElTooltip :content="session.title || '未命名'">
+          <ElTooltip :content="conversation.title || '未命名'">
             <span
               :class="
                 cn(
                   'text-foreground overflow-hidden text-ellipsis text-nowrap',
-                  currentSession.sessionId === session.sessionId &&
-                    'text-primary',
+                  currentSession.id === conversation.id && 'text-primary',
                 )
               "
             >
-              {{ session.title || '未命名' }}
+              {{ conversation.title || '未命名' }}
             </span>
           </ElTooltip>
           <span
             :class="
               cn(
                 'text-foreground/50 text-nowrap text-xs group-hover:hidden',
-                hoverId === session.sessionId && 'hidden',
+                hoverId === conversation.id && 'hidden',
               )
             "
           >
-            {{ formatCreatedTime(session.created) }}
+            {{ formatCreatedTime(conversation.created) }}
           </span>
           <ElDropdown
             :class="
               cn(
                 'group-hover:!inline-flex',
-                (!hoverId || session.sessionId !== hoverId) && '!hidden',
+                (!hoverId || conversation.id !== hoverId) && '!hidden',
               )
             "
             @click.stop
@@ -239,7 +240,7 @@ function remove(row: any) {
 
             <template #dropdown>
               <ElDropdownMenu
-                @mouseenter="handleMouseEvent(session.sessionId)"
+                @mouseenter="handleMouseEvent(conversation.id)"
                 @mouseleave="handleMouseEvent()"
               >
                 <ElDropdownItem @click="dialogVisible = true">
@@ -247,7 +248,7 @@ function remove(row: any) {
                 </ElDropdownItem>
                 <ElDropdownItem>
                   <ElButton
-                    @click="remove(session)"
+                    @click="remove(conversation)"
                     link
                     type="danger"
                     :icon="Delete"
@@ -271,7 +272,7 @@ function remove(row: any) {
         </span>
       </ElHeader>
       <ElMain>
-        <slot :session-id="currentSession.sessionId"></slot>
+        <slot :conversation-id="currentSession.id"></slot>
       </ElMain>
     </ElContainer>
     <ElDialog title="编辑" v-model="dialogVisible">

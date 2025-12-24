@@ -14,7 +14,7 @@ import com.mybatisflex.annotation.Table;
 @Table("tb_bot_document_collection")
 public class BotDocumentCollection extends BotDocumentCollectionBase {
 
-    @RelationOneToOne(selfField = "knowledgeId", targetField = "id")
+    @RelationOneToOne(selfField = "documentCollectionId", targetField = "id")
     private DocumentCollection knowledge;
 
     public DocumentCollection getKnowledge() {
