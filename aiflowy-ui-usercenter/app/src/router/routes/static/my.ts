@@ -43,7 +43,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'PersonalCenter',
-        path: '/personalCenter/:id',
+        path: '/personalCenter',
         component: () => import('#/views/personalCenter/index.vue'),
         meta: {
           icon: 'svg:people',
