@@ -1,4 +1,4 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex.tool;
 
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.util.StrUtil;
@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.aiflowy.ai.agentsflex.CustomMultipartFile;
+import tech.aiflowy.ai.entity.Plugin;
+import tech.aiflowy.ai.entity.PluginItem;
 import tech.aiflowy.ai.mapper.PluginMapper;
 import tech.aiflowy.ai.service.PluginItemService;
 import tech.aiflowy.common.ai.plugin.NestedParamConverter;

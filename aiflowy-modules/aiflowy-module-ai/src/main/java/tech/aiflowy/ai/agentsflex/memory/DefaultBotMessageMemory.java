@@ -1,10 +1,11 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex.memory;
 
 import com.agentsflex.core.memory.DefaultChatMemory;
 import com.agentsflex.core.message.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import tech.aiflowy.ai.entity.BotMessage;
 
 import java.io.IOException;
 import java.math.BigInteger;

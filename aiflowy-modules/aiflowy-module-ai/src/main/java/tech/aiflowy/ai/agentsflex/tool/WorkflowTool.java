@@ -1,10 +1,11 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex.tool;
 
 import com.agentsflex.core.model.chat.tool.BaseTool;
 import com.agentsflex.core.model.chat.tool.Parameter;
 import dev.tinyflow.core.chain.ChainDefinition;
 import dev.tinyflow.core.chain.DataType;
 import dev.tinyflow.core.chain.runtime.ChainExecutor;
+import tech.aiflowy.ai.entity.Workflow;
 import tech.aiflowy.common.util.SpringContextUtil;
 
 import java.math.BigInteger;

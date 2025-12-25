@@ -1,4 +1,4 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex;
 
 import org.springframework.web.multipart.MultipartFile;
 

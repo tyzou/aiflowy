@@ -1,8 +1,9 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex.tool;
 
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.model.chat.tool.BaseTool;
 import com.agentsflex.core.model.chat.tool.Parameter;
+import tech.aiflowy.ai.entity.DocumentCollection;
 import tech.aiflowy.ai.service.DocumentCollectionService;
 import tech.aiflowy.common.util.SpringContextUtil;
 

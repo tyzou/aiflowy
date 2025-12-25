@@ -13,6 +13,7 @@ import com.agentsflex.store.qcloud.QCloudVectorStoreConfig;
 import com.agentsflex.store.redis.RedisVectorStore;
 import com.agentsflex.store.redis.RedisVectorStoreConfig;
 import com.mybatisflex.annotation.Table;
+import tech.aiflowy.ai.agentsflex.tool.DocumentCollectionTool;
 import tech.aiflowy.ai.entity.base.DocumentCollectionBase;
 import tech.aiflowy.common.util.PropertiesUtil;
 

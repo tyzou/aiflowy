@@ -1,8 +1,9 @@
-package tech.aiflowy.ai.entity;
+package tech.aiflowy.ai.agentsflex.memory;
 
 import com.agentsflex.core.memory.ChatMemory;
 import com.agentsflex.core.message.Message;
 import com.mybatisflex.core.query.QueryWrapper;
+import tech.aiflowy.ai.entity.BotMessage;
 import tech.aiflowy.ai.service.BotMessageService;
 
 import java.math.BigInteger;

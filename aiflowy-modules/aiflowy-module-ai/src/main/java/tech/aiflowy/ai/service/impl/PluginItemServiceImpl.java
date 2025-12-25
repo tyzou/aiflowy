@@ -5,7 +5,7 @@ import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import tech.aiflowy.ai.entity.BotPlugin;
 import tech.aiflowy.ai.entity.Plugin;
-import tech.aiflowy.ai.entity.PluginTool;
+import tech.aiflowy.ai.agentsflex.tool.PluginTool;
 import tech.aiflowy.ai.entity.PluginItem;
 import tech.aiflowy.ai.mapper.BotPluginMapper;
 import tech.aiflowy.ai.mapper.PluginMapper;
