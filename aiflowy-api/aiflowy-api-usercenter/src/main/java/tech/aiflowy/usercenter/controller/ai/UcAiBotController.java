@@ -218,7 +218,7 @@ public class UcAiBotController extends BaseCurdController<BotService, Bot> {
             }
             conversation.setBotId(botId);
             conversation.setAccountId(SaTokenUtil.getLoginAccount().getId());
-            conversation.setCreated(new Date());
+            commonFiled(conversation, SaTokenUtil.getLoginAccount().getId(), SaTokenUtil.getLoginAccount().getTenantId(), SaTokenUtil.getLoginAccount().getDeptId());
             conversationMessageService.save(conversation);
         }
 

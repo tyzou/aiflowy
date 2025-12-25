@@ -56,6 +56,7 @@ public class BotMessageMemory implements ChatMemory {
         dbMessage.setAccountId(accountId);
         dbMessage.setConversationId(conversationId);
         dbMessage.setContentAndRole(message);
+        dbMessage.setModified(new Date());
         messageService.save(dbMessage);
     }
 
