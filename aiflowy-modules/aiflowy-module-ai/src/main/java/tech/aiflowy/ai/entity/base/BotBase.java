@@ -64,16 +64,16 @@ public class BotBase extends DateEntity implements Serializable {
     private String icon;
 
     /**
-     * LLM ID
+     * 模型 ID
      */
-    @Column(comment = "LLM ID")
-    private BigInteger llmId;
+    @Column(comment = "模型 ID")
+    private BigInteger modelId;
 
     /**
-     * LLM选项
+     * 模型配置
      */
-    @Column(typeHandler = FastjsonTypeHandler.class, comment = "LLM选项")
-    private Map<String, Object> llmOptions;
+    @Column(comment = "模型配置")
+    private String modelOptions;
 
     /**
      * 数据状态
@@ -175,20 +175,20 @@ public class BotBase extends DateEntity implements Serializable {
         this.icon = icon;
     }
 
-    public BigInteger getLlmId() {
-        return llmId;
+    public BigInteger getModelId() {
+        return modelId;
     }
 
-    public void setLlmId(BigInteger llmId) {
-        this.llmId = llmId;
+    public void setModelId(BigInteger modelId) {
+        this.modelId = modelId;
     }
 
-    public Map<String, Object> getLlmOptions() {
-        return llmOptions;
+    public String getModelOptions() {
+        return modelOptions;
     }
 
-    public void setLlmOptions(Map<String, Object> llmOptions) {
-        this.llmOptions = llmOptions;
+    public void setModelOptions(String modelOptions) {
+        this.modelOptions = modelOptions;
     }
 
     public Integer getStatus() {
