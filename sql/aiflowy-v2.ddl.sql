@@ -644,6 +644,22 @@ CREATE TABLE `tb_resource`
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '素材库' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
+-- Table structure for tb_resource_category
+-- ----------------------------
+CREATE TABLE `tb_resource_category`
+(
+    `id`            bigint unsigned NOT NULL COMMENT '主键',
+    `category_name` varchar(50) NOT NULL COMMENT '分类名称',
+    `sort_no`       int                  DEFAULT '0' COMMENT '排序',
+    `created`       datetime    NOT NULL COMMENT '创建时间',
+    `created_by`    bigint unsigned NOT NULL COMMENT '创建者',
+    `modified`      datetime    NOT NULL COMMENT '修改时间',
+    `modified_by`   bigint unsigned NOT NULL COMMENT '修改者',
+    `status`        int         NOT NULL DEFAULT '0' COMMENT '数据状态',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='素材分类';
+
+-- ----------------------------
 -- Table structure for tb_sys_account
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_sys_account`;
