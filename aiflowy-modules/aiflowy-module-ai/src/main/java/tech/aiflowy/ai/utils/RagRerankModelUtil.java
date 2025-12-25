@@ -1,4 +1,4 @@
-package tech.aiflowy.ai.config;
+package tech.aiflowy.ai.utils;
 
 import com.agentsflex.rerank.DefaultRerankModel;
 import com.agentsflex.rerank.DefaultRerankModelConfig;
