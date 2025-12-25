@@ -53,7 +53,7 @@ import static tech.aiflowy.ai.entity.table.PluginItemTableDef.PLUGIN_ITEM;
 @RestController
 @RequestMapping("/userCenter/aiBot")
 @UsePermission(moduleName = "/api/v1/bot")
-public class UcAiBotController extends BaseCurdController<BotService, Bot> {
+public class UcBotController extends BaseCurdController<BotService, Bot> {
 
     private final ModelService modelService;
     private final BotWorkflowService botWorkflowService;
@@ -73,10 +73,10 @@ public class UcAiBotController extends BaseCurdController<BotService, Bot> {
     @Resource
     private AudioServiceManager audioServiceManager;
 
-    private static final Logger logger = LoggerFactory.getLogger(UcAiBotController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UcBotController.class);
 
-    public UcAiBotController(BotService service, ModelService modelService, BotWorkflowService botWorkflowService,
-                             BotDocumentCollectionService botDocumentCollectionService, BotMessageService botMessageService) {
+    public UcBotController(BotService service, ModelService modelService, BotWorkflowService botWorkflowService,
+                           BotDocumentCollectionService botDocumentCollectionService, BotMessageService botMessageService) {
         super(service);
         this.modelService = modelService;
         this.botWorkflowService = botWorkflowService;

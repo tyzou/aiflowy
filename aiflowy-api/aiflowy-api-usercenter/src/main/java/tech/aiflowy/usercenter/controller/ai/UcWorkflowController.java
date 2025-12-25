@@ -29,7 +29,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/userCenter/aiWorkflow")
 @UsePermission(moduleName = "/api/v1/workflow")
-public class UcAiWorkflowController extends BaseCurdController<WorkflowService, Workflow> {
+public class UcWorkflowController extends BaseCurdController<WorkflowService, Workflow> {
 
     @Resource
     private ChainExecutor chainExecutor;
@@ -38,7 +38,7 @@ public class UcAiWorkflowController extends BaseCurdController<WorkflowService, 
     @Resource
     private TinyFlowService tinyFlowService;
 
-    public UcAiWorkflowController(WorkflowService service) {
+    public UcWorkflowController(WorkflowService service) {
         super(service);
     }
 

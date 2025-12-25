@@ -20,9 +20,9 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/userCenter/aiWorkflowCategory")
 @UsePermission(moduleName = "/api/v1/workflow")
-public class UcAiWorkflowCategoryController extends BaseCurdController<WorkflowCategoryService, WorkflowCategory> {
+public class UcWorkflowCategoryController extends BaseCurdController<WorkflowCategoryService, WorkflowCategory> {
 
-    public UcAiWorkflowCategoryController(WorkflowCategoryService service) {
+    public UcWorkflowCategoryController(WorkflowCategoryService service) {
         super(service);
     }
 

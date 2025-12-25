@@ -19,14 +19,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/userCenter/conversation")
 @SaIgnore
-public class UcAIBotConversationMessageController extends BaseCurdController<BotConversationService, BotConversation> {
+public class UcBotConversationController extends BaseCurdController<BotConversationService, BotConversation> {
 
     @Resource
     private BotConversationService conversationMessageService;
     @Resource
     private BotMessageService botMessageService;
 
-    public UcAIBotConversationMessageController(BotConversationService service) {
+    public UcBotConversationController(BotConversationService service) {
         super(service);
     }
 

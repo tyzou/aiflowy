@@ -16,8 +16,8 @@ import tech.aiflowy.common.web.controller.BaseCurdController;
 @RestController
 @RequestMapping("/userCenter/aiBotCategory")
 @UsePermission(moduleName = "/api/v1/bot")
-public class UcAiBotCategoryController extends BaseCurdController<BotCategoryService, BotCategory> {
-    public UcAiBotCategoryController(BotCategoryService service) {
+public class UcBotCategoryController extends BaseCurdController<BotCategoryService, BotCategory> {
+    public UcBotCategoryController(BotCategoryService service) {
         super(service);
     }
 }
