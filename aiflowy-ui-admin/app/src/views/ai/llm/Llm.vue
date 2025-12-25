@@ -22,7 +22,7 @@ import ManageIcon from '#/components/icons/ManageIcon.vue';
 import PageSide from '#/components/page/PageSide.vue';
 import AddLlmModal from '#/views/ai/llm/AddLlmModal.vue';
 import AddLlmProviderModal from '#/views/ai/llm/AddLlmProviderModal.vue';
-import { getIconByValue } from '#/views/ai/llm/defaultIcon.js';
+import { getIconByValue, isSvgString } from '#/views/ai/llm/defaultIcon.js';
 import LlmModal from '#/views/ai/llm/LlmModal.vue';
 import LlmVerifyConfig from '#/views/ai/llm/LlmVerifyConfig.vue';
 import LlmViewItemOperation from '#/views/ai/llm/LlmViewItemOperation.vue';
@@ -163,7 +163,14 @@ const controlBtns = [
     onClick(row) {
       isEdit.value = true;
       dialogAddProviderVisible.value = true;
-      addLlmProviderRef.value.openEditDialog(row);
+
+      const tempRow = {
+        ...row,
+      };
+      if (isSvgString(tempRow.icon)) {
+        tempRow.icon = '';
+      }
+      addLlmProviderRef.value.openEditDialog(tempRow);
     },
   },
   {
