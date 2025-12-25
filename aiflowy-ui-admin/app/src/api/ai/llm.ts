@@ -28,7 +28,11 @@ export async function quickAddLlm(data: any) {
 export interface llmType {
   id: string;
   title: string;
-  provider: string;
+  modelProvider: {
+    icon: string;
+    providerName: string;
+    providerType: string;
+  };
   llmModel: string;
   icon: string;
   description: string;

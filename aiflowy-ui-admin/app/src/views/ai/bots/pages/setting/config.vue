@@ -62,12 +62,12 @@ watch(
   (newValue) => {
     if (!newValue.hasSavePermission) {
       selectedId.value = '没有权限';
-    } else if (newValue.bot?.llmId) {
-      selectedId.value = newValue.bot.llmId;
+    } else if (newValue.bot?.modelId) {
+      selectedId.value = newValue.bot.modelId;
     }
 
     if (newValue.bot) {
-      llmConfig.value = newValue.bot.llmOptions;
+      llmConfig.value = newValue.bot.modelOptions;
     }
   },
   { immediate: true },
@@ -164,7 +164,7 @@ const handleLlmChange = async (value: string) => {
   const [, res] = await tryit(
     updateLlmId({
       id: props.bot?.id || '',
-      llmId: value,
+      modelId: value,
     }),
   );
 

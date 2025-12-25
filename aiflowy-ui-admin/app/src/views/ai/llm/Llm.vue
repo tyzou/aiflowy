@@ -40,7 +40,7 @@ const checkAndFillDefaultIcon = (list) => {
   if (!list || list.length === 0) return;
   list.forEach((item) => {
     if (!item.icon) {
-      item.icon = getIconByValue(item.provider);
+      item.icon = getIconByValue(item.providerType);
     }
   });
 };

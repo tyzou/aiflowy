@@ -50,7 +50,7 @@ const handleEditLlm = (id: string) => {
 
         <div
           v-else
-          v-html="getIconByValue(llm.modelProvider.provider)"
+          v-html="getIconByValue(llm.modelProvider.providerType)"
           :style="{
             width: '21px',
             height: '21px',

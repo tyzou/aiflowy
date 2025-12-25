@@ -7,8 +7,8 @@ interface BotInfo {
   description: string;
   icon: string;
   id: string;
-  llmId: string;
-  llmOptions: {
+  modelId: string;
+  modelOptions: {
     maxMessageCount: number;
     maxReplyLength: number;
     systemPrompt?: string;

@@ -19,7 +19,7 @@ const systemPrompt = ref(
 );
 const promptChoreChatModalRef = ref();
 watch(
-  () => props.bot?.llmOptions.systemPrompt,
+  () => props.bot?.modelOptions.systemPrompt,
   (newPrompt) => {
     if (newPrompt) {
       systemPrompt.value = newPrompt;

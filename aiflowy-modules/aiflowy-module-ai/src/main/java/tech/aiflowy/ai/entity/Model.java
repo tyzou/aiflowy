@@ -54,11 +54,11 @@ public class Model extends ModelBase {
     }
 
     public ChatModel toChatModel() {
-        String provider = modelProvider.getProviderName();
-        if (StringUtil.noText(provider)) {
+        String providerType = modelProvider.getProviderType();
+        if (StringUtil.noText(providerType)) {
             return null;
         }
-        switch (provider.toLowerCase()) {
+        switch (providerType.toLowerCase()) {
             case "ollama":
                 return ollamaLlm();
             case "deepseek":
@@ -101,7 +101,7 @@ public class Model extends ModelBase {
         String rerankPath = getPath(RERANK_PATH);
         String endpoint = getPath(LLM_ENDPOINT);
         String apiKey = getApiKey();
-        switch (modelProvider.getProviderName().toLowerCase()) {
+        switch (modelProvider.getProviderType().toLowerCase()) {
             case "gitee":
                 GiteeRerankModelConfig giteeRerankModelConfig = new GiteeRerankModelConfig();
                 giteeRerankModelConfig.setApiKey(apiKey);
@@ -121,11 +121,11 @@ public class Model extends ModelBase {
     public EmbeddingModel toEmbeddingModel() {
         String embedPath = getPath(EMBED_PATH);;
         String endpoint = getPath(LLM_ENDPOINT);
-        String providerName = modelProvider.getProviderName();
-        if (StringUtil.noText(providerName)) {
+        String providerType = modelProvider.getProviderType();
+        if (StringUtil.noText(providerType)) {
             return null;
         }
-        switch (providerName.toLowerCase()) {
+        switch (providerType.toLowerCase()) {
             case "ollama":
                 OllamaEmbeddingConfig ollamaEmbeddingConfig = new OllamaEmbeddingConfig();
                 ollamaEmbeddingConfig.setEndpoint(endpoint);

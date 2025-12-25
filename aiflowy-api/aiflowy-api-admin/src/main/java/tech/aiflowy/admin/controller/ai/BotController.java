@@ -184,8 +184,8 @@ public class BotController extends BaseCurdController<BotService, Bot> {
 
         }
 
-        Map<String, Object> llmOptions = aiBot.getModelOptions();
-        String systemPrompt = MapUtil.getString(llmOptions, "systemPrompt");
+        Map<String, Object> modelOptions = aiBot.getModelOptions();
+        String systemPrompt = MapUtil.getString(modelOptions, "systemPrompt");
 
         Model model = modelService.getLlmInstance(aiBot.getModelId());
         if (model == null) {
@@ -198,7 +198,7 @@ public class BotController extends BaseCurdController<BotService, Bot> {
             return SSEUtil.sseEmitterForContent( "LLM获取为空");
         }
         final MemoryPrompt memoryPrompt = new MemoryPrompt();
-        Integer maxMessageCount = MapUtil.getInteger(llmOptions, "maxMessageCount");
+        Integer maxMessageCount = MapUtil.getInteger(modelOptions, "maxMessageCount");
         if (maxMessageCount != null) {
             memoryPrompt.setMaxAttachedMessageCount(maxMessageCount);
         }
@@ -211,7 +211,7 @@ public class BotController extends BaseCurdController<BotService, Bot> {
         UserMessage userMessage = new UserMessage(prompt);
         userMessage.addTools(buildFunctionList(Maps.of("botId", botId).set("needEnglishName", false)));
 
-        ChatOptions chatOptions = getChatOptions(llmOptions);
+        ChatOptions chatOptions = getChatOptions(modelOptions);
         return botService.startChat(botId, chatModel, prompt, memoryPrompt, chatOptions, conversationId, messages, userMessage);
 
     }
