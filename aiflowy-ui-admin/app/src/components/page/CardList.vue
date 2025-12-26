@@ -64,8 +64,17 @@ const hiddenActions = computed(() => {
     >
       <div class="flex flex-col gap-3">
         <div class="flex items-center gap-3">
-          <ElAvatar :src="item[iconField] || defaultIcon" :size="36" />
-          <span class="text-base font-medium">{{ item[titleField] }}</span>
+          <ElAvatar
+            class="shrink-0"
+            :src="item[iconField] || defaultIcon"
+            :size="36"
+          />
+          <span
+            class="overflow-hidden text-ellipsis text-nowrap text-base font-medium"
+            :title="item[titleField]"
+          >
+            {{ item[titleField] }}
+          </span>
         </div>
         <div class="item-desc line-clamp-2" :title="item[descField]">
           {{ item[descField] }}
