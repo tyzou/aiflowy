@@ -17,7 +17,7 @@
     "datacenter": "数据中枢",
     "workflow": "工作流",
     "plugin": "插件",
-    "llm": "大模型",
+    "model": "大模型",
     "knowledge": "知识库"
   },
   "settings": {

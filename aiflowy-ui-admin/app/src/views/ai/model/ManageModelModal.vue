@@ -23,7 +23,7 @@ import {
 
 import { api } from '#/api/request';
 import { $t } from '#/locales';
-import LlmViewItemOperation from '#/views/ai/llm/LlmViewItemOperation.vue';
+import ModelViewItemOperation from '#/views/ai/model/ModelViewItemOperation.vue';
 
 const emit = defineEmits(['reload']);
 const tabList = ref<any>([]);
@@ -297,7 +297,7 @@ const handleRefresh = () => {
                       </span>
                     </div>
                   </template>
-                  <LlmViewItemOperation
+                  <ModelViewItemOperation
                     :need-hidden-setting-icon="true"
                     :llm-list="group.llmList"
                     @delete-llm="handleDeleteLlm"

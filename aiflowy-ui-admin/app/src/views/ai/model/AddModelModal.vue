@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModelAbilityItem } from './llmUtils/model-ability';
+import type { ModelAbilityItem } from '#/views/ai/model/modelUtils/model-ability';
 
 import { reactive, ref, watch } from 'vue';
 
@@ -20,11 +20,11 @@ import {
   getDefaultModelAbility,
   handleTagClick as handleTagClickUtil,
   syncTagSelectedStatus as syncTagSelectedStatusUtil,
-} from './llmUtils/model-ability';
+} from '#/views/ai/model/modelUtils/model-ability';
 import {
   generateFeaturesFromModelAbility,
   resetModelAbility,
-} from './llmUtils/model-ability-utils';
+} from '#/views/ai/model/modelUtils/model-ability-utils';
 
 interface FormData {
   modelType: string;

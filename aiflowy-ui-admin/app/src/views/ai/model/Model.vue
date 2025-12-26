@@ -20,16 +20,16 @@ import { getLlmProviderList } from '#/api/ai/llm.js';
 import { api } from '#/api/request.js';
 import ManageIcon from '#/components/icons/ManageIcon.vue';
 import PageSide from '#/components/page/PageSide.vue';
-import AddLlmModal from '#/views/ai/llm/AddLlmModal.vue';
-import AddLlmProviderModal from '#/views/ai/llm/AddLlmProviderModal.vue';
+import AddModelModal from '#/views/ai/model/AddModelModal.vue';
+import AddModelProviderModal from '#/views/ai/model/AddModelProviderModal.vue';
+import ManageModelModal from '#/views/ai/model/ManageModelModal.vue';
 import {
   getIconByValue,
   isSvgString,
-} from '#/views/ai/llm/llmUtils/defaultIcon.ts';
-import { modelTypes } from '#/views/ai/llm/llmUtils/modelTypes.ts';
-import LlmVerifyConfig from '#/views/ai/llm/LlmVerifyConfig.vue';
-import LlmViewItemOperation from '#/views/ai/llm/LlmViewItemOperation.vue';
-import ManageLlmModal from '#/views/ai/llm/ManageLlmModal.vue';
+} from '#/views/ai/model/modelUtils/defaultIcon.ts';
+import { modelTypes } from '#/views/ai/model/modelUtils/modelTypes.ts';
+import ModelVerifyConfig from '#/views/ai/model/ModelVerifyConfig.vue';
+import ModelViewItemOperation from '#/views/ai/model/ModelViewItemOperation.vue';
 
 const brandListData = ref([]);
 const defaultSelectProviderId = ref('');
@@ -382,7 +382,7 @@ const handleUpdateLlm = (id) => {
                       </span>
                     </div>
                   </template>
-                  <LlmViewItemOperation
+                  <ModelViewItemOperation
                     :llm-list="group.llmList"
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
@@ -421,7 +421,7 @@ const handleUpdateLlm = (id) => {
                       </span>
                     </div>
                   </template>
-                  <LlmViewItemOperation
+                  <ModelViewItemOperation
                     :llm-list="group.llmList"
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
@@ -460,7 +460,7 @@ const handleUpdateLlm = (id) => {
                       </span>
                     </div>
                   </template>
-                  <LlmViewItemOperation
+                  <ModelViewItemOperation
                     :llm-list="group.llmList"
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
@@ -489,21 +489,21 @@ const handleUpdateLlm = (id) => {
     </div>
 
     <!--添加模型供应商模态框-->
-    <AddLlmProviderModal
+    <AddModelProviderModal
       ref="addLlmProviderRef"
       @reload="getLlmProviderListData()"
     />
     <!--添加模型模态框-->
-    <AddLlmModal
+    <AddModelModal
       ref="addLlmRef"
       @reload="getLlmProviderListData()"
       :provider-id="defaultSelectProviderId"
     />
     <!--模型管理模态框-->
-    <ManageLlmModal ref="manageLlmRef" @reload="getLlmProviderListData()" />
+    <ManageModelModal ref="manageLlmRef" @reload="getLlmProviderListData()" />
 
     <!--模型检测配置模态框-->
-    <LlmVerifyConfig ref="llmVerifyConfigRef" />
+    <ModelVerifyConfig ref="llmVerifyConfigRef" />
   </div>
 </template>
 

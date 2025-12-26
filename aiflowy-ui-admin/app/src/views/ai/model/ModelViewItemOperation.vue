@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
 
-import type { ModelAbilityItem } from './llmUtils/model-ability';
-
 import type { llmType } from '#/api';
+import type { ModelAbilityItem } from '#/views/ai/model/modelUtils/model-ability';
 
 import { Minus, Plus, Setting } from '@element-plus/icons-vue';
 import { ElIcon, ElImage, ElTag } from 'element-plus';
 
-import { getIconByValue } from '#/views/ai/llm/llmUtils/defaultIcon';
-
-import { getDefaultModelAbility } from './llmUtils/model-ability';
-import { mapLlmToModelAbility } from './llmUtils/model-ability-utils';
+import { getIconByValue } from '#/views/ai/model/modelUtils/defaultIcon';
+import { getDefaultModelAbility } from '#/views/ai/model/modelUtils/model-ability';
+import { mapLlmToModelAbility } from '#/views/ai/model/modelUtils/model-ability-utils';
 
 defineProps({
   llmList: {
