@@ -70,20 +70,22 @@ const toggleFold = () => {
           <template #default="{ conversationId }">
             <div class="flex h-full flex-col justify-between">
               <ChatBubbleList :bot="currentBot" :messages="messageList" />
-              <ChatSender
-                :add-message="addMessage"
-                :bot="currentBot"
-                :conversation-id="conversationId"
-              />
+              <div class="mx-auto w-full max-w-[1000px]">
+                <ChatSender
+                  :add-message="addMessage"
+                  :bot="currentBot"
+                  :conversation-id="conversationId"
+                />
+              </div>
             </div>
           </template>
         </ChatContainer>
       </ElMain>
       <transition name="collapse-horizontal">
         <ElAside
-          v-if="isFold"
+          v-if="!isFold"
           width="283px"
-          class="bg-background border-border flex flex-col gap-5 border-l p-5 pt-4 transition-all"
+          class="bg-background border-border flex flex-col gap-5 border-l p-5 pt-4 transition-all will-change-transform"
         >
           <div class="flex items-center justify-between">
             <span class="pl-2.5 text-base font-medium">助理</span>
@@ -133,17 +135,23 @@ const toggleFold = () => {
 
 .collapse-horizontal-enter-active,
 .collapse-horizontal-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
+
 .collapse-horizontal-enter-from,
 .collapse-horizontal-leave-to {
-  max-width: 0;
+  transform: scaleX(0);
+  transform-origin: left;
   opacity: 0;
+  max-width: 0;
 }
+
 .collapse-horizontal-enter-to,
 .collapse-horizontal-leave-from {
-  max-width: 283px; /* 设置一个足够大的值 */
+  transform: scaleX(1);
+  transform-origin: left;
   opacity: 1;
+  max-width: 283px;
 }
 </style>

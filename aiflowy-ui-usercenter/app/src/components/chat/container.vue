@@ -265,7 +265,7 @@ function remove(row: any) {
             {{ currentSession.title || '未命名' }}
           </span>
           <IconifyIcon
-            v-if="!isFold"
+            v-if="isFold"
             icon="svg:assistant-fold"
             class="rotate-180 cursor-pointer"
             @click="toggleFold"

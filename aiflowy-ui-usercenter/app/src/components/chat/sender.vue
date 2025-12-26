@@ -43,7 +43,7 @@ function sendMessage() {
         key: msgKey,
         role: 'assistant',
         placement: 'start',
-        content: (str += res.data),
+        content: (str += JSON.parse(res.data!)),
         typing: true,
       };
       if (res.event === 'finish') {
