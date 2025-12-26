@@ -556,9 +556,11 @@ $namespace: aiflowy;
       & .#{$namespace}-menu-item,
       & .#{$namespace}-sub-menu-content,
       & .#{$namespace}-menu-item-group__title {
-        padding-left: calc(
-          var(--menu-item-indent) + var(--menu-level) * var(--menu-item-indent)
-        );
+        // TODO: 菜单层级样式
+        // padding-left: calc(
+        //   var(--menu-item-indent) + var(--menu-level) * var(--menu-item-indent)
+        // );
+        padding-left: calc(var(--menu-item-indent) - 8px);
         white-space: nowrap;
       }
 

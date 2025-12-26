@@ -369,6 +369,11 @@
                 <artifactId>aiflowy-common-audio</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>tech.aiflowy</groupId>
+                <artifactId>aiflowy-common-chat-protocol</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <!--modules-->
             <dependency>
