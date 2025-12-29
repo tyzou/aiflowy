@@ -252,7 +252,13 @@ function onAsyncExecute(info: any) {
     <div class="flex items-center justify-between border-b p-2.5">
       <div>
         <ElButton :icon="ArrowLeft" link @click="router.back()">
-          {{ workflowInfo.title }}
+          <span
+            class="w-[500px] overflow-hidden text-ellipsis text-nowrap text-base"
+            style="font-size: 14px"
+            :title="workflowInfo.title"
+          >
+            {{ workflowInfo.title }}
+          </span>
         </ElButton>
       </div>
       <div>
