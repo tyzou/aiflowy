@@ -302,10 +302,10 @@ CREATE TABLE `tb_document_history`
 DROP TABLE IF EXISTS `tb_model`;
 CREATE TABLE `tb_model`
 (
-    `id`                     bigint UNSIGNED NOT NULL COMMENT 'ID',
-    `dept_id`                bigint UNSIGNED NOT NULL COMMENT '部门ID',
-    `tenant_id`              bigint UNSIGNED NOT NULL COMMENT '租户ID',
-    `provider_id`            bigint UNSIGNED NULL DEFAULT NULL COMMENT '供应商id',
+    `id`                     bigint(0) UNSIGNED NOT NULL COMMENT 'ID',
+    `dept_id`                bigint(0) UNSIGNED NOT NULL COMMENT '部门ID',
+    `tenant_id`              bigint(0) UNSIGNED NOT NULL COMMENT '租户ID',
+    `provider_id`            bigint(0) UNSIGNED NULL DEFAULT NULL COMMENT '供应商id',
     `title`                  varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标题或名称',
     `icon`                   varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ICON',
     `description`            varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '描述',
@@ -316,7 +316,7 @@ CREATE TABLE `tb_model`
     `extra_config`           text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '大模型其他属性配置',
     `options`                text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '其他配置内容',
     `group_name`             varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分组名称',
-    `model_type`             varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '模型类型: chat/embedding/rerank/orc..',
+    `model_type`             varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '模型类型: chatModel/embeddingModel/rerankModel/orc..',
     `with_used`              tinyint(1) NULL DEFAULT NULL COMMENT '是否使用',
     `support_thinking`       tinyint(1) NULL DEFAULT NULL COMMENT '是否支持推理',
     `support_tool`           tinyint(1) NULL DEFAULT NULL COMMENT '是否支持工具',
@@ -325,8 +325,9 @@ CREATE TABLE `tb_model`
     `support_video`          tinyint(1) NULL DEFAULT NULL COMMENT '是否支持视频',
     `support_audio`          tinyint(1) NULL DEFAULT NULL COMMENT '是否支持音频',
     `support_free`           tinyint(1) NULL DEFAULT NULL COMMENT '是否免费',
+    `support_tool_message`   tinyint(1) NULL DEFAULT NULL COMMENT '是否支持tool消息',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '大模型管理' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '大模型管理' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for tb_model_provider
