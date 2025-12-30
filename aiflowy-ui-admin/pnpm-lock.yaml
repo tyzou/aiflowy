@@ -586,6 +586,9 @@ importers:
 
   app:
     dependencies:
+      '@aiflowy-core/shadcn-ui':
+        specifier: workspace:*
+        version: link:../packages/@core/ui-kit/shadcn-ui
       '@aiflowy/access':
         specifier: workspace:*
         version: link:../packages/effects/access

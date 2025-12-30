@@ -9,7 +9,8 @@
     "sysDict": "字典管理",
     "sysJob": "定时任务",
     "sysLog": "日志管理",
-    "sysFeedback": "用户反馈"
+    "sysFeedback": "用户反馈",
+    "sysAppearance": "外观设置"
   },
   "ai": {
     "bots": "聊天助手",

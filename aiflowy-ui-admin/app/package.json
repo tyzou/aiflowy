@@ -20,6 +20,7 @@
     "#/*": "./src/*"
   },
   "dependencies": {
+    "@aiflowy-core/shadcn-ui": "workspace:*",
     "@aiflowy/access": "workspace:*",
     "@aiflowy/common-ui": "workspace:*",
     "@aiflowy/constants": "workspace:*",

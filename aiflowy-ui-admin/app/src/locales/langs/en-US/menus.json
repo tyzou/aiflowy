@@ -9,7 +9,8 @@
     "sysDict": "Dictionary",
     "sysJob": "Job",
     "sysLog": "Log",
-    "sysFeedback": "UserFeedback"
+    "sysFeedback": "UserFeedback",
+    "sysAppearance": "Appearance"
   },
   "ai": {
     "bots": "ChatAssistant",
