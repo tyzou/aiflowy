@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import { useAppConfig } from '@aiflowy/hooks';
 import { useAccessStore } from '@aiflowy/stores';
 
+import { Upload } from '@element-plus/icons-vue';
 import { ElButton, ElUpload } from 'element-plus';
 
 import { $t } from '#/locales';
@@ -53,6 +54,12 @@ const handleRemove: UploadProps['onRemove'] = (file, uploadFiles) => {
 const handleSuccess: UploadProps['onSuccess'] = (response) => {
   emit('success', response.data.path);
 };
+
+defineExpose({
+  clear() {
+    fileList.value = [];
+  },
+});
 </script>
 
 <template>
@@ -67,6 +74,6 @@ const handleSuccess: UploadProps['onSuccess'] = (response) => {
     :limit="props.limit"
     :on-success="handleSuccess"
   >
-    <ElButton type="primary">{{ $t('button.upload') }}</ElButton>
+    <ElButton :icon="Upload">{{ $t('button.upload') }}</ElButton>
   </ElUpload>
 </template>
