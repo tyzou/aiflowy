@@ -42,7 +42,7 @@ public class SystemModuleGen {
         globalConfig.setGenerateTable("tb_sys_account", "tb_sys_account_position", "tb_sys_account_role"
                 , "tb_sys_api_key", "tb_sys_api_key_resource", "tb_sys_api_key_resource_mapping"
                 , "tb_sys_dept", "tb_sys_dict", "tb_sys_dict_item", "tb_sys_log", "tb_sys_menu", "tb_sys_option"
-                , "tb_sys_position", "tb_sys_role", "tb_sys_role_menu"
+                , "tb_sys_position", "tb_sys_role", "tb_sys_role_menu", "tb_sys_user_feedback"
         );
         String sourceDir = System.getProperty("user.dir") + "/aiflowy-modules/aiflowy-module-system/src/main/java";
         globalConfig.setSourceDir(sourceDir);
