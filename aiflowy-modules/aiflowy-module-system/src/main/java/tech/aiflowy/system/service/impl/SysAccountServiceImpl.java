@@ -1,7 +1,6 @@
 package tech.aiflowy.system.service.impl;
 
 import cn.hutool.crypto.digest.BCrypt;
-import com.mybatisflex.core.keygen.impl.SnowFlakeIDKeyGenerator;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -43,9 +42,6 @@ public class SysAccountServiceImpl extends ServiceImpl<SysAccountMapper, SysAcco
         if (entity == null || entity.getId() == null) {
             return;
         }
-
-        SnowFlakeIDKeyGenerator generator = new SnowFlakeIDKeyGenerator();
-
         //sync roleIds
         List<BigInteger> roleIds = entity.getRoleIds();
         if (roleIds != null) {
@@ -109,7 +105,7 @@ public class SysAccountServiceImpl extends ServiceImpl<SysAccountMapper, SysAcco
         record.setModifiedBy(Constants.SUPER_ADMIN_ID);
         record.setRemark(platform);
         save(record);
-        // TODO 分配一个默认角色，目前是超级管理员
+        // 分配一个默认角色，目前是超级管理员
         SysAccountRole accountRole = new SysAccountRole();
         accountRole.setAccountId(record.getId());
         accountRole.setRoleId(Constants.SUPER_ADMIN_ROLE_ID);
