@@ -1,10 +1,10 @@
 {
   "welcomeBack": "欢迎回来",
-  "pageTitle": "AIFlowy 开箱即用，深度可控",
+  "pageTitle": "AIFlowy 智能体开发平台",
   "pageDesc": "企业级安全架构｜灵活定制｜分钟级落地应用",
   "loginSuccess": "登录成功",
   "loginSuccessDesc": "欢迎回来",
-  "loginSubtitle": "请输入您的帐户信息以开始管理您的项目",
+  "loginSubtitle": "欢迎使用 AIFlowy 智能体开发平台",
   "selectAccount": "快速选择账号",
   "username": "账号",
   "password": "密码",
