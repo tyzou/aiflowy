@@ -3,7 +3,7 @@
     "tenantId": "租户ID",
     "roleName": "角色名称",
     "roleKey": "角色标识",
-    "status": "数据状态",
+    "status": "是否启用",
     "created": "创建时间",
     "createdBy": "创建者",
     "modified": "修改时间",

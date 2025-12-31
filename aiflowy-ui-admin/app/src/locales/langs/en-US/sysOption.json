@@ -1,0 +1,4 @@
+{
+  "oauthWxWeb": "WechatLogin",
+  "oauthDingTalk": "DingTalkLogin"
+}

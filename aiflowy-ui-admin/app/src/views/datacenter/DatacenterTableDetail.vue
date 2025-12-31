@@ -44,13 +44,13 @@ onMounted(() => {
 const detailInfo = ref<any>({});
 const fieldList = ref<any[]>([]);
 const headers = ref<any[]>([]);
-const activeMenu = ref('1');
+const activeMenu = ref('2');
 const recordModal = ref();
 const batchImportModal = ref();
 const dictStore = useDictStore();
 const categoryData = [
-  { key: '1', name: $t('datacenterTable.structure') },
   { key: '2', name: $t('datacenterTable.data') },
+  { key: '1', name: $t('datacenterTable.structure') },
 ];
 function initDict() {
   dictStore.fetchDictionary('fieldType');
@@ -114,7 +114,7 @@ function openImportModal() {
 }
 function changeTab(category: any) {
   activeMenu.value = category.key;
-  if (category.key === '2') {
+  if (category.key === '2' && pageDataRef.value) {
     refresh();
   }
 }
@@ -170,7 +170,7 @@ function changeTab(category: any) {
         label-key="name"
         value-key="key"
         :menus="categoryData"
-        default-selected="1"
+        default-selected="2"
         @change="changeTab"
       />
 

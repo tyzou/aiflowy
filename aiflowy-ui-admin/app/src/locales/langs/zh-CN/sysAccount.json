@@ -11,7 +11,7 @@
   "avatar": "账户头像",
   "dataScope": "数据权限类型",
   "deptIdList": "自定义部门权限",
-  "status": "数据状态",
+  "status": "是否启用",
   "created": "创建时间",
   "createdBy": "创建者",
   "modified": "修改时间",

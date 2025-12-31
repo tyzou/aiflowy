@@ -1,8 +1,11 @@
 package tech.aiflowy.admin.controller.system;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.options.SysOptions;
+import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.web.controller.BaseController;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 import tech.aiflowy.system.entity.SysOption;
 import tech.aiflowy.system.service.SysOptionService;
@@ -50,5 +53,32 @@ public class SysOptionController extends BaseController {
         }
         map.forEach(SysOptions::set);
         return Result.ok();
+    }
+
+    @PostMapping("/saveOption")
+    @SaCheckPermission("/api/v1/sysOption/save")
+    public Result<Void> saveOption(@JsonBody SysOption sysOption) {
+        String key = sysOption.getKey();
+        if (key == null || key.isEmpty()) {
+            throw new BusinessException("key is empty");
+        }
+        sysOption.setTenantId(SaTokenUtil.getLoginAccount().getTenantId());
+        SysOption record = service.getByOptionKey(key);
+        if (record == null) {
+            service.save(sysOption);
+        } else {
+            QueryWrapper w = QueryWrapper.create();
+            w.eq(SysOption::getKey, key);
+            service.update(sysOption, w);
+        }
+        return Result.ok();
+    }
+
+    @GetMapping("/getByKey")
+    public Result<SysOption> getByKey(String key) {
+        if (key == null || key.isEmpty()) {
+            throw new BusinessException("key is empty");
+        }
+        return Result.ok(service.getByOptionKey(key));
     }
 }

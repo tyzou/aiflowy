@@ -9,12 +9,15 @@ import tech.aiflowy.common.constant.Constants;
 import tech.aiflowy.common.constant.enums.EnumAccountType;
 import tech.aiflowy.common.constant.enums.EnumDataStatus;
 import tech.aiflowy.common.third.auth.entity.PlatformUser;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.system.entity.SysAccount;
 import tech.aiflowy.system.entity.SysAccountPosition;
 import tech.aiflowy.system.entity.SysAccountRole;
+import tech.aiflowy.system.entity.SysRole;
 import tech.aiflowy.system.mapper.SysAccountMapper;
 import tech.aiflowy.system.mapper.SysAccountPositionMapper;
 import tech.aiflowy.system.mapper.SysAccountRoleMapper;
+import tech.aiflowy.system.mapper.SysRoleMapper;
 import tech.aiflowy.system.service.SysAccountService;
 
 import javax.annotation.Resource;
@@ -36,6 +39,8 @@ public class SysAccountServiceImpl extends ServiceImpl<SysAccountMapper, SysAcco
     private SysAccountRoleMapper sysAccountRoleMapper;
     @Resource
     private SysAccountPositionMapper sysAccountPositionMapper;
+    @Resource
+    private SysRoleMapper sysRoleMapper;
 
     @Override
     public void syncRelations(SysAccount entity) {
@@ -105,10 +110,16 @@ public class SysAccountServiceImpl extends ServiceImpl<SysAccountMapper, SysAcco
         record.setModifiedBy(Constants.SUPER_ADMIN_ID);
         record.setRemark(platform);
         save(record);
-        // 分配一个默认角色，目前是超级管理员
+        // 分配一个默认角色oauth_role，找不到就无法创建
+        QueryWrapper q = QueryWrapper.create();
+        q.eq(SysRole::getRoleKey, Constants.OAUTH_ROLE_KEY);
+        SysRole role = sysRoleMapper.selectOneByQuery(q);
+        if (role == null) {
+            throw new BusinessException("找不到默认角色，请联系管理员");
+        }
         SysAccountRole accountRole = new SysAccountRole();
         accountRole.setAccountId(record.getId());
-        accountRole.setRoleId(Constants.SUPER_ADMIN_ROLE_ID);
+        accountRole.setRoleId(role.getId());
         sysAccountRoleMapper.insert(accountRole);
         return record;
     }

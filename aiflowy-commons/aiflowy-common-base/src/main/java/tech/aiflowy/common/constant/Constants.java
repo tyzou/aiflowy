@@ -28,5 +28,6 @@ public interface Constants {
     String TENANT_ID = "tenant_id";
     // 根部门标识
     String ROOT_DEPT = "root_dept";
-
+    // 第三方登录账号角色标识
+    String OAUTH_ROLE_KEY = "oauth_role";
 }
