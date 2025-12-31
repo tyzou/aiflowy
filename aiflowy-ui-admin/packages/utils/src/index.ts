@@ -1,5 +1,4 @@
 export * from './helpers';
-export * from './helpers/tryit';
 export * from './helpers/uuid';
 export * from '@aiflowy-core/shared/cache';
 export * from '@aiflowy-core/shared/color';

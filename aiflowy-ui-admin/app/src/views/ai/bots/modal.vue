@@ -6,7 +6,6 @@ import type { SaveBotParams, UpdateBotParams } from '#/api/ai/bot';
 import { ref } from 'vue';
 
 import { $t } from '@aiflowy/locales';
-import { tryit } from '@aiflowy/utils';
 
 import {
   ElButton,
@@ -16,6 +15,7 @@ import {
   ElInput,
   ElMessage,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import { saveBot, updateBotApi } from '#/api/ai/bot';
 import DictSelect from '#/components/dict/DictSelect.vue';
@@ -44,10 +44,8 @@ const handleSubmit = async () => {
   loading.value = true;
 
   const [err, res] = await tryit(
-    dialogType.value === 'create'
-      ? saveBot(formData.value)
-      : updateBotApi(formData.value as UpdateBotParams),
-  );
+    dialogType.value === 'create' ? saveBot : updateBotApi,
+  )(formData.value as any);
 
   if (!err && res.errorCode === 0) {
     emit('success');

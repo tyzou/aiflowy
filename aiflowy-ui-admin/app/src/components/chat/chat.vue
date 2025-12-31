@@ -10,10 +10,11 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 import { useBotStore } from '@aiflowy/stores';
-import { cn, tryit, uuid } from '@aiflowy/utils';
+import { cn, uuid } from '@aiflowy/utils';
 
 import { CopyDocument, RefreshRight } from '@element-plus/icons-vue';
 import { ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
+import { tryit } from 'radash';
 
 import { getMessageList, getPerQuestions } from '#/api';
 import { api, sseClient } from '#/api/request';
@@ -90,13 +91,11 @@ onMounted(async () => {
 });
 watchEffect(async () => {
   if (props.bot && props.conversationId) {
-    const [, res] = await tryit(
-      getMessageList({
-        conversationId: props.conversationId,
-        botId: props.bot.id,
-        tempUserId: uuid() + props.bot.id,
-      }),
-    );
+    const [, res] = await tryit(getMessageList)({
+      conversationId: props.conversationId,
+      botId: props.bot.id,
+      tempUserId: uuid() + props.bot.id,
+    });
 
     if (res?.errorCode === 0) {
       bubbleItems.value = res.data.map((item) => ({

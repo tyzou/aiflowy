@@ -3,7 +3,6 @@ import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { IconifyIcon } from '@aiflowy/icons';
-import { tryit } from '@aiflowy/utils';
 
 import { ArrowLeft, Check } from '@element-plus/icons-vue';
 import {
@@ -13,6 +12,7 @@ import {
   ElLink,
   ElMessage,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import { api } from '#/api/request';
 import { $t } from '#/locales';
@@ -65,11 +65,9 @@ const loading = reactive<Record<string, boolean>>({
 
 onMounted(async () => {
   if (route.params.id) {
-    const [, res] = await tryit(
-      api.get('/api/v1/sysUserFeedback/detail', {
-        params: { id: route.params.id },
-      }),
-    );
+    const [, res] = await tryit(api.get)('/api/v1/sysUserFeedback/detail', {
+      params: { id: route.params.id },
+    });
 
     if (res && res.errorCode === 0) {
       feedback.value = res.data;
@@ -86,12 +84,10 @@ async function markStatus(_status: number) {
   const key = _status === 1 ? 'markRead' : 'markResolved';
   loading[key] = true;
 
-  const [, res] = await tryit(
-    api.post('/api/v1/sysUserFeedback/update', {
-      ...feedback.value,
-      status: _status,
-    }),
-  );
+  const [, res] = await tryit(api.post)('/api/v1/sysUserFeedback/update', {
+    ...feedback.value,
+    status: _status,
+  });
 
   if (res && res.errorCode === 0) {
     status.value = _status;

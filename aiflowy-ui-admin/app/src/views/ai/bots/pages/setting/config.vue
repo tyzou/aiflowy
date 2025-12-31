@@ -6,7 +6,6 @@ import { useRoute } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 import { useBotStore } from '@aiflowy/stores';
-import { tryit } from '@aiflowy/utils';
 
 import { Delete, Plus, Setting } from '@element-plus/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
@@ -24,6 +23,7 @@ import {
   ElSlider,
   ElSwitch,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import {
   getPerQuestions,
@@ -161,12 +161,10 @@ onMounted(async () => {
 const handleLlmChange = async (value: string) => {
   if (!props.bot) return;
 
-  const [, res] = await tryit(
-    updateLlmId({
-      id: props.bot?.id || '',
-      modelId: value,
-    }),
-  );
+  const [, res] = await tryit(updateLlmId)({
+    id: props.bot?.id || '',
+    modelId: value,
+  });
 
   if (res?.errorCode === 0) {
     ElMessage.success('保存成功');

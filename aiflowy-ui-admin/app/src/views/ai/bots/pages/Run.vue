@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { IconifyIcon } from '@aiflowy/icons';
 import { preferences } from '@aiflowy/preferences';
-import { tryit, uuid } from '@aiflowy/utils';
+import { uuid } from '@aiflowy/utils';
 
 import {
   ElAside,
@@ -16,6 +16,7 @@ import {
   ElMain,
   ElSpace,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import { getBotDetails, getSessionList } from '#/api';
 import BotAvatar from '#/components/botAvatar/botAvatar.vue';
@@ -66,19 +67,17 @@ onMounted(() => {
 });
 
 const fetchBotDetail = async (id: string) => {
-  const [, res] = await tryit(getBotDetails(id));
+  const [, res] = await tryit(getBotDetails)(id);
 
   if (res?.errorCode === 0) {
     bot.value = res.data;
   }
 };
 const fetchSessionList = async (id: string) => {
-  const [, res] = await tryit(
-    getSessionList({
-      botId: id,
-      tempUserId: uuid().toString() + id,
-    }),
-  );
+  const [, res] = await tryit(getSessionList)({
+    botId: id,
+    tempUserId: uuid().toString() + id,
+  });
 
   if (res?.errorCode === 0) {
     sessionList.value = res.data.cons;

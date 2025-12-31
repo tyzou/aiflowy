@@ -4,7 +4,7 @@ import type { BotInfo } from '@aiflowy/types';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { tryit } from '@aiflowy/utils';
+import { tryit } from 'radash';
 
 import { getBotDetails } from '#/api';
 import { hasPermission } from '#/api/common/hasPermission';
@@ -26,7 +26,7 @@ onMounted(() => {
 });
 
 const fetchBotDetail = async (id: string) => {
-  const [, res] = await tryit(getBotDetails(id));
+  const [, res] = await tryit(getBotDetails)(id);
 
   if (res?.errorCode === 0) {
     bot.value = res.data;

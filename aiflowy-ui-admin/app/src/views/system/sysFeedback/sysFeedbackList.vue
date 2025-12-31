@@ -4,7 +4,6 @@ import type { FormInstance } from 'element-plus';
 import { ref } from 'vue';
 
 import { IconifyIcon } from '@aiflowy/icons';
-import { tryit } from '@aiflowy/utils';
 
 import { MoreFilled, View } from '@element-plus/icons-vue';
 import {
@@ -21,6 +20,7 @@ import {
   ElTableColumn,
   ElTag,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import { api } from '#/api/request';
 import DictSelect from '#/components/dict/DictSelect.vue';
@@ -89,9 +89,10 @@ function getFeedbackType(type: number) {
   return option?.label;
 }
 async function markStatus(row: any, status: number) {
-  const [, res] = await tryit(
-    api.post('/api/v1/sysUserFeedback/update', { ...row, status }),
-  );
+  const [, res] = await tryit(api.post)('/api/v1/sysUserFeedback/update', {
+    ...row,
+    status,
+  });
 
   if (res && res.errorCode === 0) {
     pageDataRef.value.setQuery({});

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
 
-import type { BotInfo, RequestResult } from '@aiflowy/types';
+import type { BotInfo } from '@aiflowy/types';
 
 import type { ActionButton } from '#/components/page/CardList.vue';
 
@@ -9,7 +9,6 @@ import { computed, markRaw, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
-import { tryit } from '@aiflowy/utils';
 
 import { Delete, Edit, Plus, Setting } from '@element-plus/icons-vue';
 import {
@@ -22,6 +21,7 @@ import {
   ElMessage,
   ElMessageBox,
 } from 'element-plus';
+import { tryit } from 'radash';
 
 import { removeBotFromId } from '#/api';
 import { api } from '#/api/request';
@@ -99,16 +99,18 @@ const actions: ActionButton[] = [
 ];
 
 const removeBot = async (bot: BotInfo) => {
-  const [action] = await tryit(
-    ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+  const [action] = await tryit(ElMessageBox.confirm)(
+    $t('message.deleteAlert'),
+    $t('message.noticeTitle'),
+    {
       confirmButtonText: $t('message.ok'),
       cancelButtonText: $t('message.cancel'),
       type: 'warning',
-    }),
+    },
   );
 
   if (!action) {
-    const [err, res] = await tryit(removeBotFromId(bot.id));
+    const [err, res] = await tryit(removeBotFromId)(bot.id);
 
     if (!err && res.errorCode === 0) {
       ElMessage.success($t('message.deleteOkMessage'));
@@ -245,11 +247,9 @@ function handleSubmit() {
   });
 }
 const getSideList = async () => {
-  const [, res] = await tryit<RequestResult>(
-    api.get('/api/v1/botCategory/list', {
-      params: { sortKey: 'sortNo', sortType: 'asc' },
-    }),
-  );
+  const [, res] = await tryit(api.get)('/api/v1/botCategory/list', {
+    params: { sortKey: 'sortNo', sortType: 'asc' },
+  });
 
   if (res && res.errorCode === 0) {
     sideList.value = [
