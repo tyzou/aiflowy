@@ -109,6 +109,10 @@ class PreferenceManager {
     this.updatePreferences(this.state);
   }
 
+  public setInitialPreferences(_preferences: Preferences) {
+    this.initialPreferences = _preferences;
+  }
+
   /**
    * 更新偏好设置
    * @param updates - 要更新的偏好设置

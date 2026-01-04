@@ -260,6 +260,7 @@ const headerSlots = computed(() => {
         :collapsed="logoCollapsed"
         :src="preferences.logo.source"
         :src-dark="preferences.logo.sourceDark"
+        :src-mini="preferences.logo.sourceMini"
         :text="preferences.app.name"
         :theme="showHeaderNav ? headerTheme : theme"
         @click="clickLogo"
@@ -353,6 +354,7 @@ const headerSlots = computed(() => {
         :fit="preferences.logo.fit"
         :src="preferences.logo.source"
         :src-dark="preferences.logo.sourceDark"
+        :src-mini="preferences.logo.sourceMini"
         :text="preferences.app.name"
         :theme="theme"
       >

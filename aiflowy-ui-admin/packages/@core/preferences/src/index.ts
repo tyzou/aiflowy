@@ -21,12 +21,17 @@ const clearPreferencesCache =
 const initPreferences =
   preferencesManager.initPreferences.bind(preferencesManager);
 
+// 初始化偏好设置
+const setInitialPreferences =
+  preferencesManager.setInitialPreferences.bind(preferencesManager);
+
 export {
   clearPreferencesCache,
   initPreferences,
   preferences,
   preferencesManager,
   resetPreferences,
+  setInitialPreferences,
   updatePreferences,
 };
 

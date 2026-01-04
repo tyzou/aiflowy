@@ -4,7 +4,11 @@ import type { Preferences } from '@aiflowy/preferences';
 import { onMounted } from 'vue';
 
 import { useElementPlusDesignTokens } from '@aiflowy/hooks';
-import { preferences, updatePreferences } from '@aiflowy/preferences';
+import {
+  preferences,
+  setInitialPreferences,
+  updatePreferences,
+} from '@aiflowy/preferences';
 
 import { ElConfigProvider } from 'element-plus';
 import { assign, tryit } from 'radash';
@@ -20,6 +24,7 @@ useElementPlusDesignTokens();
 onMounted(async () => {
   const [, res] = await tryit(api.get)('/api/v1/public/getUiConfig');
   if (res && res.errorCode === 0) {
+    setInitialPreferences(res.data);
     updatePreferences(assign<Preferences>(res.data, preferences));
   }
 });

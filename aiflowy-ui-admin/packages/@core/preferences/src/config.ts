@@ -15,9 +15,7 @@ const defaultPreferences: Preferences = {
   theme: {},
   transition: {},
   widget: {},
-  auth: {
-    sloganImage: '/slogan.webp',
-  },
+  auth: {},
 };
 
 export { defaultPreferences };

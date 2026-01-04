@@ -148,6 +148,8 @@ interface LogoPreferences {
   source?: string;
   /** 暗色主题logo地址 (可选，若不设置则使用 source) */
   sourceDark?: string;
+  /** 侧边栏收起logo地址 (可选，若不设置则使用 source) */
+  sourceMini?: string;
 }
 
 interface NavigationPreferences {

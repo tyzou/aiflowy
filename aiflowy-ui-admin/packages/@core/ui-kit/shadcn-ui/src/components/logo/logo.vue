@@ -31,6 +31,10 @@ interface Props {
    */
   srcDark?: string;
   /**
+   * @zh_CN 侧边栏收起时 Logo 图标 (可选，若不设置则使用 src)
+   */
+  srcMini?: string;
+  /**
    * @zh_CN Logo 文本
    */
   text: string;
@@ -50,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   logoSize: 120,
   src: '',
   srcDark: '',
+  srcMini: '',
   theme: 'light',
   fit: 'cover',
 });
@@ -59,7 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
  */
 const logoSrc = computed(() => {
   if (props.collapsed) {
-    return '/logoMini.svg';
+    return props.srcMini;
   }
   // 如果是暗色主题且提供了 srcDark，则使用暗色主题的 logo
   if (props.theme === 'dark' && props.srcDark) {

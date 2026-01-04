@@ -12,10 +12,16 @@ export const overridesPreferences = defineOverridesPreferences({
     accessMode: 'mixed',
     defaultHomePath: '/ai/bots',
   },
+  logo: {
+    sourceMini: '/logoMini.svg',
+  },
   widget: {
     timezone: false,
   },
   theme: {
     mode: 'light',
+  },
+  auth: {
+    sloganImage: '/slogan.webp',
   },
 });
