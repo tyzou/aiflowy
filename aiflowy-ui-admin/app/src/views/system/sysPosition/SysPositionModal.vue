@@ -65,7 +65,9 @@ function save() {
   saveForm.value?.validate((valid) => {
     if (valid) {
       btnLoading.value = true;
-      const url = isAdd.value ? '/api/v1/sysPosition/save' : '/api/v1/sysPosition/update';
+      const url = isAdd.value
+        ? '/api/v1/sysPosition/save'
+        : '/api/v1/sysPosition/update';
       api
         .post(url, entity.value)
         .then((res) => {
@@ -107,14 +109,31 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="positionName" :label="$t('sysPosition.positionName') || '岗位名称'">
-        <ElInput v-model.trim="entity.positionName" placeholder="请输入岗位名称" />
+      <ElFormItem
+        prop="positionName"
+        :label="$t('sysPosition.positionName') || '岗位名称'"
+      >
+        <ElInput
+          v-model.trim="entity.positionName"
+          placeholder="请输入岗位名称"
+        />
       </ElFormItem>
-      <ElFormItem prop="positionCode" :label="$t('sysPosition.positionCode') || '岗位编码'">
-        <ElInput v-model.trim="entity.positionCode" placeholder="请输入岗位编码" />
+      <ElFormItem
+        prop="positionCode"
+        :label="$t('sysPosition.positionCode') || '岗位编码'"
+      >
+        <ElInput
+          v-model.trim="entity.positionCode"
+          placeholder="请输入岗位编码"
+        />
       </ElFormItem>
       <ElFormItem prop="sortNo" :label="$t('sysPosition.sortNo') || '排序'">
-        <ElInputNumber v-model="entity.sortNo" :min="0" :max="999" style="width: 100%" />
+        <ElInputNumber
+          v-model="entity.sortNo"
+          :min="0"
+          :max="999"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem prop="status" :label="$t('sysPosition.status') || '状态'">
         <DictSelect v-model="entity.status" dict-code="dataStatus" />
