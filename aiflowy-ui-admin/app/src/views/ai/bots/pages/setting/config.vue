@@ -864,7 +864,7 @@ const formatSelectedMcpData = () => {
       ref="problemPresuppositionRef"
       @success="handleProblemPresuppositionSuccess"
     />
-    <PublishWxOfficalAccount ref="publishWxRef" />
+    <PublishWxOfficalAccount ref="publishWxRef" @reload="getBotDetail()" />
   </div>
 </template>
 

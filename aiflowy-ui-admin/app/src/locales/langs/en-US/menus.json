@@ -22,7 +22,8 @@
     "plugin": "Plugin",
     "model": "Model",
     "documentCollection": "DocumentCollection",
-    "knowledge": "DocumentManagement"
+    "knowledge": "DocumentManagement",
+    "mcp": "MCP"
   },
   "settings": {
     "title": "SettingsConfiguration",

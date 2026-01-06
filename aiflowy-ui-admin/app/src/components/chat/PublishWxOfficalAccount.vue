@@ -24,7 +24,7 @@ interface BasicFormItem {
   weChatMpToken: string;
   EncodingAESKey: string;
 }
-
+const emit = defineEmits(['reload']);
 const dialogVisible = ref(false);
 const botId = ref('');
 const openDialog = (newBotId: string, options: BasicFormItem) => {
@@ -32,7 +32,7 @@ const openDialog = (newBotId: string, options: BasicFormItem) => {
     basicFormRef.value?.resetFields();
   });
   botId.value = newBotId;
-  basicForm.value = options;
+  basicForm.value = { ...options };
   dialogVisible.value = true;
 };
 
@@ -78,15 +78,16 @@ const handleConfirm = () => {
         .post('/api/v1/bot/updateOptions', {
           id: botId.value,
           options: {
-            weChatMpAppId: basicForm.value.weChatMpAppId,
-            weChatMpSecret: basicForm.value.weChatMpSecret,
-            weChatMpToken: basicForm.value.weChatMpToken,
-            EncodingAESKey: basicForm.value.EncodingAESKey,
+            weChatMpAppId: basicForm.value?.weChatMpAppId,
+            weChatMpSecret: basicForm.value?.weChatMpSecret,
+            weChatMpToken: basicForm.value?.weChatMpToken,
+            EncodingAESKey: basicForm.value?.EncodingAESKey,
           },
         })
         .then((res) => {
           if (res.errorCode === 0) {
             ElMessage.success($t('message.updateOkMessage'));
+            emit('reload');
           } else {
             ElMessage.error(res.message);
           }
