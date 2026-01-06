@@ -1,33 +1,13 @@
 <script lang="ts" setup>
-import type { Preferences } from '@aiflowy/preferences';
-
-import { onMounted } from 'vue';
-
 import { useElementPlusDesignTokens } from '@aiflowy/hooks';
-import {
-  preferences,
-  setInitialPreferences,
-  updatePreferences,
-} from '@aiflowy/preferences';
 
 import { ElConfigProvider } from 'element-plus';
-import { assign, tryit } from 'radash';
 
 import { elementLocale } from '#/locales';
-
-import { api } from './api/request';
 
 defineOptions({ name: 'App' });
 
 useElementPlusDesignTokens();
-
-onMounted(async () => {
-  const [, res] = await tryit(api.get)('/api/v1/public/getUiConfig');
-  if (res && res.errorCode === 0) {
-    setInitialPreferences(res.data);
-    updatePreferences(assign<Preferences>(res.data, preferences));
-  }
-});
 </script>
 
 <template>
