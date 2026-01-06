@@ -103,7 +103,6 @@ watchDebounced(
         'svg:setting',
         'svg:api',
         'svg:user-feedback',
-        'svg:appearance',
         'svg:oauth',
         'svg:mcp',
         ...(await fetchIconsData(prefix)),
