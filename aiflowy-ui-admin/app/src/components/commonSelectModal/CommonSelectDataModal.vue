@@ -393,9 +393,6 @@ const handleSearch = (query: string) => {
   line-height: normal;
   color: #333;
   background-color: #fff !important;
-  border: 1px solid #e4e7ed;
-  border-color: #dee2e6;
-  border-radius: 4px;
 }
 
 .select-modal-container :deep(.el-collapse-item__header:hover) {
@@ -445,7 +442,13 @@ const handleSearch = (query: string) => {
 }
 
 .select-modal-container :deep(.el-collapse) {
+  overflow: hidden;
   background-color: #fff;
-  border: none;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.select-modal-container :deep(.el-checkbox__inner) {
+  --el-checkbox-input-border: 1px solid #c7c7c7;
 }
 </style>
