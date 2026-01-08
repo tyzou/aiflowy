@@ -37,6 +37,7 @@ const formRef = ref<InstanceType<typeof ElForm>>();
 const formData = ref<SaveBotParams | UpdateBotParams>(initialFormData);
 const rules = {
   title: [{ required: true, message: $t('message.required'), trigger: 'blur' }],
+  alias: [{ required: true, message: $t('message.required'), trigger: 'blur' }],
 };
 const loading = ref(false);
 
