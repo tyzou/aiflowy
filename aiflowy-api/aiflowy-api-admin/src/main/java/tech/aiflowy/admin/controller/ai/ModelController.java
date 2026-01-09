@@ -2,13 +2,13 @@ package tech.aiflowy.admin.controller.ai;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.mybatisflex.core.BaseMapper;
-import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.aiflowy.ai.entity.Model;
+import tech.aiflowy.ai.entity.ModelProvider;
 import tech.aiflowy.ai.entity.table.ModelTableDef;
 import tech.aiflowy.ai.mapper.ModelMapper;
 import tech.aiflowy.ai.service.ModelService;
@@ -25,7 +25,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -55,7 +55,10 @@ public class ModelController extends BaseCurdController<ModelService, Model> {
         queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
         List<Model> list = Tree.tryToTree(modelMapper.selectListWithRelationsByQuery(queryWrapper), asTree);
         list.forEach(item -> {
-            item.setTitle(item.getModelProvider().getProviderName()  + "/" + item.getTitle());
+            String providerName = Optional.ofNullable(item.getModelProvider())
+                    .map(ModelProvider::getProviderName)
+                    .orElse("-");
+            item.setTitle(providerName + "/" + item.getTitle());
         });
         return Result.ok(list);
     }
@@ -130,6 +133,7 @@ public class ModelController extends BaseCurdController<ModelService, Model> {
 
     /**
      * 添加所有模型
+     *
      * @param entity
      * @return
      */

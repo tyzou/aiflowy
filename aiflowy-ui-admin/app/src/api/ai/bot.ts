@@ -50,7 +50,7 @@ export const updateBotApi = (params: UpdateBotParams) => {
 
 /** 删除Bot */
 export const removeBotFromId = (id: string) => {
-  return api.post<RequestResult>('/api/v1/bot/update', { id });
+  return api.post<RequestResult>('/api/v1/bot/remove', { id });
 };
 
 export interface GetMessageListParams {
