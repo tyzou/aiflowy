@@ -76,8 +76,13 @@ cd aiflowy
 # 构建后端
 mvn clean package
 
-# 启动前端（React + pnpm）
+# 启动前端（Vue + pnpm）
 cd aiflowy-ui-admin
+pnpm install
+pnpm dev
+
+# 启动用户中心（Vue + pnpm）
+cd aiflowy-ui-usercenter
 pnpm install
 pnpm dev
 ```
