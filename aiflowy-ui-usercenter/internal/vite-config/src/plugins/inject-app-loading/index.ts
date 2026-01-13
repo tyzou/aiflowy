@@ -27,6 +27,11 @@ async function viteInjectAppLoadingPlugin(
   <script data-app-loading="inject-js">
   var theme = localStorage.getItem(${cacheName});
   document.documentElement.classList.toggle('dark', /dark/.test(theme));
+  setTimeout(() => {
+    if (/dark/.test(theme)) {
+      document.querySelector('#__app-loading__ img').src = '/logoDark.svg';
+    }
+  })
 </script>
 `;
 
@@ -57,7 +62,7 @@ async function getLoadingRawByHtmlTemplate(loadingTemplate: string) {
 
   if (!fs.existsSync(appLoadingPath)) {
     const __dirname = fileURLToPath(new URL('.', import.meta.url));
-    appLoadingPath = join(__dirname, './default-loading.html');
+    appLoadingPath = join(__dirname, './default-loading-progress.html');
   }
 
   return await fsp.readFile(appLoadingPath, 'utf8');
