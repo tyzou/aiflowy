@@ -36,7 +36,6 @@ public class McpController extends BaseCurdController<McpService, Mcp> {
     private BotMcpService botMcpService;
     @Override
     public Result<?> save(Mcp entity) {
-
         return service.saveMcp(entity);
     }
 
