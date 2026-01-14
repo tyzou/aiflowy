@@ -13,7 +13,7 @@ import {
   ElCollapseItem,
   ElDialog,
   ElMessage,
-  ElText
+  ElText,
 } from 'element-plus';
 
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
