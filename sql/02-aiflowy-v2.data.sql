@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 
 -- ----------------------------
 -- Records of tb_sys_account
@@ -240,5 +241,25 @@ INSERT INTO `tb_model` (`id`, `dept_id`, `tenant_id`, `provider_id`, `title`, `i
 -- Records of tb_sys_option
 -- ----------------------------
 
-INSERT INTO `tb_mcp` (`id`, `title`, `description`, `config_json`, `dept_id`, `tenant_id`, `created`, `created_by`, `modified`, `modified_by`, `status`) VALUES (365597368948781056, '测试everything', 'MCP测试功能', '{\n    \"mcpServers\": {\n        \"everything\": {\n            \"command\": \"npx.cmd\",\n            \"args\": [\n                \"-y\",\n                \"@modelcontextprotocol/server-everything\"\n            ]\n        }\n    }\n}', 1, 1000000, '2026-01-06 09:57:07', 1, '2026-01-06 09:57:07', 1, 0);
-INSERT INTO `tb_mcp` (`id`, `title`, `description`, `config_json`, `dept_id`, `tenant_id`, `created`, `created_by`, `modified`, `modified_by`, `status`) VALUES (365956218142994432, '12306购票综合查询', '12306购票综合查询', '{\n    \"mcpServers\": {\n        \"12306-mcp\": {\n            \"command\": \"npx.cmd\",\n            \"args\": [\n                \"-y\",\n                \"12306-mcp\"\n            ]\n        }\n    }\n}', 1, 1000000, '2026-01-06 09:56:44', 1, '2026-01-06 09:56:44', 1, 0);
+INSERT INTO `tb_mcp` (`id`, `title`, `description`, `config_json`, `dept_id`, `tenant_id`, `created`, `created_by`, `modified`, `modified_by`, `status`) VALUES (365597368948781056, '测试everything', 'MCP测试功能', '{
+    \"mcpServers\": {
+        \"everything\": {
+            \"command\": \"npx\",
+            \"args\": [
+                \"-y\",
+                \"@modelcontextprotocol/server-everything\"
+            ]
+        }
+    }
+}', 1, 1000000, '2026-01-06 09:57:07', 1, '2026-01-06 09:57:07', 1, 0);
+INSERT INTO `tb_mcp` (`id`, `title`, `description`, `config_json`, `dept_id`, `tenant_id`, `created`, `created_by`, `modified`, `modified_by`, `status`) VALUES (365956218142994432, '12306购票综合查询', '12306购票综合查询', '{
+    \"mcpServers\": {
+        \"12306-mcp\": {
+            \"command\": \"npx\",
+            \"args\": [
+                \"-y\",
+                \"12306-mcp\"
+            ]
+        }
+    }
+}', 1, 1000000, '2026-01-06 09:56:44', 1, '2026-01-06 09:56:44', 1, 0);

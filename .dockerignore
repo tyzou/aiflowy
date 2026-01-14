@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Maven
+target/
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# Node.js
+**/node_modules
+**/dist
+**/pnpm-lock.yaml
+.npmrc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
