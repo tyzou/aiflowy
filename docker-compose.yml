@@ -1,47 +1,78 @@
-version: '3.8'
 services:
-  aiflowy:
+  # 后端服务
+  aiflowy-api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/aiflowy?useInformationSchema=true&characterEncoding=utf-8
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/aiflowy?useInformationSchema=true&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_REDIS_HOST=redis
+      - SPRING_WEB_RESOURCES_STATIC-LOCATIONS=file:/www/aiflowy/attachment/
+      - AIFLOWY_STORAGE_LOCAL_ROOT=/www/aiflowy/attachment
     networks:
       - aiflowy-net
+    volumes:
+      - ./attachment:/www/aiflowy/attachment
     depends_on:
       mysql:
         condition: service_healthy
-  aiflowy-ui:
+      redis:
+        condition: service_started
+
+  # 管理后台前端
+  aiflowy-ui-admin:
     build:
-      context: ./aiflowy-ui-react
-      dockerfile: Dockerfile
+      context: ./aiflowy-ui-admin
+      dockerfile: scripts/deploy/Dockerfile
     ports:
-      - "8081:80"
-    depends_on:
-      - aiflowy
+      - "8081:8080"
     networks:
       - aiflowy-net
+    depends_on:
+      - aiflowy-api
+
+  # 用户中心前端
+  aiflowy-ui-usercenter:
+    build:
+      context: ./aiflowy-ui-usercenter
+      dockerfile: scripts/deploy/Dockerfile
+    ports:
+      - "8082:8080"
+    networks:
+      - aiflowy-net
+    depends_on:
+      - aiflowy-api
+
+  # 数据库
   mysql:
     image: mysql:8.0
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --lower-case-table-names=1
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: aiflowy
     ports:
       - "3306:3306"
     volumes:
-      - ./initdb:/docker-entrypoint-initdb.d
+      - ./sql:/docker-entrypoint-initdb.d
     # 这个命令在默认 entrypoint 运行前修复权限
     entrypoint: sh -c "chown -R mysql:mysql /docker-entrypoint-initdb.d && docker-entrypoint.sh mysqld"
     networks:
       - aiflowy-net
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      timeout: 5s
+      retries: 5
+
+  # Redis (后端可能需要)
+  redis:
+    image: redis:alpine
+    networks:
+      - aiflowy-net
+
 networks:
   aiflowy-net:
+    driver: bridge
