@@ -42,8 +42,7 @@ public class McpController extends BaseCurdController<McpService, Mcp> {
 
     @Override
     public Result<?> update(Mcp entity) {
-        service.updateMcp(entity);
-        return Result.ok();
+        return service.updateMcp(entity);
     }
 
     @Override
@@ -64,5 +63,22 @@ public class McpController extends BaseCurdController<McpService, Mcp> {
     public Result<Mcp> getMcpTools(@JsonBody("id") String id) {
 
         return Result.ok(service.getMcpTools(id));
+    }
+
+
+    @GetMapping("pageTools")
+    public Result<Page<Mcp>> pageTools(HttpServletRequest request, String sortKey, String sortType, Long pageNumber, Long pageSize) {
+        if (pageNumber == null || pageNumber < 1) {
+            pageNumber = 1L;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10L;
+        }
+
+        QueryWrapper queryWrapper = buildQueryWrapper(request);
+        queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
+        Page<Mcp> mcpPage = queryPage(new Page<>(pageNumber, pageSize), queryWrapper);
+
+        return Result.ok(service.pageTools(mcpPage));
     }
 }

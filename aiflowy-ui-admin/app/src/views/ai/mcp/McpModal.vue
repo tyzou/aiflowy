@@ -67,22 +67,6 @@ const defaultEntity: McpEntity = {
 };
 const entity = ref<McpEntity>({ ...defaultEntity });
 
-const validateJson = (
-  _: any,
-  value: string,
-  callback: (error?: Error) => void,
-) => {
-  if (!value) {
-    return callback();
-  }
-  try {
-    JSON.parse(value);
-    callback();
-  } catch {
-    callback(new Error($t('message.invalidJson') || '请输入合法的 JSON 格式'));
-  }
-};
-
 const rules = ref({
   title: [
     {
@@ -93,9 +77,9 @@ const rules = ref({
   ],
   configJson: [
     {
-      validator: validateJson,
+      required: true,
+      message: $t('message.required'),
       trigger: 'blur',
-      message: '请输入合法的 JSON 格式',
     },
   ],
 });
@@ -150,7 +134,17 @@ function closeDialog() {
   entity.value = { ...defaultEntity };
   dialogVisible.value = false;
 }
-
+const jsonPlaceholder = ref(`{
+  "mcpServers": {
+    "12306-mcp": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "12306-mcp"
+      ]
+    }
+  }
+}`);
 const activeName = ref('config');
 </script>
 
@@ -182,7 +176,7 @@ const activeName = ref('config');
               type="textarea"
               :rows="15"
               v-model.trim="entity.configJson"
-            />
+              :placeholder="$t('mcp.example') + jsonPlaceholder" />
           </ElFormItem>
           <ElFormItem prop="status" :label="$t('mcp.status')">
             <ElSwitch v-model="entity.status" />
@@ -191,7 +185,11 @@ const activeName = ref('config');
       </ElTabPane>
       <div v-if="!isAdd">
         <ElTabPane :label="$t('mcp.modal.tool')" name="tool">
-          <ElTable :data="entity.tools" border :preserve-expanded-content="true">
+          <ElTable
+            :data="entity.tools"
+            border
+            :preserve-expanded-content="true"
+          >
             <ElTableColumn type="expand">
               <template #default="scope">
                 <!-- 解构获取properties和required，同时做空值保护 -->
@@ -201,8 +199,8 @@ const activeName = ref('config');
                 >
                   <div
                     v-for="([propKey, propValue], index) in Object.entries(
-                    scope.row.inputSchema.properties,
-                  )"
+                      scope.row.inputSchema.properties,
+                    )"
                     :key="index"
                     class="params-content-container"
                   >
@@ -211,13 +209,13 @@ const activeName = ref('config');
                         {{ propKey }}
                         <span
                           v-if="
-                          scope.row.inputSchema.required &&
-                          scope.row.inputSchema.required.includes(propKey)
-                        "
+                            scope.row.inputSchema.required &&
+                            scope.row.inputSchema.required.includes(propKey)
+                          "
                           class="required-mark"
                         >
-                        *
-                      </span>
+                          *
+                        </span>
                       </div>
                     </div>
                     <div class="params-desc-container">
@@ -249,7 +247,6 @@ const activeName = ref('config');
             </ElTableColumn>-->
           </ElTable>
         </ElTabPane>
-
       </div>
     </ElTabs>
     <template #footer>

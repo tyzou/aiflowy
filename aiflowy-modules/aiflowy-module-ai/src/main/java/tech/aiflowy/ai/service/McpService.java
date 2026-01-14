@@ -17,9 +17,9 @@ import java.io.Serializable;
  */
 public interface McpService extends IService<Mcp> {
 
-    void saveMcp(Mcp entity);
+    Result<?> saveMcp(Mcp entity);
 
-    void updateMcp(Mcp entity);
+    Result<?> updateMcp(Mcp entity);
 
     void removeMcp(Serializable id);
 
@@ -28,4 +28,6 @@ public interface McpService extends IService<Mcp> {
     Result<Page<Mcp>> pageMcp(Result<Page<Mcp>> page);
 
     Mcp getMcpTools(String id);
+
+    Page<Mcp> pageTools(Page<Mcp> mcpPage);
 }

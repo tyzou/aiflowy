@@ -60,13 +60,6 @@ public class UcBotController extends BaseCurdController<BotService, Bot> {
     private final ModelService modelService;
     private final BotWorkflowService botWorkflowService;
     private final BotDocumentCollectionService botDocumentCollectionService;
-    private final BotMessageService botMessageService;
-    @Resource
-    private SysApiKeyMapper aiBotApiKeyMapper;
-    @Resource
-    private BotConversationService botConversationService;
-    @Resource
-    private BotConversationMapper botConversationMapper;
     @Resource
     private BotService botService;
     @Autowired
@@ -74,16 +67,17 @@ public class UcBotController extends BaseCurdController<BotService, Bot> {
     private Cache<String, Object> cache;
     @Resource
     private AudioServiceManager audioServiceManager;
-
-    private static final Logger logger = LoggerFactory.getLogger(UcBotController.class);
+    @Resource
+    private BotMcpService botMcpService;
+    @Resource
+    private McpService mcpService;
 
     public UcBotController(BotService service, ModelService modelService, BotWorkflowService botWorkflowService,
-                           BotDocumentCollectionService botDocumentCollectionService, BotMessageService botMessageService) {
+                           BotDocumentCollectionService botDocumentCollectionService) {
         super(service);
         this.modelService = modelService;
         this.botWorkflowService = botWorkflowService;
         this.botDocumentCollectionService = botDocumentCollectionService;
-        this.botMessageService = botMessageService;
     }
 
     @Resource
@@ -423,6 +417,15 @@ public class UcBotController extends BaseCurdController<BotService, Bot> {
                 }
             }
         }
+
+        // MCP function 集合
+        queryWrapper = QueryWrapper.create();
+        queryWrapper.eq(BotMcp::getBotId, botId);
+        List<BotMcp> botMcpList = botMcpService.getMapper().selectListWithRelationsByQuery(queryWrapper);
+        botMcpList.forEach(botMcp -> {
+            Tool tool = mcpService.toFunction(botMcp);
+            functionList.add(tool);
+        });
 
 
         return functionList;

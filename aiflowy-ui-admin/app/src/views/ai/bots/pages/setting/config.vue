@@ -852,7 +852,7 @@ const formatSelectedMcpData = () => {
       :title="$t('menus.ai.mcp')"
       width="730"
       ref="mcpToolDataRef"
-      page-url="/api/v1/mcp/page"
+      page-url="/api/v1/mcp/pageTools"
       title-key="title"
       :has-parent="true"
       :is-select-mcp="true"

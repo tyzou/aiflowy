@@ -6,6 +6,7 @@ import com.agentsflex.core.model.chat.tool.Tool;
 import com.agentsflex.mcp.client.McpClientManager;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import com.jfinal.template.stat.ast.Return;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import io.modelcontextprotocol.client.McpSyncClient;
@@ -19,9 +20,11 @@ import tech.aiflowy.ai.mapper.McpMapper;
 import tech.aiflowy.ai.service.McpService;
 import org.springframework.stereotype.Service;
 import tech.aiflowy.ai.utils.CommonFiledUtil;
+import tech.aiflowy.common.constant.enums.EnumRes;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
+import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import java.io.Serializable;
@@ -39,33 +42,68 @@ public class McpServiceImpl extends ServiceImpl<McpMapper, Mcp>  implements McpS
     protected Logger Log = LoggerFactory.getLogger(DocumentServiceImpl.class);
 
     @Override
-    public void saveMcp(Mcp entity) {
-
-        if (entity == null || entity.getConfigJson() == null || entity.getConfigJson().trim().isEmpty()) {
-            Log.error("MCP 配置不能为空");
-            throw new BusinessException("MCP 配置 JSON 不能为空");
+    public Result<?> saveMcp(Mcp entity) {
+        Result<?> validateResult = validateMcpConfig(entity);
+        if (!(EnumRes.SUCCESS.getCode() == validateResult.getErrorCode())) {
+            return validateResult;
         }
-        mcpClientManager.registerFromJson(entity.getConfigJson());
+        String serverName = getFirstMcpServerName(entity.getConfigJson());
+        if (!StringUtil.hasText(serverName)) {
+            return Result.fail("未找到mcp服务名称", serverName);
+        }
+        try {
+            mcpClientManager.registerFromJson(entity.getConfigJson());
+        } catch (Exception e) {
+            Log.error("MCP服务名称：{} 注册失败", serverName, e);
+        }
+        if (entity.getStatus()) {
+        try {
+            getMcpClient(entity, mcpClientManager);
+        } catch (Exception e) {
+            Log.error("MCP服务名称：{} 启动失败", serverName, e);
+            return Result.fail("MCP服务名称：{} 启动失败", serverName);
+        }
+        }
+
         LoginAccount loginAccount = SaTokenUtil.getLoginAccount();
         CommonFiledUtil.commonFiled(entity, loginAccount.getId(), loginAccount.getTenantId(), loginAccount.getDeptId());
         this.save(entity);
+        return Result.ok();
     }
 
     @Override
-    public void updateMcp(Mcp entity) {
-        if (entity == null || entity.getConfigJson() == null || entity.getConfigJson().trim().isEmpty()) {
-            Log.error("MCP 配置不能为空");
-            throw new BusinessException("MCP 配置 JSON 不能为空");
+    public Result<?> updateMcp(Mcp entity) {
+        Result<?> validateResult = validateMcpConfig(entity);
+        if (!(EnumRes.SUCCESS.getCode() == validateResult.getErrorCode())) {
+            return validateResult;
+        }
+        String serverName = getFirstMcpServerName(entity.getConfigJson());
+        if (!StringUtil.hasText(serverName)) {
+            return Result.fail("未找到mcp服务名称", serverName);
         }
         if (entity.getStatus()) {
-            mcpClientManager.registerFromJson(entity.getConfigJson());
+            try {
+                mcpClientManager.registerFromJson(entity.getConfigJson());
+            } catch (Exception e) {
+                Log.error("MCP服务名称：{} 注册失败", serverName, e);
+            }
+            try {
+                getMcpClient(entity, mcpClientManager);
+            } catch (Exception e) {
+                Log.error("MCP服务名称：{} 启动失败", serverName, e);
+                return Result.fail("MCP服务名称：{} 启动失败", serverName);
+            }
+
         } else {
-            McpSyncClient mcpClient = getMcpClient(entity, mcpClientManager);
-            mcpClient.close();
+            if (StringUtil.hasText(serverName)) {
+                if (mcpClientManager.isClientOnline(serverName)) {
+                    mcpClientManager.getMcpClient(serverName).close();
+                }
+            }
         }
-        LoginAccount loginAccount = SaTokenUtil.getLoginAccount();
-        CommonFiledUtil.commonFiled(entity, loginAccount.getId(), loginAccount.getTenantId(), loginAccount.getDeptId());
+        entity.setModified(new Date());
         this.updateById(entity);
+        return Result.ok();
     }
 
     @Override
@@ -96,19 +134,20 @@ public class McpServiceImpl extends ServiceImpl<McpMapper, Mcp>  implements McpS
 
     public static McpSyncClient getMcpClient(Mcp mcp, McpClientManager mcpClientManager) {
         String configJson = mcp.getConfigJson();
-        Optional<String> mcpServerName = getFirstMcpServerName(configJson);
-        return mcpServerName.map(mcpClientManager::getMcpClient).orElse(null);
+        String mcpServerName = getFirstMcpServerName(configJson);
+        if (StringUtil.hasText(mcpServerName)) {
+            return mcpClientManager.getMcpClient(mcpServerName);
+        }
+        return null;
     }
 
     @Override
     public Tool toFunction(BotMcp botMcp) {
         Mcp mcpInfo = this.getById(botMcp.getMcpId());
         String configJson = mcpInfo.getConfigJson();
-        Optional<String> mcpServerName = getFirstMcpServerName(configJson);
-        if (mcpServerName.isPresent()) {
-            // 获取mcp 服务名称
-            String serverName = mcpServerName.get();
-            McpSyncClient mcpClient = mcpClientManager.getMcpClient(serverName);
+        String mcpServerName = getFirstMcpServerName(configJson);
+        if (StringUtil.hasText(mcpServerName)) {
+            McpSyncClient mcpClient = mcpClientManager.getMcpClient(mcpServerName);
             List<McpSchema.Tool> tools = mcpClient.listTools().tools();
             for (McpSchema.Tool tool : tools) {
                 if (tool.name().equals(botMcp.getMcpToolName())) {
@@ -155,9 +194,43 @@ public class McpServiceImpl extends ServiceImpl<McpMapper, Mcp>  implements McpS
         return mcpServersJson.keySet();
     }
 
-    public static Optional<String> getFirstMcpServerName(String mcpJson) {
+    public static String getFirstMcpServerName(String mcpJson) {
         Set<String> serverNames = getMcpServerNames(mcpJson);
-        return serverNames.stream().findFirst();
+        Optional<String> firstServerName = serverNames.stream().findFirst();
+        return firstServerName.orElse(null);
     }
 
+    @Override
+    public Page<Mcp> pageTools(Page<Mcp> page) {
+        page.getRecords().forEach(mcp -> {
+            // mcp 未启用，不查询工具
+            if (!mcp.getStatus()) {
+                return;
+            }
+            String configJson = mcp.getConfigJson();
+            String serverName = getFirstMcpServerName(configJson);
+            if (StringUtil.hasText(serverName)) {
+                mcpClientManager.registerFromJson(configJson);
+                try {
+                    McpSyncClient mcpClient = mcpClientManager.getMcpClient(serverName);
+                    List<McpSchema.Tool> tools = mcpClient.listTools().tools();
+                    mcp.setTools(tools);
+                } catch (Exception e) {
+                    Log.error("MCP服务名称：{} 启动失败", serverName, e);
+                }
+
+            } else {
+                throw new BusinessException("MCP 配置 JSON 中没有找到任何 MCP 服务名称");
+            }
+        });
+        return page;
+    }
+
+    private Result<?> validateMcpConfig(Mcp entity) {
+        if (entity == null || !StringUtil.hasText(entity.getConfigJson())) {
+            Log.error("MCP 配置不能为空");
+            return Result.fail("MCP 配置 JSON 不能为空");
+        }
+        return Result.ok();
+    }
 }

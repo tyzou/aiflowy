@@ -7,6 +7,7 @@ import tech.aiflowy.ai.entity.Mcp;
 import tech.aiflowy.ai.service.McpService;
 import tech.aiflowy.ai.service.impl.McpServiceImpl;
 import tech.aiflowy.common.util.SpringContextUtil;
+import tech.aiflowy.common.util.StringUtil;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -24,10 +25,10 @@ public class McpTool extends BaseTool {
 
         McpService mcpService = SpringContextUtil.getBean(McpService.class);
         Mcp mcp = mcpService.getMapper().selectOneById(mcpId);
-        Optional<String> serverName = McpServiceImpl.getFirstMcpServerName(mcp.getConfigJson());
-        if (serverName.isPresent()) {
+        String serverName = McpServiceImpl.getFirstMcpServerName(mcp.getConfigJson());
+        if (StringUtil.hasText(serverName)) {
             McpClientManager mcpClientManager = McpClientManager.getInstance();
-            Tool mcpTool = mcpClientManager.getMcpTool(serverName.get(), this.name);
+            Tool mcpTool = mcpClientManager.getMcpTool(serverName, this.name);
             Object result = mcpTool.invoke(argsMap);
             return result;
         }

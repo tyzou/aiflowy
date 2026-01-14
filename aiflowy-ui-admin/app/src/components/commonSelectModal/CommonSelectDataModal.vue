@@ -12,7 +12,8 @@ import {
   ElCollapse,
   ElCollapseItem,
   ElDialog,
-  ElText,
+  ElMessage,
+  ElText
 } from 'element-plus';
 
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
@@ -143,6 +144,10 @@ const getMcpSelectedInfo = (): Record<number | string, string[][]>[] => {
 };
 
 const handleSubmitRun = () => {
+  if (selectedIds.value.length === 0) {
+    ElMessage.error($t('message.selectTip'));
+    return;
+  }
   if (props?.isSelectMcp) {
     emit('getData', getMcpSelectedInfo());
   } else {

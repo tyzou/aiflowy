@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import tech.aiflowy.ai.entity.Mcp;
 import tech.aiflowy.ai.service.impl.McpServiceImpl;
+import tech.aiflowy.common.util.StringUtil;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -35,9 +36,8 @@ public class McpClientAutoConfig {
                 return;
             }
             String configJson = mcp.getConfigJson();
-            Optional<String> firstServerName = getFirstMcpServerName(configJson);
-            if (firstServerName.isPresent()) {
-                String serverName = firstServerName.get();
+            String serverName = getFirstMcpServerName(configJson);
+            if (StringUtil.hasText(serverName)) {
                 try {
                     mcpClientManager.registerFromJson(configJson);
                 } catch (Exception e) {
