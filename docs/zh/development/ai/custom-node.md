@@ -3,13 +3,28 @@
 自定义节点，需要前端添加节点信息后，后端也要新增对应的处理逻辑和方法。
 
 ## 前端
-在  `src/pages/ai/workflowDesign/customNode` 文件夹下预置了一些自定义节点，可作为参考，
+在  `aiflowy-ui-admin/app/src/views/ai/workflow/customNode` 文件夹下预置了一些自定义节点，可作为参考，
 下面介绍一下怎么添加自定义节点。
 ### 新增节点信息 
-在 `src/pages/ai/workflowDesign/customNode` 文件夹下新建一个 `yourNode.ts` 文件，里面包含了节点信息，如下：
-```typescript
+在 `nodeNames.ts` 中添加你的 nodeName：
+
+```
 export default {
-    'your-node': { // 节点唯一标识
+  ...
+  yourNode: 'your-node',
+};
+
+```
+
+在这里定义节点名称是为了统一管理，修改时不需要到处修改。
+
+在 `aiflowy-ui-admin/app/src/views/ai/workflow/customNode` 文件夹下新建一个 `yourNode.ts` 文件，里面包含了节点信息，如下：
+```typescript
+
+import nodeNames from './nodeNames';
+
+export default {
+    [nodeNames.yourNode]: { // 节点唯一标识
         title: '节点名称',
         description: '描述', // 描述
         icon: ' svg 图标', // 图标，可到 https://remixicon.com 获取
@@ -99,17 +114,17 @@ export default {
 ```
 import yourNode from './yourNode.ts'
 
-export default {
+export const getCustomNode = async (options: CustomNodeOptions) => {
     ...yourNode,
 }
 ```
 ## 后端
 
-后端使用了 [tinyflow](https://www.tinyflow.cn/zh/) 和 [agents-flex](https://agentsflex.com) 作为工作流的实现，可点击查看对应文档。
+后端使用了 [tinyflow](https://www.tinyflow.cn/zh/) 作为工作流的实现，可点击查看对应文档。
 
 ### 继承 BaseNode 类
 
-继承 `com.agentsflex.core.chain.node.BaseNode` 类，并实现 `execute` 方法。
+继承 `dev.tinyflow.core.node.BaseNode` 类，并实现 `execute` 方法。
 ```java
 public class YourNode extends BaseNode {
     
@@ -118,7 +133,7 @@ public class YourNode extends BaseNode {
         Map<String, Object> res = new HashMap<>();
         
         // 获取输入参数
-        Map<String, Object> map = chain.getParameterValues(this);
+        Map<String, Object> map = chain.getState().resolveParameters(this);
         
         // 获取输出参数定义
         List<Parameter> outputDefs = getOutputDefs();
@@ -133,18 +148,13 @@ public class YourNode extends BaseNode {
 ### 继承 BaseNodeParser 类
 继承 `dev.tinyflow.core.parser.BaseNodeParser` 类，并实现 `parse` 方法。
 ```java
-public class YourNodeParser extends BaseNodeParser {
+public class YourNodeParser extends BaseNodeParser<YourNode> {
     
     @Override
-    public ChainNode parse(JSONObject jsonObject, Tinyflow tinyflow) {
-        // 获取节点数据
-        JSONObject data = getData(jsonObject);
+    public YourNode doParse(JSONObject root, JSONObject data, JSONObject tinyflow) {
         // 创建自定义节点
         YourNode yourNode = new YourNode();
-        // 添加输入参数
-        addParameters(yourNode, data);
-        // 添加输出参数
-        addOutputDefs(yourNode, data);
+        // 设置自定义节点的属性，如需要
         return docNode;
     }
 
@@ -156,10 +166,14 @@ public class YourNodeParser extends BaseNodeParser {
 ```
 ### 注册节点
 
-找到 `tech.aiflowy.ai.utils.TinyFlowConfigService` 类的 `setExtraNodeParser` 方法。
+找到 `tech.aiflowy.ai.tinyflow.service.TinyFlowConfigService` 类的 `setExtraNodeParser` 方法。
 
 添加如下代码：
 ```java
-YourNodeParser yourNodeParser = new YourNodeParser();
-chainParser.addNodeParser(yourNodeParser.getNodeName(), yourNodeParser);
+public void setExtraNodeParser(ChainParser chainParser) {
+
+    // 你的自定义节点
+    YourNodeParser yourNodeParser = new YourNodeParser();
+    chainParser.addNodeParser(yourNodeParser.getNodeName(), yourNodeParser);
+}
 ```

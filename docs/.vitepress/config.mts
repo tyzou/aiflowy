@@ -139,7 +139,11 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
                 {text: '行为验证码', link: 'backend/captcha'},
                 {text: '数据字典', link: 'backend/data_dictionary'},
                 {text: '文件管理', link: 'backend/file_management'},
-                {text: '自定义节点', link: 'ai/custom-node'},
+                {
+                    text: '工作流', collapsed: false, items: [
+                        {text: '自定义节点', link: 'ai/custom-node'},
+                    ]
+                },
                 // {text: '其他', link: '/backend/other'}
             ]
         },
@@ -153,11 +157,6 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
                 {text: '知识库', link: 'ai/knowledge'},
                 {text: 'apiKey', link: 'ai/apiKey'},
                 {text: 'Ollama', link: 'ai/ollama'},
-                {
-                    text: '工作流', collapsed: false, items: [
-                        {text: '自定义节点', link: 'ai/custom-node'},
-                    ]
-                },
             ]
         },
     ]
