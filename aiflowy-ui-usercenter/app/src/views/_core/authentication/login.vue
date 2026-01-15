@@ -69,6 +69,7 @@ function onSubmit(values: any) {
   const style = {
     logoUrl: null, // 去除logo
     // logoUrl: "/xx/xx/xxx.png" // 替换成自定义的logo
+    btnUrl: '/tac-btn.png',
   };
   window
     // @ts-ignore
