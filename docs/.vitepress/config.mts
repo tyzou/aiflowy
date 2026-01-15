@@ -134,12 +134,12 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
             text: '后端相关',
             collapsed: false,
             items: [
-                {text: '控制器', link: '/backend/controller'},
-                {text: '权限管理', link: '/backend/permission_management'},
-                {text: '验证码', link: '/backend/captcha'},
-                {text: '数据字典', link: '/backend/data_dictionary'},
-                {text: '文件管理', link: '/backend/file_management'},
-                {text: '自定义节点', link: '/ai/custom-node'},
+                {text: '代码生成器', link: 'backend/code-generator'},
+                {text: '权限管理', link: 'backend/permission_management'},
+                {text: '验证码', link: 'backend/captcha'},
+                {text: '数据字典', link: 'backend/data_dictionary'},
+                {text: '文件管理', link: 'backend/file_management'},
+                {text: '自定义节点', link: 'ai/custom-node'},
                 // {text: '其他', link: '/backend/other'}
             ]
         },
@@ -147,15 +147,15 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
             text: 'API 文档',
             collapsed: false,
             items: [
-                {text: '大语言模型', link: '/ai/language-model'},
-                {text: 'Bot 应用', link: '/ai/bot-application'},
-                {text: '插件', link: '/ai/plugin'},
-                {text: '知识库', link: '/ai/knowledge'},
-                {text: 'apiKey', link: '/ai/apiKey'},
-                {text: 'Ollama', link: '/ai/ollama'},
+                {text: '大语言模型', link: 'ai/language-model'},
+                {text: 'Bot 应用', link: 'ai/bot-application'},
+                {text: '插件', link: 'ai/plugin'},
+                {text: '知识库', link: 'ai/knowledge'},
+                {text: 'apiKey', link: 'ai/apiKey'},
+                {text: 'Ollama', link: 'ai/ollama'},
                 {
                     text: '工作流', collapsed: false, items: [
-                        {text: '自定义节点', link: '/ai/custom-node'},
+                        {text: '自定义节点', link: 'ai/custom-node'},
                     ]
                 },
             ]
