@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.agentsflex.core.document.Document;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.util.StringUtils;
+import tech.aiflowy.ai.entity.BotDocumentCollection;
 import tech.aiflowy.ai.entity.DocumentCollection;
 import tech.aiflowy.ai.service.BotDocumentCollectionService;
 import tech.aiflowy.ai.service.DocumentChunkService;
@@ -89,7 +90,7 @@ public class DocumentCollectionController extends BaseCurdController<DocumentCol
     protected Result<Void> onRemoveBefore(Collection<Serializable> ids) {
 
         QueryWrapper queryWrapper = QueryWrapper.create();
-        queryWrapper.in("knowledge_id", ids);
+        queryWrapper.in(BotDocumentCollection::getId, ids);
 
         boolean exists = botDocumentCollectionService.exists(queryWrapper);
         if (exists){
