@@ -12,7 +12,7 @@ import {
   ElHeader,
   ElIcon,
   ElMain,
-  ElSpace,
+  ElText,
 } from 'element-plus';
 
 import { api } from '#/api/request';
@@ -73,16 +73,21 @@ function onAsyncExecute(info: any) {
   <ElContainer class="h-full">
     <ElHeader class="!px-8 !py-4" height="fit-content">
       <div class="flex flex-col gap-6">
-        <ElSpace class="cursor-pointer" :size="10" @click="router.back()">
+        <div
+          class="flex cursor-pointer items-center gap-2.5"
+          @click="router.back()"
+        >
           <ElIcon size="24"><ArrowLeft /></ElIcon>
-          <h1 class="text-lg font-medium">
+          <ElText truncated class="!text-lg font-medium">
             {{ workflowInfo?.title }}
-          </h1>
-        </ElSpace>
+          </ElText>
+        </div>
         <div
           class="bg-background border-border flex items-center justify-between overflow-hidden rounded-lg border px-5 py-6"
         >
-          <Card class="w-full max-w-none cursor-auto items-center gap-7">
+          <Card
+            class="w-full max-w-none cursor-auto items-center gap-7 overflow-hidden"
+          >
             <CardAvatar
               :size="72"
               :src="workflowInfo?.icon"

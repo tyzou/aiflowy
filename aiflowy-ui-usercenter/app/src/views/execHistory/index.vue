@@ -15,6 +15,7 @@ import {
   ElSelect,
   ElSpace,
   ElTag,
+  ElText,
 } from 'element-plus';
 
 import { api } from '#/api/request';
@@ -186,7 +187,7 @@ function getDateRange() {
                     v-for="record in pageList"
                     :key="record.id"
                   >
-                    <span>{{ record.title }}</span>
+                    <ElText truncated>{{ record.title }}</ElText>
                     <span>{{ record.startTime }}</span>
                     <span>{{ record.execTime }} ms</span>
                     <span>
