@@ -94,3 +94,14 @@ function getUserAvatar() {
     </template>-->
   </el-bubble-list>
 </template>
+
+<style lang="css" scoped>
+:deep(.el-bubble) {
+  --bubble-content-max-width: calc(
+    100% -
+      calc(
+        var(--el-bubble-avatar-placeholder-gap) + var(--el-avatar-size, 40px)
+      )
+  ) !important;
+}
+</style>
