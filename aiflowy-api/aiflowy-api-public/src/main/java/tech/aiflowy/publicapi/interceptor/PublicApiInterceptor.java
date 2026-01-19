@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.util.ResponseUtil;
-import tech.aiflowy.system.entity.SysApiKey;
 import tech.aiflowy.system.service.SysApiKeyService;
 
 @Component
@@ -31,12 +30,7 @@ public class PublicApiInterceptor implements HandlerInterceptor {
             ResponseUtil.renderJson(response, failed);
             return false;
         }
-
-        SysApiKey record = sysApiKeyService.getSysApiKey(apiKey);
-
-        System.out.println("验证密钥：" + apiKey);
-        System.out.println("验证请求URI：" + requestURI);
-
+        sysApiKeyService.checkApikeyPermission(apiKey, requestURI);
         return true;
     }
 }

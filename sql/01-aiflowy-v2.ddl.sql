@@ -723,9 +723,10 @@ DROP TABLE IF EXISTS `tb_sys_api_key_resource`;
 CREATE TABLE `tb_sys_api_key_resource`
 (
     `id`                bigint UNSIGNED NOT NULL COMMENT 'id',
-    `request_interface` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求接口',
+    `request_interface` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '请求接口',
     `title`             varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标题',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `uni_api` (`request_interface`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '请求接口表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------

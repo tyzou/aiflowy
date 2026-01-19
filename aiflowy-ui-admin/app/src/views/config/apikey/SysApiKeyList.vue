@@ -37,14 +37,6 @@ const headerButtons = [
     data: { action: 'create' },
     permission: '',
   },
-  {
-    key: 'addPermission',
-    text: $t('sysApiKeyResourcePermission.addPermission'),
-    icon: markRaw(Plus),
-    type: 'primary',
-    data: { action: 'create' },
-    permission: '',
-  },
 ];
 
 const handleSearch = (params: string) => {

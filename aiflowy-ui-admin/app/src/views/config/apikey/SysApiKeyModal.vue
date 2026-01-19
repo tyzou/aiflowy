@@ -4,6 +4,7 @@ import type { FormInstance } from 'element-plus';
 import { onMounted, ref } from 'vue';
 
 import {
+  ElAlert,
   ElButton,
   ElCheckbox,
   ElCheckboxGroup,
@@ -197,6 +198,10 @@ defineExpose({
         :label="$t('sysApiKey.permissions')"
         class="permission-form-item"
       >
+        <ElAlert type="info">
+          接口信息请运行：tech.aiflowy.publicapi.SyncApis 的 main
+          方法同步到数据库。
+        </ElAlert>
         <ElCheckboxGroup
           v-model="entity.permissionIds"
           class="permission-checkbox-group"

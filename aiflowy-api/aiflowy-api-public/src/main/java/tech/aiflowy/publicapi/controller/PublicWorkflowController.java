@@ -1,7 +1,7 @@
 package tech.aiflowy.publicapi.controller;
 
 import jakarta.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,21 +10,18 @@ import tech.aiflowy.ai.entity.Workflow;
 import tech.aiflowy.ai.service.WorkflowService;
 import tech.aiflowy.common.domain.Result;
 
-import jakarta.validation.constraints.NotBlank;
-
 /**
  * 工作流
  */
 @RequestMapping("/public-api/workflow")
 @RestController
-@Validated
 public class PublicWorkflowController {
 
     @Resource
     private WorkflowService workflowService;
 
     /**
-     * 通过id或者别名获取工作流详情
+     * 通过id或别名获取工作流详情
      * @param key id或者别名
      * @return 工作流详情
      */

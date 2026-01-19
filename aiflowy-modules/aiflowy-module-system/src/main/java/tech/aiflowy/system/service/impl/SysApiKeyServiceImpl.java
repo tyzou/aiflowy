@@ -27,57 +27,25 @@ import java.util.List;
 public class SysApiKeyServiceImpl extends ServiceImpl<SysApiKeyMapper, SysApiKey> implements SysApiKeyService {
 
     @Resource
-    private SysApiKeyResourceMappingService permissionRelationshipService;
-
+    private SysApiKeyResourceMappingService mappingService;
     @Resource
-    private SysApiKeyResourceService permissionService;
-
-    @Override
-    public void checkApiKey(String apiKey) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select("api_key", "status", "expired_at")
-                .from("tb_sys_api_key")
-                .where("api_key = ? ", apiKey);
-        SysApiKey aiBotApiKey = getOne(queryWrapper);
-        if (aiBotApiKey == null) {
-            throw new BusinessException("该apiKey不存在");
-        }
-        if (aiBotApiKey.getStatus() == 0) {
-            throw new BusinessException("该apiKey未启用");
-        }
-        if (aiBotApiKey.getExpiredAt().getTime() < new Date().getTime()) {
-            throw new BusinessException("该apiKey已失效");
-        }
-    }
+    private SysApiKeyResourceService resourceService;
 
     @Override
     public void checkApikeyPermission(String apiKey, String requestURI) {
-        QueryWrapper queryWrapper = QueryWrapper.create().eq(SysApiKey::getApiKey, apiKey);
-        SysApiKey sysApiKey = getOne(queryWrapper);
-        if (sysApiKey == null) {
-            throw new BusinessException("该apiKey不存在");
+        SysApiKey sysApiKey = getSysApiKey(apiKey);
+        QueryWrapper w = QueryWrapper.create();
+        w.eq(SysApiKeyResource::getRequestInterface, requestURI);
+        SysApiKeyResource resource = resourceService.getOne(w);
+        if (resource == null) {
+            throw new BusinessException("该接口不存在");
         }
-        if (sysApiKey.getStatus() == 0) {
-            throw new BusinessException("该apiKey未启用");
-        }
-        if (sysApiKey.getExpiredAt().getTime() < new Date().getTime()) {
-            throw new BusinessException("该apiKey已失效");
-        }
-        QueryWrapper queryWrapperShip = QueryWrapper.create().select(SysApiKeyResourceMapping::getApiKeyResourceId).eq(SysApiKeyResourceMapping::getApiKeyId, sysApiKey.getId());
-        // 获取到当前apiKey可以访问哪些资源
-        List<BigInteger> resourcePermissionsId = permissionRelationshipService.listAs(queryWrapperShip, BigInteger.class);
-        List<SysApiKeyResource> allPermissions = permissionService.list();
-        boolean hasPermission = false;
-        for (BigInteger resourcePermission : resourcePermissionsId) {
-            for (SysApiKeyResource allPermission : allPermissions) {
-                if (resourcePermission.equals(allPermission.getId()) && allPermission.getRequestInterface().equals(requestURI)) {
-                    hasPermission = true;
-                    break;
-                }
-            }
-        }
-        if (!hasPermission) {
-            throw new BusinessException("该apiKey没有权限访问该资源");
+        QueryWrapper wm = QueryWrapper.create();
+        wm.eq(SysApiKeyResourceMapping::getApiKeyId, sysApiKey.getId());
+        wm.eq(SysApiKeyResourceMapping::getApiKeyResourceId, resource.getId());
+        long count = mappingService.count(wm);
+        if (count == 0) {
+            throw new BusinessException("该apiKey无权限访问该接口");
         }
     }
 
