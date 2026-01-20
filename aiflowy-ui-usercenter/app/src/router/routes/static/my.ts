@@ -1,5 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router';
 
+import { $t } from '#/locales';
+
 const routes: RouteRecordRaw[] = [
   {
     name: 'My',
@@ -48,7 +50,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           icon: 'svg:people',
           order: 99,
-          title: '个人中心',
+          title: $t('page.auth.profile'),
         },
       },
     ],
