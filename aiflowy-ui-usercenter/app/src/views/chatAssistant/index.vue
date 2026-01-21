@@ -85,7 +85,7 @@ const toggleFold = () => {
         <ElAside
           v-if="!isFold"
           width="283px"
-          class="bg-background border-border flex flex-col gap-5 border-l p-5 pt-4 transition-all will-change-transform"
+          class="bg-background border-border flex flex-col gap-5 border-l p-5 pt-4"
         >
           <div class="flex items-center justify-between">
             <span class="pl-2.5 text-base font-medium">助理</span>
@@ -138,23 +138,22 @@ const toggleFold = () => {
 
 .collapse-horizontal-enter-active,
 .collapse-horizontal-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapse-horizontal-enter-from,
 .collapse-horizontal-leave-to {
-  transform: scaleX(0);
-  transform-origin: left;
-  opacity: 0;
   max-width: 0;
+  padding: 0;
+  opacity: 0;
+  transform-origin: left;
 }
 
 .collapse-horizontal-enter-to,
 .collapse-horizontal-leave-from {
-  transform: scaleX(1);
-  transform-origin: left;
-  opacity: 1;
   max-width: 283px;
+  opacity: 1;
+  transform-origin: left;
 }
 </style>
