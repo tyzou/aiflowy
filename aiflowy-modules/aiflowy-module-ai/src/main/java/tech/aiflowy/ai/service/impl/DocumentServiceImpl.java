@@ -27,6 +27,8 @@ import tech.aiflowy.ai.entity.Document;
 import tech.aiflowy.ai.entity.DocumentChunk;
 import tech.aiflowy.ai.entity.DocumentCollection;
 import tech.aiflowy.ai.entity.Model;
+
+import static tech.aiflowy.ai.entity.DocumentCollection.KEY_SEARCH_ENGINE_TYPE;
 import static tech.aiflowy.ai.entity.table.DocumentChunkTableDef.DOCUMENT_CHUNK;
 import static tech.aiflowy.ai.entity.table.DocumentTableDef.DOCUMENT;
 import tech.aiflowy.ai.mapper.DocumentChunkMapper;
@@ -140,8 +142,8 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
         List<BigInteger> chunkIds = documentChunkMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
         documentStore.delete(chunkIds, options);
         // 删除搜索引擎中的数据
-        if (searcherFactory.getSearcher() != null) {
-            DocumentSearcher searcher = searcherFactory.getSearcher();
+        if (searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE)) != null) {
+            DocumentSearcher searcher = searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE));
             chunkIds.forEach(searcher::deleteDocument);
         }
         int ck = documentChunkMapper.deleteByQuery(QueryWrapper.create().eq(DocumentChunk::getDocumentId, id));
@@ -277,7 +279,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
 
         if (knowledge.isSearchEngineEnabled()) {
             // 获取搜索引擎
-            DocumentSearcher searcher = searcherFactory.getSearcher();
+            DocumentSearcher searcher = searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE));
             // 添加到搜索引擎
             documents.forEach(searcher::addDocument);
         }

@@ -36,7 +36,7 @@ const actions: ActionButton[] = [
     className: '',
     permission: '/api/v1/documentCollection/save',
     onClick(row) {
-      router.replace({
+      router.push({
         path: '/ai/documentCollection/document',
         query: {
           id: row.id,
@@ -51,8 +51,14 @@ const actions: ActionButton[] = [
     className: '',
     permission: '',
     onClick(row) {
-      selectSearchKnowledgeId.value = row.id;
-      searchKnowledgeModalVisible.value = true;
+      router.push({
+        path: '/ai/documentCollection/document',
+        query: {
+          id: row.id,
+          pageKey: '/ai/documentCollection',
+          activeMenu: 'knowledgeSearch',
+        },
+      });
     },
   },
   {
@@ -144,19 +150,6 @@ const handleSearch = (params: any) => {
     </div>
     <!--    新增知识库模态框-->
     <DocumentCollectionModal ref="aiKnowledgeModalRef" @reload="handleSearch" />
-    <!--    知识检索模态框-->
-    <ElDialog
-      v-model="searchKnowledgeModalVisible"
-      draggable
-      :close-on-click-modal="false"
-      width="80%"
-      align-center
-      :title="$t('documentCollection.knowledgeRetrieval')"
-    >
-      <div class="search-knowledge-dialog">
-        <KnowledgeSearch :knowledge-id="selectSearchKnowledgeId" />
-      </div>
-    </ElDialog>
   </div>
 </template>
 

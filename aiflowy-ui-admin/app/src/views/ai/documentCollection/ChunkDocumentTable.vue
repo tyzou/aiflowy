@@ -99,11 +99,6 @@ const form = ref({
       <template #default="{ pageList }">
         <ElTable :data="pageList" style="width: 100%" size="large">
           <ElTableColumn
-            prop="sorting"
-            :label="$t('documentCollection.sorting')"
-            width="180"
-          />
-          <ElTableColumn
             prop="content"
             :label="$t('documentCollection.content')"
             min-width="240"
