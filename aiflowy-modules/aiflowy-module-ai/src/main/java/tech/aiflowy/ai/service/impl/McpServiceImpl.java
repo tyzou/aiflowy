@@ -91,7 +91,7 @@ public class McpServiceImpl extends ServiceImpl<McpMapper, Mcp>  implements McpS
                 getMcpClient(entity, mcpClientManager);
             } catch (Exception e) {
                 Log.error("MCP服务名称：{} 启动失败", serverName, e);
-                return Result.fail("MCP服务名称：{} 启动失败", serverName);
+                return Result.fail("MCP服务名称：" + serverName + " 启动失败", serverName);
             }
 
         } else {
