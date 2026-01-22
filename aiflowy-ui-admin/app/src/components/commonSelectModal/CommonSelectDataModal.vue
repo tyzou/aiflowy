@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import type { Component, PropType } from 'vue';
 
 import { ref } from 'vue';
 
@@ -19,6 +19,16 @@ import {
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
 import PageData from '#/components/page/PageData.vue';
 
+export interface ButtonConfig {
+  key?: number | string;
+  text: string;
+  type?: 'danger' | 'default' | 'info' | 'primary' | 'success' | 'warning';
+  icon?: Component | string; // 支持字符串图标或组件图标
+  disabled?: boolean;
+  permission?: string; // 权限编码
+  [key: string]: any; // 允许传递自定义属性
+}
+
 interface SelectedMcpTool {
   name: string;
   description: string;
@@ -36,9 +46,13 @@ const props = defineProps({
   hasParent: { type: Boolean, default: false },
   isSelectMcp: { type: Boolean, default: false },
   singleSelect: { type: Boolean, default: false },
+  footerButtons: {
+    type: Array as PropType<ButtonConfig[]>,
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(['getData']);
+const emit = defineEmits(['getData', 'buttonClick']);
 const dialogVisible = ref(false);
 const pageDataRef = ref();
 const loading = ref(false);
@@ -177,6 +191,14 @@ const handleSearch = (query: string) => {
     ...tempParams,
   });
 };
+
+const handleButtonClick = (button: ButtonConfig) => {
+  // 重新启动MCP
+  if (button.key === 'restartMcpServer') {
+    pageDataRef.value.setQuery();
+  }
+  emit('buttonClick', button);
+};
 </script>
 
 <template>
@@ -310,6 +332,17 @@ const handleSearch = (query: string) => {
       </PageData>
     </div>
     <template #footer>
+      <template v-for="button in footerButtons" :key="button.key">
+        <ElButton
+          :type="button.type || 'default'"
+          :icon="button.icon"
+          :disabled="button.disabled"
+          v-access:code="button.permission"
+          @click="handleButtonClick(button)"
+        >
+          {{ button.text }}
+        </ElButton>
+      </template>
       <ElButton @click="dialogVisible = false">
         {{ $t('button.cancel') }}
       </ElButton>

@@ -149,7 +149,6 @@ const backDoc = () => {
           <div v-if="selectedCategory === 'config'">
             <DocumentCollectionDataConfig
               :detail-data="knowledgeInfo"
-              ref="documentCollectionDataConfigRef"
               @reload="getKnowledge"
             />
           </div>

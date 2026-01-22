@@ -17,5 +17,6 @@
       "availableTools": "可用工具"
     }
   },
-  "example": "示例："
+  "example": "示例：",
+  "restartMcpServer": "重启MCP服务"
 }

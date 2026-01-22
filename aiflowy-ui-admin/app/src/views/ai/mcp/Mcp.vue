@@ -64,6 +64,8 @@ const handleUpdate = (row: any) => {
   api.post('/api/v1/mcp/update', { ...row }).then((res) => {
     if (res.errorCode === 0) {
       ElMessage.success($t('message.updateOkMessage'));
+    } else {
+      pageDataRef.value.setQuery({});
     }
   });
 };

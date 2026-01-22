@@ -17,5 +17,6 @@
       "availableTools": "Available Tools"
     }
   },
-  "example": "Example："
+  "example": "Example：",
+  "restartMcpServer": "RestartMcpServer"
 }
