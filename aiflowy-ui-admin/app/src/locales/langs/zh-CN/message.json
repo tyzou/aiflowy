@@ -27,7 +27,7 @@
   "copyFail": "复制失败",
   "upload": {
     "title": "点击或将文件拖拽到这里上传",
-    "description": "TXT, PDF, DOCX, MD, PPT, PPTX，XLSX 格式文件，单个大小不超过20M。"
+    "description": "TXT, PDF, DOCX, MD, PPT, PPTX 格式文件，单个大小不超过20M。"
   },
   "uploadFileFirst": "请先上传文件",
   "deleteModelAlert": "该操作会删除大模型，确定删除吗？",
@@ -43,5 +43,6 @@
   "completeForm": "请完善表单信息",
   "notVideo": "您的浏览器不支持 video 元素。",
   "notAudio": "您的浏览器不支持 audio 元素。",
-  "selectTip": "请选择数据"
+  "selectTip": "请选择数据",
+  "mustBeNumber": "请输入有效的数字"
 }

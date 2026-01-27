@@ -27,7 +27,7 @@
   "copyFail": "Copy fail",
   "upload": {
     "title": "Click or drag and drop files here to upload",
-    "description": "TXT, PDF, DOCX, MD, PPT, PPTX, and XLSX files are supported. Each upload allows one file only, with a maximum size of 20M per file."
+    "description": "TXT, PDF, DOCX, MD, PPT, PPTX files are supported. Each upload allows one file only, with a maximum size of 20M per file."
   },
   "uploadFileFirst": "Please upload the file first",
   "deleteModelAlert": "This operation will delete the large model. Are you sure to delete it?",
@@ -43,5 +43,6 @@
   "completeForm": "Please complete the form information",
   "notVideo": "Your browser does not support the video element.",
   "notAudio": "Your browser does not support the audio element.",
-  "selectTip": "Please select"
+  "selectTip": "Please select",
+  "mustBeNumber": "Please enter a valid number"
 }

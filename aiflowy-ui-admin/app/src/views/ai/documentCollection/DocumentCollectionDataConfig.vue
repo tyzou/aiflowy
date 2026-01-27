@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
 
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import { InfoFilled } from '@element-plus/icons-vue';
 import {
   ElButton,
-  ElDialog,
   ElForm,
   ElFormItem,
   ElIcon,
@@ -19,13 +18,58 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
-import DictSelect from '#/components/dict/DictSelect.vue';
 import UploadAvatar from '#/components/upload/UploadAvatar.vue';
 import { $t } from '#/locales';
 
+const props = defineProps({
+  detailData: {
+    type: Object,
+    default: () => ({
+      id: '',
+      alias: '',
+      deptId: '',
+      icon: '',
+      title: '',
+      description: '',
+      slug: '',
+      vectorStoreEnable: false,
+      vectorStoreType: '',
+      vectorStoreCollection: '',
+      vectorStoreConfig: '',
+      vectorEmbedModelId: '',
+      options: {
+        canUpdateEmbeddingModel: true,
+      },
+      rerankModelId: '',
+      searchEngineEnable: false,
+      englishName: '',
+    }),
+    required: true,
+  },
+});
+
 const emit = defineEmits(['reload']);
+
+const entity = ref<any>({ ...props.detailData });
+
+watch(
+  () => props.detailData,
+  (newVal) => {
+    entity.value = { ...newVal };
+  },
+  { immediate: true, deep: true },
+);
+
 const embeddingLlmList = ref<any>([]);
 const rerankerLlmList = ref<any>([]);
+const vecotrDatabaseList = ref<any>([
+  { value: 'milvus', label: 'Milvus' },
+  { value: 'redis', label: 'Redis' },
+  { value: 'opensearch', label: 'OpenSearch' },
+  { value: 'elasticsearch', label: 'ElasticSearch' },
+  { value: 'aliyun', label: $t('documentCollection.alibabaCloud') },
+  { value: 'qcloud', label: $t('documentCollection.tencentCloud') },
+]);
 
 const getEmbeddingLlmListData = async () => {
   try {
@@ -56,40 +100,6 @@ onMounted(async () => {
 });
 
 const saveForm = ref<FormInstance>();
-const dialogVisible = ref(false);
-const isAdd = ref(true);
-const vecotrDatabaseList = ref<any>([
-  { value: 'milvus', label: 'Milvus' },
-  { value: 'redis', label: 'Redis' },
-  { value: 'opensearch', label: 'OpenSearch' },
-  { value: 'elasticsearch', label: 'ElasticSearch' },
-  { value: 'aliyun', label: $t('documentCollection.alibabaCloud') },
-  { value: 'qcloud', label: $t('documentCollection.tencentCloud') },
-]);
-
-const defaultEntity = {
-  alias: '',
-  deptId: '',
-  icon: '',
-  title: '',
-  categoryId: '',
-  description: '',
-  slug: '',
-  vectorStoreEnable: false,
-  vectorStoreType: '',
-  vectorStoreCollection: '',
-  vectorStoreConfig: '',
-  vectorEmbedModelId: '',
-  dimensionOfVectorModel: undefined,
-  options: {
-    canUpdateEmbeddingModel: true,
-  },
-  rerankModelId: '',
-  searchEngineEnable: '',
-  englishName: '',
-};
-const entity = ref<any>({ ...defaultEntity });
-
 const btnLoading = ref(false);
 const rules = ref({
   deptId: [
@@ -116,21 +126,6 @@ const rules = ref({
   ],
 });
 
-function openDialog(row: any = {}) {
-  if (row.id) {
-    isAdd.value = false;
-    entity.value = {
-      ...defaultEntity,
-      ...row,
-      options: { ...defaultEntity.options, ...row.options },
-    };
-  } else {
-    isAdd.value = true;
-    entity.value = { ...defaultEntity };
-  }
-  dialogVisible.value = true;
-}
-
 async function save() {
   try {
     const valid = await saveForm.value?.validate();
@@ -138,18 +133,13 @@ async function save() {
 
     btnLoading.value = true;
     const res = await api.post(
-      isAdd.value
-        ? '/api/v1/documentCollection/save'
-        : '/api/v1/documentCollection/update',
+      '/api/v1/documentCollection/update',
       entity.value,
     );
 
     if (res.errorCode === 0) {
-      ElMessage.success(res.message || $t('message.saveSuccess'));
+      ElMessage.success($t('message.saveOkMessage'));
       emit('reload');
-      closeDialog();
-    } else {
-      ElMessage.error(res.message || $t('message.saveFail'));
     }
   } catch (error) {
     ElMessage.error($t('message.saveFail'));
@@ -158,28 +148,10 @@ async function save() {
     btnLoading.value = false;
   }
 }
-
-function closeDialog() {
-  saveForm.value?.resetFields();
-  isAdd.value = true;
-  entity.value = { ...defaultEntity };
-  dialogVisible.value = false;
-}
-
-defineExpose({
-  openDialog,
-});
 </script>
 
 <template>
-  <ElDialog
-    v-model="dialogVisible"
-    draggable
-    :title="isAdd ? $t('button.add') : $t('button.edit')"
-    :before-close="closeDialog"
-    :close-on-click-modal="false"
-    align-center
-  >
+  <div class="document-config-container">
     <ElForm
       label-width="150px"
       ref="saveForm"
@@ -198,15 +170,6 @@ defineExpose({
         <ElInput
           v-model.trim="entity.title"
           :placeholder="$t('documentCollection.placeholder.title')"
-        />
-      </ElFormItem>
-      <ElFormItem
-        prop="categoryId"
-        :label="$t('documentCollection.categoryId')"
-      >
-        <DictSelect
-          v-model="entity.categoryId"
-          dict-code="aiDocumentCollectionCategory"
         />
       </ElFormItem>
       <ElFormItem prop="alias" :label="$t('documentCollection.alias')">
@@ -309,37 +272,6 @@ defineExpose({
         </ElSelect>
       </ElFormItem>
       <ElFormItem
-        prop="dimensionOfVectorModel"
-        :label="$t('documentCollection.dimensionOfVectorModel')"
-      >
-        <template #label>
-          <span style="display: flex; align-items: center">
-            {{ $t('documentCollection.dimensionOfVectorModel') }}
-            <ElTooltip
-              :content="$t('documentCollection.dimensionOfVectorModelTips')"
-              placement="top"
-              effect="light"
-            >
-              <ElIcon
-                style="
-                  margin-left: 4px;
-                  color: #909399;
-                  cursor: pointer;
-                  font-size: 14px;
-                "
-              >
-                <InfoFilled />
-              </ElIcon>
-            </ElTooltip>
-          </span>
-        </template>
-        <ElInput
-          :disabled="!entity?.options?.canUpdateEmbeddingModel"
-          v-model.trim="entity.dimensionOfVectorModel"
-          type="number"
-        />
-      </ElFormItem>
-      <ElFormItem
         prop="rerankModelId"
         :label="$t('documentCollection.rerankLlmId')"
       >
@@ -361,21 +293,23 @@ defineExpose({
       >
         <ElSwitch v-model="entity.searchEngineEnable" />
       </ElFormItem>
+      <ElFormItem style="margin-top: 20px; text-align: right">
+        <ElButton
+          type="primary"
+          @click="save"
+          :loading="btnLoading"
+          :disabled="btnLoading"
+        >
+          {{ $t('button.save') }}
+        </ElButton>
+      </ElFormItem>
     </ElForm>
-    <template #footer>
-      <ElButton @click="closeDialog">
-        {{ $t('button.cancel') }}
-      </ElButton>
-      <ElButton
-        type="primary"
-        @click="save"
-        :loading="btnLoading"
-        :disabled="btnLoading"
-      >
-        {{ $t('button.save') }}
-      </ElButton>
-    </template>
-  </ElDialog>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.document-config-container {
+  height: 100%;
+  overflow: auto;
+}
+</style>

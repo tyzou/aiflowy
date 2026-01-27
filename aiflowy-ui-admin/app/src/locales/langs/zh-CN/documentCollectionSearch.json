@@ -1,0 +1,41 @@
+{
+  "title": "知识检索配置",
+  "docRecallMaxNum": {
+    "label": "召回最大条数",
+    "tooltip": "检索时返回的最大文档数量，数值越大召回越全但速度越慢"
+  },
+  "simThreshold": {
+    "label": "相似度最小值",
+    "tooltip": "值越大筛选越严格，仅返回相似度更高的文档，范围0-1，建议设置0.6-0.8"
+  },
+  "button": {
+    "save": "保存配置"
+  },
+  "message": {
+    "saveSuccess": "配置保存成功",
+    "saveFailed": "配置保存失败"
+  },
+  "placeholder": {
+    "count": "1-50"
+  },
+  "switch": {
+    "on": "开",
+    "off": "关"
+  },
+  "unit": {
+    "count": "条"
+  },
+  "searchEngineType": {
+    "label": "搜索引擎类型",
+    "placeholder": "请选择搜索引擎类型",
+    "tooltip": "选择检索文档的引擎类型：关键词检索（快速）",
+    "vector": "向量检索",
+    "hybrid": "混合检索",
+    "keyword": "关键词检索"
+  },
+  "searchEngineEnable": {
+    "label": "是否启用搜索引擎",
+    "tooltip": "是否启用搜索引擎，开启后，将使用搜索引擎进行文档检索"
+  },
+  "vectorEmbedModelTips": "After successful vector data, it is not allowed to modify the vector model"
+}

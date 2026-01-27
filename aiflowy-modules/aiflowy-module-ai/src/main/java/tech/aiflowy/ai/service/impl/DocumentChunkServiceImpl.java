@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 
+import static tech.aiflowy.ai.entity.DocumentCollection.KEY_SEARCH_ENGINE_TYPE;
+
 /**
  *  服务层实现。
  *
@@ -26,9 +28,10 @@ public class DocumentChunkServiceImpl extends ServiceImpl<DocumentChunkMapper, D
 
     @Override
     public boolean removeChunk(DocumentCollection knowledge, BigInteger chunkId) {
-        DocumentSearcher searcher = searcherFactory.getSearcher();
+        String searchEngineType = (String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE);
+        DocumentSearcher searcher = searcherFactory.getSearcher(searchEngineType);
         // 删除搜索引擎中的数据
-        if (searcherFactory.getSearcher() == null){
+        if (searcherFactory.getSearcher(searchEngineType) == null){
             return true;
         }
         return  searcher.deleteDocument(chunkId);

@@ -56,7 +56,6 @@ public class DocumentCollectionController extends BaseCurdController<DocumentCol
         if (StringUtils.hasLength(alias)){
             DocumentCollection knowledge = service.getByAlias(alias);
 
-
             if (knowledge != null && isSave){
                 throw new BusinessException("别名已存在！");
             }
@@ -65,6 +64,8 @@ public class DocumentCollectionController extends BaseCurdController<DocumentCol
                 throw new BusinessException("别名已存在！");
             }
 
+        } else {
+            entity.setAlias(null);
         }
 
 
@@ -73,7 +74,7 @@ public class DocumentCollectionController extends BaseCurdController<DocumentCol
             if (entity.getSearchEngineEnable() == null){
                 entity.setSearchEngineEnable(false);
             }
-            options.put("canUpdateEmbedding", true);
+            options.put("canUpdateEmbeddingModel", true);
             entity.setOptions(options);
         }
         return super.onSaveOrUpdateBefore(entity, isSave);

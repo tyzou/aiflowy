@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiEsConfig extends ESConfig {
 
-    @Value("${rag.searcher.type}")
-    private String type;
-
     @Value("${rag.searcher.elastic.host}")
     @Override
     public void setHost(String host) {
@@ -32,14 +29,6 @@ public class AiEsConfig extends ESConfig {
     @Override
     public void setIndexName(String indexName) {
         super.setIndexName(indexName);
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
 }

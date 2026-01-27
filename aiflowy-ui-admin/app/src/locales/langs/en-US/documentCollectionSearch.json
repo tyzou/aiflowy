@@ -1,0 +1,40 @@
+{
+  "title": "Knowledge Retrieval Configuration",
+  "docRecallMaxNum": {
+    "label": "Max Recall Documents",
+    "tooltip": "Maximum number of documents returned during retrieval. Larger values recall more comprehensively but slower."
+  },
+  "simThreshold": {
+    "label": "Minimum Similarity",
+    "tooltip": "Higher values mean stricter filtering, only returning documents with higher similarity (range: 0-1, recommended: 0.6-0.8)."
+  },
+  "button": {
+    "save": "Save Configuration"
+  },
+  "message": {
+    "saveSuccess": "Configuration saved successfully",
+    "saveFailed": "Configuration saved failed"
+  },
+  "placeholder": {
+    "count": "1-50"
+  },
+  "switch": {
+    "on": "On",
+    "off": "Off"
+  },
+  "unit": {
+    "count": "items"
+  },
+  "searchEngineType": {
+    "label": "Search Engine Type",
+    "placeholder": "Please select search engine type",
+    "tooltip": "Select the engine type for document retrieval: Keyword search (fast)",
+    "vector": "Vector Retrieval",
+    "hybrid": "Hybrid Retrieval",
+    "keyword": "Keyword Retrieval"
+  },
+  "searchEngineEnable": {
+    "label": "Enable Search Engine",
+    "tooltip": "Enable to use the search engine for document retrieval."
+  }
+}

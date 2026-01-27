@@ -100,11 +100,11 @@ const handleDelete = (row: any) => {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn :label="$t('common.handle')" width="100" align="right">
+        <ElTableColumn :label="$t('common.handle')" width="120" align="right">
           <template #default="{ row }">
             <div class="flex items-center gap-3">
               <ElButton link type="primary" @click="handleView(row)">
-                {{ $t('button.view') }}
+                {{ $t('button.viewSegmentation') }}
               </ElButton>
 
               <ElDropdown>

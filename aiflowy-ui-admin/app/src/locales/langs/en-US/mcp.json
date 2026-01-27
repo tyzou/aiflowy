@@ -17,5 +17,15 @@
       "availableTools": "Available Tools"
     }
   },
-  "example": "Example："
+  "example": "Example：",
+  "restartMcpServer": "RestartMcpServer",
+  "message": {
+    "startupFail": "StartupFail",
+    "startupSuccessful": "StartupSuccessful",
+    "stopSuccessful": "StopSuccessful"
+  },
+  "labels": {
+    "clientOnline": "ClientOnline",
+    "clientOffline": "ClientOffline"
+  }
 }

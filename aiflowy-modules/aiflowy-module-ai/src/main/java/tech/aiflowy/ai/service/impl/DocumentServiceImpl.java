@@ -27,6 +27,9 @@ import tech.aiflowy.ai.entity.Document;
 import tech.aiflowy.ai.entity.DocumentChunk;
 import tech.aiflowy.ai.entity.DocumentCollection;
 import tech.aiflowy.ai.entity.Model;
+
+import static tech.aiflowy.ai.entity.DocumentCollection.KEY_CAN_UPDATE_EMBEDDING_MODEL;
+import static tech.aiflowy.ai.entity.DocumentCollection.KEY_SEARCH_ENGINE_TYPE;
 import static tech.aiflowy.ai.entity.table.DocumentChunkTableDef.DOCUMENT_CHUNK;
 import static tech.aiflowy.ai.entity.table.DocumentTableDef.DOCUMENT;
 import tech.aiflowy.ai.mapper.DocumentChunkMapper;
@@ -140,8 +143,8 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
         List<BigInteger> chunkIds = documentChunkMapper.selectListByQueryAs(queryWrapper, BigInteger.class);
         documentStore.delete(chunkIds, options);
         // 删除搜索引擎中的数据
-        if (searcherFactory.getSearcher() != null) {
-            DocumentSearcher searcher = searcherFactory.getSearcher();
+        if (searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE)) != null) {
+            DocumentSearcher searcher = searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE));
             chunkIds.forEach(searcher::deleteDocument);
         }
         int ck = documentChunkMapper.deleteByQuery(QueryWrapper.create().eq(DocumentChunk::getDocumentId, id));
@@ -259,6 +262,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
         StoreOptions options = StoreOptions.ofCollectionName(knowledge.getVectorStoreCollection());
         EmbeddingOptions embeddingOptions = new EmbeddingOptions();
         embeddingOptions.setModel(model.getModelName());
+        embeddingOptions.setDimensions(knowledge.getDimensionOfVectorModel());
         options.setEmbeddingOptions(embeddingOptions);
         options.setIndexName(options.getCollectionName());
         List<com.agentsflex.core.document.Document> documents = new ArrayList<>();
@@ -277,24 +281,22 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
 
         if (knowledge.isSearchEngineEnabled()) {
             // 获取搜索引擎
-            DocumentSearcher searcher = searcherFactory.getSearcher();
+            DocumentSearcher searcher = searcherFactory.getSearcher((String) knowledge.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE));
             // 添加到搜索引擎
             documents.forEach(searcher::addDocument);
         }
 
         DocumentCollection documentCollection = new DocumentCollection();
         documentCollection.setId(entity.getCollectionId());
-        // CanUpdateEmbedLlm false: 不能修改知识库的大模型 true: 可以修改
-        DocumentCollection knowledge1 = knowledgeService.getById(entity.getCollectionId());
-        Map<String, Object> knowledgeoptions = new HashMap<>();
-        if (knowledge1.getOptions() == null) {
-            knowledgeoptions.put("canUpdateEmbedding", false);
-        } else {
-            knowledgeoptions = knowledge.getOptions();
-            knowledgeoptions.put("canUpdateEmbedding", false);
-        }
-        documentCollection.setOptions(knowledgeoptions);
+        Map<String, Object> knowledgeOptions = knowledge.getOptions();
+        knowledgeOptions.put(KEY_CAN_UPDATE_EMBEDDING_MODEL, false);
+        documentCollection.setOptions(knowledgeOptions);
         knowledgeService.updateById(documentCollection);
+        if (knowledge.getDimensionOfVectorModel() == null) {
+            int dimension = Model.getEmbeddingDimension(embeddingModel);
+            knowledge.setDimensionOfVectorModel(dimension);
+            knowledgeService.updateById(knowledge);
+        }
         return true;
     }
 

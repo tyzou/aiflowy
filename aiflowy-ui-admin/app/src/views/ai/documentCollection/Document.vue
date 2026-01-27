@@ -12,15 +12,19 @@ import bookIcon from '#/assets/ai/knowledge/book.svg';
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
 import PageSide from '#/components/page/PageSide.vue';
 import ChunkDocumentTable from '#/views/ai/documentCollection/ChunkDocumentTable.vue';
+import DocumentCollectionDataConfig from '#/views/ai/documentCollection/DocumentCollectionDataConfig.vue';
 import DocumentTable from '#/views/ai/documentCollection/DocumentTable.vue';
 import ImportKnowledgeDocFile from '#/views/ai/documentCollection/ImportKnowledgeDocFile.vue';
 import KnowledgeSearch from '#/views/ai/documentCollection/KnowledgeSearch.vue';
+import KnowledgeSearchConfig from '#/views/ai/documentCollection/KnowledgeSearchConfig.vue';
 
 const route = useRoute();
 const router = useRouter();
 
 const knowledgeId = ref<string>((route.query.id as string) || '');
+const activeMenu = ref<string>((route.query.activeMenu as string) || '');
 const knowledgeInfo = ref<any>({});
+const defaultSelectedMenu = ref('documentList');
 const getKnowledge = () => {
   api
     .get('/api/v1/documentCollection/detail', {
@@ -33,6 +37,9 @@ const getKnowledge = () => {
     });
 };
 onMounted(() => {
+  if (activeMenu.value) {
+    defaultSelectedMenu.value = activeMenu.value;
+  }
   getKnowledge();
 });
 const back = () => {
@@ -41,6 +48,7 @@ const back = () => {
 const categoryData = [
   { key: 'documentList', name: $t('documentCollection.documentList') },
   { key: 'knowledgeSearch', name: $t('documentCollection.knowledgeRetrieval') },
+  { key: 'config', name: $t('documentCollection.config') },
 ];
 const headerButtons = [
   {
@@ -69,6 +77,9 @@ const handleButtonClick = (event: any) => {
 };
 const handleCategoryClick = (category: any) => {
   selectedCategory.value = category.key;
+  if (category.key === 'config') {
+    getKnowledge();
+  }
   viewDocVisible.value = false;
 };
 const viewDocVisible = ref(false);
@@ -106,7 +117,7 @@ const backDoc = () => {
             label-key="name"
             value-key="key"
             :menus="categoryData"
-            default-selected="documentList"
+            :default-selected="defaultSelectedMenu"
             @change="handleCategoryClick"
           />
         </div>
@@ -131,7 +142,15 @@ const backDoc = () => {
             v-if="selectedCategory === 'knowledgeSearch'"
             class="doc-search-container"
           >
+            <KnowledgeSearchConfig :document-collection-id="knowledgeId" />
             <KnowledgeSearch :knowledge-id="knowledgeId" />
+          </div>
+          <!--配置-->
+          <div v-if="selectedCategory === 'config'">
+            <DocumentCollectionDataConfig
+              :detail-data="knowledgeInfo"
+              @reload="getKnowledge"
+            />
           </div>
         </div>
       </div>
@@ -224,5 +243,6 @@ const backDoc = () => {
 .doc-search-container {
   width: 100%;
   height: 100%;
+  display: flex;
 }
 </style>
