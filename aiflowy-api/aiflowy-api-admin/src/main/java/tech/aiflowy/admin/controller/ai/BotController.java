@@ -175,12 +175,14 @@ public class BotController extends BaseCurdController<BotService, Bot> {
         if (aiBot == null) {
             return ChatSseUtil.sendSystemError(conversationIdStr, "机器人不存在");
         }
+        if (aiBot.getModelId() == null) {
+            return ChatSseUtil.sendSystemError(conversationIdStr, "请配置大模型!");
+        }
         boolean login = StpUtil.isLogin();
         if (!login && !aiBot.isAnonymousEnabled()) {
             return ChatSseUtil.sendSystemError(conversationIdStr, "此bot不支持匿名访问");
         }
         Map<String, Object> modelOptions = aiBot.getModelOptions();
-        String systemPrompt = MapUtil.getString(modelOptions, "systemPrompt");
         Model model = modelService.getModelInstance(aiBot.getModelId());
         if (model == null) {
             return ChatSseUtil.sendSystemError(conversationIdStr, "模型不存在，请检查配置");
@@ -190,7 +192,8 @@ public class BotController extends BaseCurdController<BotService, Bot> {
             return ChatSseUtil.sendSystemError(conversationIdStr, "对话模型获取失败，请检查配置");
         }
         final MemoryPrompt memoryPrompt = new MemoryPrompt();
-        Integer maxMessageCount = MapUtil.getInteger(modelOptions, "maxMessageCount");
+        String systemPrompt = MapUtil.getString(modelOptions, Bot.KEY_SYSTEM_PROMPT);
+        Integer maxMessageCount = MapUtil.getInteger(modelOptions, Bot.KEY_MAX_MESSAGE_COUNT);
         if (maxMessageCount != null) {
             memoryPrompt.setMaxAttachedMessageCount(maxMessageCount);
         }
@@ -200,6 +203,8 @@ public class BotController extends BaseCurdController<BotService, Bot> {
         UserMessage userMessage = new UserMessage(prompt);
         userMessage.addTools(buildFunctionList(Maps.of("botId", botId).set("needEnglishName", false)));
         ChatOptions chatOptions = getChatOptions(modelOptions);
+        Boolean enableDeepThinking = MapUtil.getBoolean(modelOptions, Bot.KEY_ENABLE_DEEP_THINKING, false);
+        chatOptions.setThinkingEnabled(enableDeepThinking);
         return botService.startChat(botId, chatModel, prompt, memoryPrompt, chatOptions, conversationId, messages, userMessage);
     }
 

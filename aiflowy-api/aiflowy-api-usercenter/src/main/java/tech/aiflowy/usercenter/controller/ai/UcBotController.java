@@ -13,8 +13,6 @@ import com.agentsflex.core.prompt.MemoryPrompt;
 import com.alicp.jetcache.Cache;
 import com.mybatisflex.core.keygen.impl.SnowFlakeIDKeyGenerator;
 import com.mybatisflex.core.query.QueryWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tech.aiflowy.ai.entity.*;
-import tech.aiflowy.ai.mapper.BotConversationMapper;
 import tech.aiflowy.ai.service.*;
 import tech.aiflowy.common.annotation.UsePermission;
 import tech.aiflowy.common.audio.core.AudioServiceManager;
@@ -30,13 +27,10 @@ import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.util.MapUtil;
 import tech.aiflowy.common.util.Maps;
-import tech.aiflowy.common.util.SSEUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
-import tech.aiflowy.core.chat.protocol.sse.ChatSseEmitter;
 import tech.aiflowy.core.chat.protocol.sse.ChatSseUtil;
-import tech.aiflowy.system.mapper.SysApiKeyMapper;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -177,7 +171,9 @@ public class UcBotController extends BaseCurdController<BotService, Bot> {
         }
 
         Map<String, Object> llmOptions = aiBot.getModelOptions();
-        String systemPrompt = MapUtil.getString(llmOptions, "systemPrompt");
+        if (aiBot.getModelId() == null) {
+            return ChatSseUtil.sendSystemError(conversationIdStr, "请配置大模型!");
+        }
         Model model = modelService.getModelInstance(aiBot.getModelId());
         if (model == null) {
             return ChatSseUtil.sendSystemError(conversationIdStr, "模型不存在，请检查配置");
@@ -189,7 +185,8 @@ public class UcBotController extends BaseCurdController<BotService, Bot> {
         }
 
         final MemoryPrompt memoryPrompt = new MemoryPrompt();
-        Integer maxMessageCount = MapUtil.getInteger(llmOptions, "maxMessageCount");
+        String systemPrompt = MapUtil.getString(llmOptions, Bot.KEY_SYSTEM_PROMPT);
+        Integer maxMessageCount = MapUtil.getInteger(llmOptions, Bot.KEY_MAX_MESSAGE_COUNT);
         if (maxMessageCount != null) {
             memoryPrompt.setMaxAttachedMessageCount(maxMessageCount);
         }

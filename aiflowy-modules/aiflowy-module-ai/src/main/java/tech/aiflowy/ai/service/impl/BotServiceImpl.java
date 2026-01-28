@@ -1,14 +1,11 @@
 package tech.aiflowy.ai.service.impl;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.agentsflex.core.memory.ChatMemory;
 import com.agentsflex.core.message.UserMessage;
 import com.agentsflex.core.model.chat.ChatModel;
 import com.agentsflex.core.model.chat.ChatOptions;
 import com.agentsflex.core.model.chat.StreamResponseListener;
 import com.agentsflex.core.prompt.MemoryPrompt;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.slf4j.Logger;
@@ -19,28 +16,25 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import tech.aiflowy.ai.agentsflex.listener.ChatStreamListener;
+import tech.aiflowy.ai.agentsflex.memory.BotMessageMemory;
+import tech.aiflowy.ai.agentsflex.memory.DefaultBotMessageMemory;
 import tech.aiflowy.ai.entity.Bot;
 import tech.aiflowy.ai.entity.BotMessage;
-import tech.aiflowy.ai.agentsflex.memory.DefaultBotMessageMemory;
-import tech.aiflowy.ai.agentsflex.memory.BotMessageMemory;
 import tech.aiflowy.ai.mapper.BotMapper;
 import tech.aiflowy.ai.service.BotMessageService;
 import tech.aiflowy.ai.service.BotService;
-import tech.aiflowy.ai.agentsflex.listener.ChatStreamListener;
 import tech.aiflowy.ai.utils.CustomBeanUtils;
 import tech.aiflowy.ai.utils.RegexUtils;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.web.exceptions.BusinessException;
-import tech.aiflowy.core.chat.protocol.MessageRole;
 import tech.aiflowy.core.chat.protocol.sse.ChatSseEmitter;
 
 import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  服务层实现。
@@ -53,18 +47,11 @@ public class BotServiceImpl extends ServiceImpl<BotMapper, Bot> implements BotSe
 
     private static final Logger log = LoggerFactory.getLogger(BotServiceImpl.class);
 
-    private static final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
-
     @Resource
     private BotMessageService botMessageService;
 
     @Resource(name = "sseThreadPool")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
-    // 30秒发一次心跳
-    private static final long HEARTBEAT_INTERVAL = 30 * 1000L;
-    // 心跳消息
-    private static final String HEARTBEAT_MESSAGE = "ping";
 
     @Override
     public Bot getDetail(String id) {
@@ -87,7 +74,7 @@ public class BotServiceImpl extends ServiceImpl<BotMapper, Bot> implements BotSe
     @Override
     public Bot getByAlias(String alias) {
         QueryWrapper queryWrapper = QueryWrapper.create();
-        queryWrapper.eq("alias", alias);
+        queryWrapper.eq(Bot::getAlias, alias);
         return getOne(queryWrapper);
     }
 

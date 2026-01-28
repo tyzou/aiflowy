@@ -15,6 +15,9 @@ import java.util.Map;
 @Table("tb_bot")
 public class Bot extends BotBase {
 
+    public static final String KEY_SYSTEM_PROMPT = "systemPrompt";
+    public static final String KEY_MAX_MESSAGE_COUNT = "maxMessageCount";
+    public static final String KEY_ENABLE_DEEP_THINKING = "enableDeepThinking";
 
     public boolean isAnonymousEnabled() {
         Map<String, Object> options = getOptions();
