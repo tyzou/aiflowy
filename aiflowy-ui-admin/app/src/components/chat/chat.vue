@@ -443,4 +443,19 @@ const handleRefresh = () => {
   font-size: 12px;
   color: var(--common-font-placeholder-color);
 }
+
+.el-bubble-list :deep(.el-bubble.el-bubble-start) {
+  --bubble-content-max-width: calc(
+    100% - var(--el-bubble-avatar-placeholder-gap)
+  ) !important;
+}
+
+.el-bubble-list :deep(.el-bubble.el-bubble-end) {
+  --bubble-content-max-width: calc(
+    100% -
+      calc(
+        var(--el-bubble-avatar-placeholder-gap) + var(--el-avatar-size, 40px)
+      )
+  ) !important;
+}
 </style>
