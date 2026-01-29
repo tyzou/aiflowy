@@ -6,40 +6,6 @@ import { ElAvatar } from 'element-plus';
 import defaultAssistantAvatar from '#/assets/defaultAssistantAvatar.svg';
 import defaultUserAvatar from '#/assets/defaultUserAvatar.png';
 
-// type listType = BubbleListItemProps & {
-//   key: number;
-//   role: 'assistant' | 'user';
-// };
-// const messageList: BubbleListProps<listType>['list'] = [
-//   {
-//     key: 0,
-//     role: 'user',
-//     placement: 'end',
-//     content: '哈哈哈，让我试试',
-//     typing: true,
-//   },
-//   {
-//     key: 1,
-//     role: 'assistant',
-//     placement: 'start',
-//     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
-//     typing: true,
-//   },
-//   {
-//     key: 2,
-//     role: 'user',
-//     placement: 'end',
-//     content: '哈哈哈，让我试试',
-//     typing: true,
-//   },
-//   {
-//     key: 3,
-//     role: 'assistant',
-//     placement: 'start',
-//     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
-//     loading: true,
-//   },
-// ];
 interface Props {
   bot: any;
   messages: any[];
@@ -69,9 +35,18 @@ function getUserAvatar() {
 
     <!-- 自定义头部 -->
     <template #header="{ item }">
-      <span class="text-foreground/50 text-xs">
-        {{ item.created }}
-      </span>
+      <div class="flex flex-col">
+        <span class="text-foreground/50 text-xs">
+          {{ item.created }}
+        </span>
+        <ElThinking
+          v-if="item.reasoning_content"
+          v-model="item.thinlCollapse"
+          :content="item.reasoning_content"
+          :status="item.thinkingStatus"
+          class="mb-3"
+        />
+      </div>
     </template>
 
     <!-- 自定义气泡内容 -->

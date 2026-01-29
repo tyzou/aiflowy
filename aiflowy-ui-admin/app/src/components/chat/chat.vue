@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Sender } from 'vue-element-plus-x';
 import type { BubbleListProps } from 'vue-element-plus-x/types/BubbleList';
+import type { ThinkingStatus } from 'vue-element-plus-x/types/Thinking';
 import type { TypewriterInstance } from 'vue-element-plus-x/types/Typewriter';
 
 import type { BotInfo, ChatMessage } from '@aiflowy/types';
@@ -24,6 +25,12 @@ import SendIcon from '#/components/icons/SendIcon.vue';
 import BotAvatar from '../botAvatar/botAvatar.vue';
 import SendingIcon from '../icons/SendingIcon.vue';
 
+type MessageItem = ChatMessage & {
+  reasoning_content?: string;
+  thinkingStatus?: ThinkingStatus;
+  thinlCollapse?: boolean;
+};
+
 const props = defineProps<{
   bot?: BotInfo;
   conversationId?: string;
@@ -43,7 +50,7 @@ const route = useRoute();
 const botId = ref<string>((route.params.id as string) || '');
 const router = useRouter();
 
-const bubbleItems = ref<BubbleListProps<ChatMessage>['list']>([]);
+const bubbleItems = ref<BubbleListProps<MessageItem>['list']>([]);
 const senderRef = ref<InstanceType<typeof Sender>>();
 const senderValue = ref('');
 const sending = ref(false);
@@ -182,18 +189,30 @@ const handleSubmit = async (refreshContent: string) => {
       // 处理流式消息
       const delta = sseData.payload?.delta;
       const role = sseData.payload?.role;
+
       if (lastBubbleItem && delta) {
-        if (delta === lastBubbleItem.content) {
-          sending.value = false;
-        } else {
+        if (sseData.type === 'THINKING') {
           bubbleItems.value[bubbleItems.value.length - 1] = {
             ...lastBubbleItem,
-            content: lastBubbleItem.content + delta,
+            thinkingStatus: 'thinking',
+            thinlCollapse: true,
+            reasoning_content: (lastBubbleItem.reasoning_content ?? '') + delta,
+          };
+        } else if (sseData.type === 'MESSAGE') {
+          bubbleItems.value[bubbleItems.value.length - 1] = {
+            ...lastBubbleItem,
+            thinkingStatus: 'end',
+            thinlCollapse: false,
+            content: (lastBubbleItem.content + delta).replaceAll(
+              '```echartsoption',
+              '```echarts\noption',
+            ),
             loading: false,
             typing: true,
           };
         }
       }
+
       // 是否需要保存聊天记录
       if (event === 'needSaveMessage') {
         messages.value.push({
@@ -201,6 +220,13 @@ const handleSubmit = async (refreshContent: string) => {
           content: sseData.payload?.content,
         });
       }
+    },
+    onFinished() {
+      sending.value = false;
+    },
+    onError(err) {
+      console.error(err);
+      sending.value = false;
     },
   });
 };
@@ -220,7 +246,7 @@ const handleComplete = (_: TypewriterInstance, index: number) => {
 };
 
 const generateMockMessages = (refreshContent: string) => {
-  const userMessage: ChatMessage = {
+  const userMessage: MessageItem = {
     role: 'user',
     id: Date.now().toString(),
     fileList: [],
@@ -230,7 +256,7 @@ const generateMockMessages = (refreshContent: string) => {
     placement: 'end',
   };
 
-  const assistantMessage: ChatMessage = {
+  const assistantMessage: MessageItem = {
     role: 'assistant',
     id: Date.now().toString(),
     content: '',
@@ -277,9 +303,18 @@ const handleRefresh = () => {
           @complete="handleComplete"
         >
           <template #header="{ item }">
-            <span class="chat-bubble-item-time-style">
-              {{ new Date(item.created).toLocaleString() }}
-            </span>
+            <div class="flex flex-col">
+              <span class="chat-bubble-item-time-style">
+                {{ new Date(item.created).toLocaleString() }}
+              </span>
+              <ElThinking
+                v-if="item.reasoning_content"
+                v-model="item.thinlCollapse"
+                :content="item.reasoning_content"
+                :status="item.thinkingStatus"
+                class="mb-3"
+              />
+            </div>
           </template>
           <!-- 自定义头像 -->
           <template #avatar="{ item }">

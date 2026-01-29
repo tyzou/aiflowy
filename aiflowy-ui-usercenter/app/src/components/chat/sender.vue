@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
+import type { ThinkingStatus } from 'vue-element-plus-x/types/Thinking';
+
 import { inject, ref } from 'vue';
 
 import { uuid } from '@aiflowy/utils';
@@ -10,10 +13,18 @@ import { sseClient } from '#/api/request';
 import SendingIcon from '#/components/icons/SendingIcon.vue';
 // import PaperclipIcon from '#/components/icons/PaperclipIcon.vue';
 
+type MessageItem = BubbleProps & {
+  key: string;
+  reasoning_content?: string;
+  role: 'assistant' | 'user';
+  thinkingStatus?: ThinkingStatus;
+  thinlCollapse?: boolean;
+};
+
 interface Props {
   conversationId: string | undefined;
   bot: any;
-  addMessage?: (message: any) => void;
+  addMessage?: (message: MessageItem) => void;
 }
 const props = defineProps<Props>();
 const senderValue = ref('');
@@ -36,17 +47,20 @@ function sendMessage() {
     content: senderValue.value,
     typing: true,
   });
-  const assistantMsg = {
+  const assistantMsg: MessageItem = {
     key: uuid(),
     role: 'assistant',
     placement: 'start',
     content: '',
     loading: true,
     typing: true,
+    thinlCollapse: true,
   };
   props.addMessage?.(assistantMsg);
   senderValue.value = '';
-  let str = '';
+
+  let content = '';
+  let reasoning_content = '';
   sseClient.post('/userCenter/bot/chat', data, {
     onMessage(res) {
       if (!res.data) {
@@ -74,11 +88,20 @@ function sendMessage() {
         return;
       }
 
-      if (str !== res.data && res.event !== 'done') {
+      if (sseData.type === 'THINKING') {
         props.addMessage?.({
           ...assistantMsg,
-          content: (str += delta),
-          loading: str.length <= 0,
+          thinkingStatus: 'thinking',
+          reasoning_content: (reasoning_content += delta),
+        });
+      } else if (sseData.type === 'MESSAGE') {
+        props.addMessage?.({
+          ...assistantMsg,
+          reasoning_content,
+          thinkingStatus: 'end',
+          thinlCollapse: false,
+          content: (content += delta),
+          loading: content.length <= 0,
         });
       }
     },

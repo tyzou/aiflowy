@@ -3,6 +3,7 @@ import {
   BubbleList,
   Conversations,
   Sender,
+  Thinking,
   XMarkdown,
 } from 'vue-element-plus-x';
 
@@ -47,6 +48,7 @@ async function bootstrap(namespace: string) {
   app.component('ElConversations', Conversations);
   app.component('ElSender', Sender);
   app.component('XMarkdown', XMarkdown);
+  app.component('ElThinking', Thinking);
 
   // 注册AIFlowy提供的v-loading和v-spinning指令
   registerLoadingDirective(app, {
