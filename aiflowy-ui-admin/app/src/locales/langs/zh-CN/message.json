@@ -44,5 +44,6 @@
   "notVideo": "您的浏览器不支持 video 元素。",
   "notAudio": "您的浏览器不支持 audio 元素。",
   "selectTip": "请选择数据",
-  "mustBeNumber": "请输入有效的数字"
+  "mustBeNumber": "请输入有效的数字",
+  "confirmItem": "待确认项"
 }

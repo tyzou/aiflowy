@@ -44,5 +44,6 @@
   "notVideo": "Your browser does not support the video element.",
   "notAudio": "Your browser does not support the audio element.",
   "selectTip": "Please select",
-  "mustBeNumber": "Please enter a valid number"
+  "mustBeNumber": "Please enter a valid number",
+  "confirmItem": "Confirm Item"
 }

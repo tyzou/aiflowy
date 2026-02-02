@@ -159,7 +159,7 @@ function handleConfirm(node: any) {
             >
               <div class="header-container" v-if="ops.formType !== 'confirm'">
                 <div class="blue-bar">&nbsp;</div>
-                <span>{{ ops.formLabel }}</span>
+                <span>{{ ops.formLabel || $t('message.confirmItem') }}</span>
               </div>
               <div
                 class="description-container"
