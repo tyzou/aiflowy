@@ -128,7 +128,11 @@ function handleConfirm(node: any) {
                 <SuccessFilled />
               </ElIcon>
               <div v-if="node.status === 1" class="spinner"></div>
-              <ElIcon v-if="node.status === 10" color="red" size="20">
+              <ElIcon
+                v-if="node.status === 10 || node.status === 21"
+                color="red"
+                size="20"
+              >
                 <CircleCloseFilled />
               </ElIcon>
               <ElIcon v-if="node.status === 6" color="orange" size="20">
