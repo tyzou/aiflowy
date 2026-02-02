@@ -88,7 +88,7 @@ public class ChatStreamListener implements StreamResponseListener {
         // 仅当canStop为true（最后一次无后续工具调用的响应）时，执行业务逻辑
         if (this.canStop) {
             System.out.println("onStop");
-            memoryPrompt.addMessage(context.getAiMessage());
+            memoryPrompt.addMessage(context.getFullMessage());
             ChatEnvelope<Map<String, String>> chatEnvelope = new ChatEnvelope<>();
             chatEnvelope.setDomain(ChatDomain.SYSTEM);
             sseEmitter.sendDone(chatEnvelope);
