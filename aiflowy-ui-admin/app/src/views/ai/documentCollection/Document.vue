@@ -24,7 +24,6 @@ const router = useRouter();
 const knowledgeId = ref<string>((route.query.id as string) || '');
 const activeMenu = ref<string>((route.query.activeMenu as string) || '');
 const knowledgeInfo = ref<any>({});
-const defaultSelectedMenu = ref('documentList');
 const getKnowledge = () => {
   api
     .get('/api/v1/documentCollection/detail', {
@@ -61,7 +60,10 @@ const headerButtons = [
 ];
 const isImportFileVisible = ref(false);
 const selectedCategory = ref('documentList');
-const handleSearch = () => {};
+const documentTableRef = ref();
+const handleSearch = (searchParams: string) => {
+  documentTableRef.value.search(searchParams);
+};
 const handleButtonClick = (event: any) => {
   // 根据按钮 key 执行不同操作
   switch (event.key) {
@@ -77,9 +79,6 @@ const handleButtonClick = (event: any) => {
 };
 const handleCategoryClick = (category: any) => {
   selectedCategory.value = category.key;
-  if (category.key === 'config') {
-    getKnowledge();
-  }
   viewDocVisible.value = false;
 };
 const viewDocVisible = ref(false);
@@ -92,6 +91,7 @@ const viewDoc = (docId: string) => {
 const backDoc = () => {
   isImportFileVisible.value = false;
 };
+const defaultSelectedMenu = ref('documentList');
 </script>
 
 <template>
@@ -121,7 +121,9 @@ const backDoc = () => {
             @change="handleCategoryClick"
           />
         </div>
-        <div class="doc-table-content border border-[var(--el-border-color)]">
+        <div
+          class="doc-table-content menu-container border border-[var(--el-border-color)]"
+        >
           <div v-if="selectedCategory === 'documentList'" class="doc-table">
             <div class="doc-header" v-if="!viewDocVisible">
               <HeaderSearch
@@ -131,11 +133,17 @@ const backDoc = () => {
               />
             </div>
             <DocumentTable
+              ref="documentTableRef"
               :knowledge-id="knowledgeId"
               @view-doc="viewDoc"
               v-if="!viewDocVisible"
             />
-            <ChunkDocumentTable v-else :document-id="documentId" />
+
+            <ChunkDocumentTable
+              v-else
+              :document-id="documentId"
+              :default-summary-prompt="knowledgeInfo.summaryPrompt"
+            />
           </div>
           <!--知识检索-->
           <div
@@ -224,7 +232,6 @@ const backDoc = () => {
 .title {
   font-weight: 500;
   font-size: 16px;
-  color: rgba(0, 0, 0, 0.85);
   line-height: 24px;
   text-align: left;
   font-style: normal;
@@ -244,5 +251,8 @@ const backDoc = () => {
   width: 100%;
   height: 100%;
   display: flex;
+}
+.menu-container {
+  flex: 1;
 }
 </style>

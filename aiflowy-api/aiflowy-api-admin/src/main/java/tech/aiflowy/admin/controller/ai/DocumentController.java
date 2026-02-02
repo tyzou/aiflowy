@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.aiflowy.ai.entity.Document;
 import tech.aiflowy.ai.entity.DocumentCollection;
+import tech.aiflowy.ai.entity.DocumentCollectionSplitParams;
 import tech.aiflowy.ai.service.DocumentChunkService;
 import tech.aiflowy.ai.service.DocumentCollectionService;
 import tech.aiflowy.ai.service.DocumentService;
@@ -138,47 +139,13 @@ public class DocumentController extends BaseCurdController<DocumentService, Docu
     }
 
     /**
-     * 文本拆分
-     * @param filePath 文件路径
-     * @param operation textSplit 拆分预览/  saveText 保存
-     * @param splitterName 拆分器名称
-     * @param chunkSize 分段大小
-     * @param overlapSize 重叠大小
-     * @param regex 正则表达式
-     * @param rowsPerChunk excel 分割段数
+     * 文本拆分/保存
+     *
      */
-    @PostMapping(value = {"textSplit", "/saveText"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"textSplit", "/saveText"})
     @SaCheckPermission("/api/v1/documentCollection/save")
-    public Result<?> textSplit(
-                              @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-                              @RequestParam(value = "pageSize", required = false) Integer pageSize,
-                              @RequestParam("operation") String operation,
-                              @RequestParam("filePath") String filePath,
-                              @RequestParam("fileOriginName") String fileOriginName,
-                              @RequestParam(name="knowledgeId") BigInteger knowledgeId,
-                              @RequestParam(name="splitterName", required = false) String splitterName,
-                              @RequestParam(name="chunkSize", required = false) Integer chunkSize,
-                              @RequestParam(name="overlapSize", required = false) Integer overlapSize,
-                              @RequestParam(name="regex", required = false) String regex,
-                              @RequestParam(name="rowsPerChunk", required = false) Integer rowsPerChunk
-                              ) {
-        if (pageNumber == null || pageNumber == 0){
-            pageNumber = 1;
-        }
-        if (pageSize == null || pageSize == 0){
-            pageSize = 10;
-        }
-        if (chunkSize == null){
-            chunkSize = 512;
-        }
-        if (overlapSize == null){
-            overlapSize = 128;
-        }
-        if (rowsPerChunk == null){
-            rowsPerChunk = 1;
-        }
-        return documentService.textSplit(pageNumber, pageSize, operation, knowledgeId, filePath, fileOriginName,  splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
-
+    public Result<?> textSplit(@JsonBody DocumentCollectionSplitParams documentCollectionSplitParams) {
+        return documentService.textSplit(documentCollectionSplitParams);
     }
 
     /**

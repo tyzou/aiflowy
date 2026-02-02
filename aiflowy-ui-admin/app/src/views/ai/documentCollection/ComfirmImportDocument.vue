@@ -48,19 +48,13 @@ function saveDoc(
   index: number,
 ) {
   api
-    .post(
-      '/api/v1/document/saveText',
-      {},
-      {
-        params: {
-          filePath,
-          operation,
-          knowledgeId: knowledgeIdRef.value,
-          fileOriginName,
-          ...props.splitterParams,
-        },
-      },
-    )
+    .post('/api/v1/document/saveText', {
+      filePath,
+      operation,
+      knowledgeId: knowledgeIdRef.value,
+      fileOriginName,
+      ...props.splitterParams,
+    })
     .then((res) => {
       if (res.errorCode === 0) {
         localFilesList.value[index].progressUpload = 'success';

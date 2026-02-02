@@ -2,6 +2,7 @@ package tech.aiflowy.ai.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.agentsflex.core.document.DocumentSplitter;
+import com.agentsflex.core.document.splitter.MarkdownHeaderSplitter;
 import com.agentsflex.core.document.splitter.RegexDocumentSplitter;
 import com.agentsflex.core.document.splitter.SimpleDocumentSplitter;
 import com.agentsflex.core.document.splitter.SimpleTokenizeSplitter;
@@ -23,10 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.aiflowy.ai.config.SearcherFactory;
-import tech.aiflowy.ai.entity.Document;
-import tech.aiflowy.ai.entity.DocumentChunk;
-import tech.aiflowy.ai.entity.DocumentCollection;
-import tech.aiflowy.ai.entity.Model;
+import tech.aiflowy.ai.entity.*;
 
 import static tech.aiflowy.ai.entity.DocumentCollection.KEY_CAN_UPDATE_EMBEDDING_MODEL;
 import static tech.aiflowy.ai.entity.DocumentCollection.KEY_SEARCH_ENGINE_TYPE;
@@ -160,13 +158,15 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
 
     @Override
     @Transactional
-    public Result<?> textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
+    public Result<?> textSplit(DocumentCollectionSplitParams documentCollectionSplitParams) {
         try {
+            String filePath = documentCollectionSplitParams.getFilePath();
+            String fileOriginName = documentCollectionSplitParams.getFileOriginName();
             InputStream inputStream = storageService.readStream(filePath);
             Document aiDocument = new Document();
             List<DocumentChunk> previewList = new ArrayList<>();
-            DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
-            String content = File2TextUtil.readFromStream(inputStream, originalFilename, null);
+            DocumentSplitter documentSplitter = getDocumentSplitter(documentCollectionSplitParams);
+            String content = File2TextUtil.readFromStream(inputStream, fileOriginName, null);
             com.agentsflex.core.document.Document document = new com.agentsflex.core.document.Document(content);;
             inputStream.close();
             List<com.agentsflex.core.document.Document> documents = documentSplitter.split(document);
@@ -182,18 +182,21 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
             }
             String fileTypeByExtension = FileUtil.getFileTypeByExtension(filePath);
             aiDocument.setDocumentType(fileTypeByExtension);
-            aiDocument.setCollectionId(knowledgeId);
+            aiDocument.setCollectionId(documentCollectionSplitParams.getKnowledgeId());
             aiDocument.setDocumentPath(filePath);
             aiDocument.setCreated(new Date());
             aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
             aiDocument.setModified(new Date());
             aiDocument.setContent(document.getContent());
-            aiDocument.setChunkSize(chunkSize);
-            aiDocument.setOverlapSize(overlapSize);
-            aiDocument.setTitle(originalFilename);
+            aiDocument.setChunkSize(documentCollectionSplitParams.getChunkSize());
+            aiDocument.setOverlapSize(documentCollectionSplitParams.getOverlapSize());
+            aiDocument.setTitle(fileOriginName);
             Map<String, Object> res = new HashMap<>();
 
             List<DocumentChunk> documentChunks = null;
+            String operation = documentCollectionSplitParams.getOperation();
+            Integer pageNumber = documentCollectionSplitParams.getPageNumber();
+            Integer pageSize = documentCollectionSplitParams.getPageSize();
             // 如果是预览拆分，则返回指定页的数据
             if ("textSplit".equals(operation)){
                 int startIndex = (pageNumber - 1) * pageSize;
@@ -300,8 +303,12 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
         return true;
     }
 
-    public DocumentSplitter getDocumentSplitter(String splitterName, int chunkSize, int overlapSize, String regex, int excelRows) {
-
+    public DocumentSplitter getDocumentSplitter(DocumentCollectionSplitParams params) {
+        String splitterName = params.getSplitterName();
+        int chunkSize = params.getChunkSize();
+        int overlapSize = params.getOverlapSize();
+        String regex = params.getRegex();
+        int excelRows = params.getRowsPerChunk();
         if (StringUtil.noText(splitterName)) {
             return null;
         }
@@ -318,6 +325,8 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
                 }
             case "ExcelDocumentSplitter":
                 return new ExcelDocumentSplitter(excelRows);
+            case "MarkdownHeaderSplitter":
+                return new MarkdownHeaderSplitter(params.getMdSplitterLevel());
             default:
                 return null;
         }

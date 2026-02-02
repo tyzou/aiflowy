@@ -4,6 +4,7 @@ import tech.aiflowy.ai.entity.Document;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
 import tech.aiflowy.ai.entity.DocumentChunk;
+import tech.aiflowy.ai.entity.DocumentCollectionSplitParams;
 import tech.aiflowy.common.domain.Result;
 
 import java.math.BigInteger;
@@ -21,7 +22,7 @@ public interface DocumentService extends IService<Document> {
 
     boolean removeDoc(String id);
 
-    Result textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeIdm, String filePath, String originFileName, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk);
+    Result textSplit(DocumentCollectionSplitParams documentCollectionSplitParams);
 
     Result saveTextResult(List<DocumentChunk> documentChunks, Document document);
 }

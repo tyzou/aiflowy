@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 
 import { $t } from '@aiflowy/locales';
-import { downloadFileFromBlob } from '@aiflowy/utils';
 
 import { Delete, Download, MoreFilled } from '@element-plus/icons-vue';
 import {
@@ -27,8 +26,14 @@ const props = defineProps({
     type: String,
   },
 });
-
 const emits = defineEmits(['viewDoc']);
+defineExpose({
+  search(searchText: string) {
+    pageDataRef.value.setQuery({
+      title: searchText,
+    });
+  },
+});
 const pageDataRef = ref();
 const handleView = (row: any) => {
   emits('viewDoc', row.id);

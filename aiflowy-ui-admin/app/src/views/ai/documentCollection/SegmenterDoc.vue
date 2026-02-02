@@ -20,6 +20,7 @@ const form = reactive({
   overlapSize: 128,
   regex: '',
   rowsPerChunk: 0,
+  mdSplitterLevel: 1,
 });
 const fileTypes = [
   {
@@ -39,6 +40,36 @@ const splitterNames = [
   {
     label: $t('documentCollection.splitterDoc.regexDocumentSplitter'),
     value: 'RegexDocumentSplitter',
+  },
+  {
+    label: $t('documentCollection.splitterDoc.markdownHeaderSplitter'),
+    value: 'MarkdownHeaderSplitter',
+  },
+];
+const mdSplitterLevel = [
+  {
+    label: '#',
+    value: 1,
+  },
+  {
+    label: '##',
+    value: 2,
+  },
+  {
+    label: '###',
+    value: 3,
+  },
+  {
+    label: '####',
+    value: 4,
+  },
+  {
+    label: '#####',
+    value: 5,
+  },
+  {
+    label: '######',
+    value: 6,
   },
 ];
 const rules = {
@@ -121,6 +152,20 @@ defineExpose({
         v-if="form.splitterName === 'RegexDocumentSplitter'"
       >
         <ElInput v-model="form.regex" />
+      </ElFormItem>
+      <ElFormItem
+        v-if="form.splitterName === 'MarkdownHeaderSplitter'"
+        :label="$t('documentCollection.splitterDoc.mdSplitterLevel')"
+        prop="splitterName"
+      >
+        <ElSelect v-model="form.mdSplitterLevel">
+          <ElOption
+            v-for="item in mdSplitterLevel"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </ElSelect>
       </ElFormItem>
     </ElForm>
   </div>

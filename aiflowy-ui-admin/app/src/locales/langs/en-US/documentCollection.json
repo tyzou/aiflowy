@@ -59,6 +59,8 @@
     "simpleDocumentSplitter": "SimpleDocumentSplitter",
     "simpleTokenizeSplitter": "SimpleTokenizeSplitter",
     "regexDocumentSplitter": "RegexDocumentSplitter",
+    "markdownHeaderSplitter": "MarkdownHeaderSplitter",
+    "mdSplitterLevel": "MarkdownSplitterLevel",
     "uploadStatus": "UploadStatus",
     "pendingUpload": "PendingUpload",
     "completed": "Completed",

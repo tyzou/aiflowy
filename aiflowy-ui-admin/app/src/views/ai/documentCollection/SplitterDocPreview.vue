@@ -96,21 +96,15 @@ function splitterDocPreview(
   fileOriginName: string,
 ) {
   api
-    .post(
-      '/api/v1/document/textSplit',
-      {},
-      {
-        params: {
-          pageNumber,
-          pageSize,
-          filePath,
-          operation,
-          knowledgeId: knowledgeIdRef.value,
-          fileOriginName,
-          ...props.splitterParams,
-        },
-      },
-    )
+    .post('/api/v1/document/textSplit', {
+      pageNumber,
+      pageSize,
+      filePath,
+      operation,
+      knowledgeId: knowledgeIdRef.value,
+      fileOriginName,
+      ...props.splitterParams,
+    })
     .then((res) => {
       if (res.errorCode === 0) {
         documentList.value = res.data.previewData;
